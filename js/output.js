@@ -1,4 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var button, checkbox, label, link, text, _ref;
+
+_ref = ['button', 'checkbox', 'label', 'link', 'text'], button = _ref[0], checkbox = _ref[1], label = _ref[2], link = _ref[3], text = _ref[4];
+
+module.exports = [[checkbox, 'toggle-all-checkbox', '$toggle-all-clicks'], [checkbox, 'completion-toggle', '$toggle-clicks'], [button, 'destroy-button', '$destroy-clicks'], [button, 'ClearButton', '$clear-clicks'], [link, 'ActiveTodos', '$active-todos-clicks'], [link, 'AllTodos', '$all-todos-clicks'], [link, 'CompletedTodos', '$completed-todos-clicks'], [text, 'new-todo-input', 'new-todo'], [text, 'todo-item-input', 'todo-in-edit'], [label, 'todo-item-label', '$todo-label-doubleclicks']];
+
+},{}],2:[function(require,module,exports){
 var active, all, bodyProps, completed, footerProps, mode, todos;
 
 todos = [
@@ -33,31 +40,36 @@ module.exports = {
   footerProps: footerProps
 };
 
-},{}],2:[function(require,module,exports){
-var Controller, React, appNodeId, initialAppState, initialize, linkTogetherMVC, push, renderComponent, topViewFactory, _ref;
+},{}],3:[function(require,module,exports){
+var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, renderComponent, topViewFactory, viewImports, _ref;
 
-_ref = require('../vendor/reactive-aspen'), Controller = _ref.Controller, React = _ref.React;
+_ref = require('../vendor/reactive-aspen'), Adapter = _ref.Adapter, Controller = _ref.Controller, React = _ref.React;
 
 initialAppState = require('./initialAppState');
 
 topViewFactory = require('./view/app');
 
+viewImports = require('./controller/view-imports');
+
 linkTogetherMVC = Controller.linkTogetherMVC, push = Controller.push;
 
 renderComponent = React.renderComponent;
 
+connectPortsToBuses = Adapter.connectPortsToBuses;
+
 appNodeId = 'todoapp';
 
-initialize = function(appNodeId, topViewFactory, initialAppState) {
+initialize = function(appNodeId, topViewFactory, initialAppState, viewImports) {
   var topReactDescriptor;
   push('top-view-factory')(topViewFactory);
   topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
-  return renderComponent(topReactDescriptor, document.getElementById(appNodeId));
+  renderComponent(topReactDescriptor, document.getElementById(appNodeId));
+  return connectPortsToBuses(viewImports);
 };
 
-initialize(appNodeId, topViewFactory, initialAppState);
+initialize(appNodeId, topViewFactory, initialAppState, viewImports);
 
-},{"../vendor/reactive-aspen":9,"./initialAppState":1,"./view/app":4}],3:[function(require,module,exports){
+},{"../vendor/reactive-aspen":10,"./controller/view-imports":1,"./initialAppState":2,"./view/app":5}],4:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -134,7 +146,7 @@ module.exports = {
   uuid: uuid
 };
 
-},{}],4:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div;
 
 div = require('../../vendor/reactive-aspen').React.DOM.div;
@@ -153,7 +165,7 @@ TodoApp = function(appState) {
 
 module.exports = TodoApp;
 
-},{"../../vendor/reactive-aspen":9,"./body":5,"./footer":6,"./header":7}],5:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":10,"./body":6,"./footer":7,"./header":8}],6:[function(require,module,exports){
 var $checkbox, AppBody, Bridge, React, TodoItem, mainToggle, section, ul, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -186,7 +198,7 @@ AppBody = function(props) {
 
 module.exports = AppBody;
 
-},{"../../vendor/reactive-aspen":9,"./todoItem":8}],6:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":10,"./todoItem":9}],7:[function(require,module,exports){
 var $button, $link, AppFooter, Bridge, DOM, React, activeFilter, addons, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -256,7 +268,7 @@ _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[
 
 module.exports = AppFooter;
 
-},{"../../vendor/reactive-aspen":9,"../utilities":3}],7:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":10,"../utilities":4}],8:[function(require,module,exports){
 var $text, AppHeader, Bridge, React, h1, header, todoInput, todosCaption, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -284,7 +296,7 @@ AppHeader = function() {
 
 module.exports = AppHeader;
 
-},{"../../vendor/reactive-aspen":9}],8:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":10}],9:[function(require,module,exports){
 var $button, $checkbox, $label, $text, Bridge, DOM, React, TodoItem, addons, classSet, completionToggle, destroyButton, div, fields, includeIndex, indexifyAdapter, li, todoItemInput, todoItemLabel, _ref, _ref1, _ref2;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -348,7 +360,7 @@ TodoItem = function(todoProps, index) {
 
 module.exports = TodoItem;
 
-},{"../../vendor/reactive-aspen":9}],9:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":10}],10:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 module.exports = _dereq_('../controller/channel-connectors.js');
 
@@ -394,7 +406,7 @@ connectNonInput = function(src) {
 };
 
 connectPortsToBuses = function(triplets) {
-  return each(connectIntakeToTarget)(triplets);
+  return triplets.forEach(connectIntakeToTarget);
 };
 
 filter = function(predicate) {
@@ -22624,4 +22636,4 @@ module.exports = {
 },{}]},{},[12])
 (12)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[2])
+},{}]},{},[3])
