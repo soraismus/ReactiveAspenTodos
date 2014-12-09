@@ -1,0 +1,25 @@
+{ Bridge, React } = require '../../vendor/reactive-aspen'
+TodoItem          = require './todoItem'
+{ section, ul }   = React.DOM
+{ $checkbox }     = Bridge.adapters 
+
+mainToggle = $checkbox 'toggle-all-checkbox'
+
+AppBody = \props ->
+  { activeTodoCount, count, todos } = props
+
+  return null unless count > 0
+
+  todoItems = todos.map TodoItem
+
+  section
+    id : 'main'
+    mainToggle
+      id       : 'toggle-all'
+      onChange : true
+      checked  : activeTodoCount == 0
+    ul
+      id : 'todo-list'
+      todoItems
+
+module.exports = AppBody

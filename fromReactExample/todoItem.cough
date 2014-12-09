@@ -1,0 +1,25 @@
+todo-item = \props ->
+  { className, completed, editText, title } = props
+
+  li
+    className : className
+    div
+      className : 'view'
+      __input 'toggle'
+        className : 'toggle'
+        type      : 'checkbox'
+        checked   : completed
+        onChange  : true
+      __label 'toggle'
+        onDoubleClick : true
+        title
+      __button 'destroy'
+        className : 'destroy'
+        onClick   : true
+    __input 'edit'
+      ref       : 'editField'
+      className : 'edit'
+      value     : editText
+      onBlur    : true
+      onChange  : true
+      onKeyDown : true

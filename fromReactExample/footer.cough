@@ -1,0 +1,38 @@
+gen-classname = (nowShowing, filter) ->
+  if nowShowing == filter then 'selected' else ''
+
+clear-button = ->
+  __button ('ClearButton')
+    id      : 'clear-completed'
+    onClick : true
+    'Clear completed'
+
+count-span = \props ->
+  { activeTodoWords, count } = props
+  span
+    id : 'todo-count'
+    strong count
+    "#{activeTodoWord} left"
+
+filter = (mode) -> (bus-label, href, filter, link-label) ->
+  LinkItem (
+    __a bus-label
+    { href, className: gen-classname (mode, filter) }
+    link-label
+  )
+
+TodoFooter = \config ->
+  { mode, todos } = config
+  { active, all, completed } = todos
+
+  _filter = filter mode
+
+  footer
+    id : 'footer'
+    count-span ()
+    ul
+      id : 'filters'
+      _filter ('AllTodos',      '/',          all,       'All '     )
+      _filter ('ActiveTodos,    '/active',    active,    'Active '  )
+      _filter ('CompletedTodos, '/completed', completed, 'Completed')
+    clear-button ()

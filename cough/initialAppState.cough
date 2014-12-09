@@ -1,0 +1,9 @@
+todos = [{ completed: false, editing: false, editText: '', title: 'think' }]
+
+active = all = mode =todos
+completed = []
+
+bodyProps   = { activeTodoCount: 1, count: 1, todos }
+footerProps = { active, all, todos, completed, mode }
+
+module.exports = { bodyProps, footerProps }

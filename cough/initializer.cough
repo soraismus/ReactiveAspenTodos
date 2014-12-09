@@ -1,0 +1,15 @@
+{ Controller, React }     = require '../vendor/reactive-aspen'
+initialAppState           = require './initialAppState'
+topViewFactory            = require './view/app'
+{ linkTogetherMVC, push } = Controller
+{ renderComponent }       = React
+
+appNodeId = 'todoapp'
+
+initialize = (appNodeId, topViewFactory, initialAppState) ->
+  push 'top-view-factory' topViewFactory
+  topReactDescriptor = linkTogetherMVC (topViewFactory, initialAppState)
+  renderComponent (topReactDescriptor, (document.getElementById appNodeId))
+
+
+initialize (appNodeId, topViewFactory, initialAppState)

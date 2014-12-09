@@ -1,0 +1,50 @@
+{ Bridge, React }                = require '../../vendor/reactive-aspen'
+{ pluralize }                    = require '../utilities'
+{ addons, DOM }                  = React
+{ classSet }                     = addons
+{ footer, li, span, strong, ul } = DOM
+{ $button, $link }               = Bridge.adapters
+
+AppFooter = \props ->
+  { active, all, completed, count, mode } = props
+
+  filterOption = getFilterOption mode
+
+  footer
+    id : 'footer'
+    countSpan count
+    ul
+      id : 'filters'
+      allFilter (mode, all)
+      activeFilter (mode, active)
+      completedFilter (mode, completed)
+    clearButton count
+
+clearButton = \count ->
+  return null unless count > 0
+  label = "Clear completed #{count}"
+  $button ('ClearButton') ({ id: 'clear-completed' }, label)
+
+countSpan = \count ->
+  activeTodoWord = pluralize (count, 'item')
+  span
+    id : 'todo-count'
+    strong count
+    "#{activeTodoWord} left"
+
+getFilterClassName = (nowShowing, filterType) ->
+  classSet { selected: nowShowing == filterType }
+
+getFilterOption = ([busLabel, href, linkLabel]) -> (mode, filter) ->
+  linkProps = { href, className: getFilterClassName (mode, filter) }
+  li ($link busLabel (linkProps, linkLabel))
+
+fields = [
+  ['ActiveTodos', '/active', 'Active ']
+  ['AllTodos', '/', 'All ']
+  ['CompletedTodos', '/completed', 'Completed']
+]
+
+[activeFilter, allFilter, completedFilter] = fields.map getFilterOption
+
+module.exports = AppFooter

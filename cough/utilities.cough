@@ -1,0 +1,37 @@
+signposts = [8, 12, 16, 20]
+
+extend = (objects...) ->
+  result = {}
+
+  for obj in objects
+    for own key of obj
+      result[key] = obj[key]
+
+  result
+
+pluralize = (count, word) ->
+  if count == 1 then word else word + 's'
+
+store = (namespace, data) ->
+  return localStorage.setItem (namespace, (JSON.stringify data)) if data
+  data = localStorage.getItem namespace
+  if data then JSON.parse data else []
+
+_uuid = (i, j) ->
+  nbr = switch i
+    when 12 then 4
+    when 16 then j & 3 | 8
+    else j
+  nbr.toString 16
+
+uuid = ->
+  uuid = ''
+
+  for i in [0...32]
+    random = Math.random () * 16 | 0
+    uuid += '-' if i in signposts
+    uuid += _uuid (i, random)
+
+  uuid
+
+module.exports = { extend, pluralize, store, uuid }

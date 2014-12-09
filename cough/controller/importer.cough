@@ -1,0 +1,45 @@
+frp-connect-ports-to-buses = ChessApp.Controller.frp-connect-ports-to-buses
+
+# -----
+# main
+# -----
+
+# TODO: Rewrite to avoid creating intermediate nodes.
+
+# TODO: Rewrite so that connections need not be made
+# based on both type and label.
+# ['Home', '$home-clicks']
+# [{ label: 'ChessPlay', type: 'link' }, '$home-clicks']
+# [{ label: 'Notification', event: 'onClick' }, '$response-clicks']
+# [{ event: 'onDoubleClick' }, '$double-clicks']
+# [{ type: 'password_input' }, '$password-inputs']
+
+frp-connect-ports-to-buses [
+  ['link',           'Home',           '$home-clicks'          ]
+  ['link',           'ChessPlay',      '$home-clicks'          ]
+  ['link',           'Notification',   '$response-clicks'      ]
+  ['link',           'GameRequest',    '$open-dropdown-clicks' ]
+  ['link',           'Pagination',     '$pagination-clicks'    ]
+  ['link',           'Signin',         '$signin-clicks'        ]
+  ['link',           'Signout',        '$signout-clicks'       ]
+  ['password_input', 'SignupConfirm',  'signup-confirm'        ]
+  ['text_input',     'SignupEmail',    'signup-email'          ]
+  ['link',           'Home-Signup',    '$signup-clicks'        ]
+  ['link',           'Signin-Signup',  '$signup-clicks'        ]
+  ['text_input',     'SignupName',     'signup-name'           ]
+  ['password_input', 'SignupPassword', 'signup-password'       ]
+  ['text_input',     'SigninEmail',    'signin-email'          ]
+  ['password_input', 'SigninPassword', 'signin-password'       ]
+  ['form',           'Signin',         '$signin-submits'       ]
+  ['form',           'Signup',         '$signup-submits'       ]
+  ['link',           'BlackGame',      '$black-clicks'         ]
+  ['link',           'WhiteGame',      '$white-clicks'         ]
+  ['sensitive',      'ChessDisplay',   '$chessboard-renderings']
+  #['link',           'Contact',        '$contact-clicks'       ]
+  ['link',           'PromType-q',     '$promotion-clicks'    ]
+  ['link',           'PromType-r',     '$promotion-clicks'    ]
+  ['link',           'PromType-b',     '$promotion-clicks'    ]
+  ['link',           'PromType-n',     '$promotion-clicks'    ]
+]
+
+# Pass data in from the react component.

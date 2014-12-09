@@ -1,0 +1,21 @@
+{ Bridge, React } = require '../../vendor/reactive-aspen'
+{ h1, header }    = React.DOM
+{ $text }         = Bridge.adapters 
+
+todosCaption = ->
+  h1 (null, 'todos')
+
+todoInput = $text 'new-todo-input'
+
+AppHeader = ->
+  header
+    id : 'header'
+    todosCaption ()
+    todoInput
+      #ref         : 'newField'
+      id          : 'new-todo'
+      placeholder : 'What needs to be done?'
+      onKeyDown   : true
+      autofocus   : true
+
+module.exports = AppHeader
