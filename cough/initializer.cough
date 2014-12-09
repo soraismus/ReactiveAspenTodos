@@ -1,15 +1,17 @@
-{ Controller, React }     = require '../vendor/reactive-aspen'
-initialAppState           = require './initialAppState'
-topViewFactory            = require './view/app'
-{ linkTogetherMVC, push } = Controller
-{ renderComponent }       = React
+{ Adapter, Controller, React } = require '../vendor/reactive-aspen'
+initialAppState                = require './initialAppState'
+topViewFactory                 = require './view/app'
+viewImports                    = require './controller/view-imports'
+{ linkTogetherMVC, push }      = Controller
+{ renderComponent }            = React
+{ connectPortsToBuses }        = Adapter
 
 appNodeId = 'todoapp'
 
-initialize = (appNodeId, topViewFactory, initialAppState) ->
+initialize = (appNodeId, topViewFactory, initialAppState, viewImports) ->
   push 'top-view-factory' topViewFactory
   topReactDescriptor = linkTogetherMVC (topViewFactory, initialAppState)
   renderComponent (topReactDescriptor, (document.getElementById appNodeId))
+  connectPortsToBuses viewImports
 
-
-initialize (appNodeId, topViewFactory, initialAppState)
+initialize (appNodeId, topViewFactory, initialAppState, viewImports)
