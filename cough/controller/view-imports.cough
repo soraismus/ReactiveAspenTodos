@@ -1,0 +1,15 @@
+[button, checkbox, label, link, text] =
+  ['button', 'checkbox', 'label', 'link', 'text']
+
+module.exports = [
+  [checkbox, 'toggle-all-checkbox', '$toggle-all-clicks'      ]
+  [checkbox, 'completion-toggle',   '$toggle-clicks'          ]
+  [button,   'destroy-button',      '$destroy-clicks'         ]
+  [button,   'ClearButton',         '$clear-clicks'           ]
+  [link,     'ActiveTodos',         '$active-todos-clicks'    ]
+  [link,     'AllTodos',            '$all-todos-clicks'       ]
+  [link,     'CompletedTodos',      '$completed-todos-clicks' ]
+  [text,     'new-todo-input',      'new-todo'                ]
+  [text,     'todo-item-input',     'todo-in-edit'            ]
+  [label,    'todo-item-label',     '$todo-label-doubleclicks']
+]
