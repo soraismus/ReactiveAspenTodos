@@ -15,3 +15,5 @@ initialize = (appNodeId, topViewFactory, initialAppState, viewImports) ->
   connectPortsToBuses viewImports
 
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
+
+require './controller/test-channel'
