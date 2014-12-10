@@ -25,3 +25,5 @@ initialize = function(appNodeId, topViewFactory, initialAppState, viewImports) {
 };
 
 initialize(appNodeId, topViewFactory, initialAppState, viewImports);
+
+require('./controller/test-channel');
