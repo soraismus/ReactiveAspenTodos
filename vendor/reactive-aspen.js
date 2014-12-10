@@ -2,14 +2,16 @@
 module.exports = _dereq_('../controller/channel-connectors.js');
 
 },{"../controller/channel-connectors.js":8}],2:[function(_dereq_,module,exports){
-var connect, connectInput, connectIntakeToTarget, connectNonInput, connectPort, connectPortsToBuses, createNonInitProperty, filter, filterByTypeAndLabel, filterIntake, filtering, getTargetValue, inputTypes, input_question_, reactIntake, remerse, remerseProp, _ref,
+var connect, connectInput, connectIntakeToTarget, connectNonInput, connectPort, connectPortsToBuses, createNonInitProperty, filter, filterByTypeAndLabel, filterIntake, filtering, getTargetValue, identity, inputTypes, input_question_, reactIntake, remerse, remerseProp, _ref,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
+_ref = _dereq_('../pando.js'), createNonInitProperty = _ref.createNonInitProperty, filtering = _ref.filtering, remerse = _ref.remerse;
 
 connect = _dereq_('./channel-connectors.js').connect;
 
 connectPort = _dereq_('./port-registrar.js').connectPort;
 
-_ref = _dereq_('../pando.js'), createNonInitProperty = _ref.createNonInitProperty, filtering = _ref.filtering, remerse = _ref.remerse;
+identity = _dereq_('../utilities.js').identity;
 
 reactIntake = _dereq_('./react-intake.js');
 
@@ -75,7 +77,7 @@ remerseProp = remerse(createNonInitProperty);
 
 module.exports = connectPortsToBuses;
 
-},{"../pando.js":14,"./channel-connectors.js":1,"./port-registrar.js":5,"./react-intake.js":7}],3:[function(_dereq_,module,exports){
+},{"../pando.js":14,"../utilities.js":22,"./channel-connectors.js":1,"./port-registrar.js":5,"./react-intake.js":7}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
 connectPortsToBuses = _dereq_('./connectPortsToBuses.js');
@@ -2310,11 +2312,7 @@ hasType_question_ = function(type) {
   };
 };
 
-_ref = ['Function', 'String'].map(hasType_question_), isFunction = _ref[0], isString = _ref[1];
-
-isObject = function(val) {
-  return val === Object(val);
-};
+_ref = ['Function', 'Object', 'String'].map(hasType_question_), isFunction = _ref[0], isObject = _ref[1], isString = _ref[2];
 
 memoize = function(fn, hasher) {
   var memo;
@@ -2336,13 +2334,20 @@ memoize = function(fn, hasher) {
 
 shallowCopy = function(val) {
   var copy, key, prop;
-  copy = {};
-  for (key in val) {
-    if (!__hasProp.call(val, key)) continue;
-    prop = val[key];
-    copy[key] = prop;
+  switch (false) {
+    case !isObject(val):
+      copy = {};
+      for (key in val) {
+        if (!__hasProp.call(val, key)) continue;
+        prop = val[key];
+        copy[key] = prop;
+      }
+      return copy;
+    case !isArray(val):
+      return val.map(identity);
+    default:
+      return val;
   }
-  return copy;
 };
 
 shallowFlatten = function(array) {
@@ -22165,7 +22170,7 @@ module.exports = warning;
 },{"./emptyFunction":121}]},{},[1])(1)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],22:[function(_dereq_,module,exports){
-var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, identity, isArray, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray,
+var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
   __hasProp = {}.hasOwnProperty,
   __slice = [].slice;
 
@@ -22220,13 +22225,13 @@ identity = function(val) {
 
 isArray = Array.isArray;
 
-isObject = function(val) {
-  return val === Object(val);
+hasType_question_ = function(type) {
+  return function(val) {
+    return ("[object " + type + "]") === toString(val);
+  };
 };
 
-isString = function(val) {
-  return "[object String]" === toString(val);
-};
+_ref = ['Object', 'String'].map(hasType_question_), isObject = _ref[0], isString = _ref[1];
 
 processKeypath = function(keypath) {
   return keypathRegex.exec(keypath).slice(1, 3);
