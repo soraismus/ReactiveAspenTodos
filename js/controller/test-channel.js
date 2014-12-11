@@ -1,16 +1,19 @@
-var getProperty;
+var getDispatcher, log, logSubscribe, reactIntake;
 
-getProperty = require('../../vendor/reactive-aspen').Controller.getProperty;
+getDispatcher = require('../../vendor/reactive-aspen').Controller.getDispatcher;
 
-getProperty('$toggle-all-clicks').subscribe(function(event) {
-  return console.log('$toggle-all-clicks', event);
-});
+log = function(label) {
+  return function(event) {
+    return console.log(label, event);
+  };
+};
 
+reactIntake = getDispatcher('reactIntake');
 
-/*
-update-mode = \new-mode ->
-  mapping (-> update-view new-mode)
+logSubscribe = function(label) {
+  return getDispatcher(label).subscribe(log(label));
+};
 
-connect ['$home-clicks', '$signin-clicks', '$signup-clicks'] 'terminus' (->
-  fmap update-mode ['home', 'signin', 'signup'])
- */
+['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todo-clicks', '$all-todo-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks'].forEach(logSubscribe);
+
+module.exports = null;
