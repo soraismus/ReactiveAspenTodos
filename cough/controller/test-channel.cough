@@ -1,12 +1,23 @@
-{ getProperty } = require('../../vendor/reactive-aspen').Controller
+{ getDispatcher } = require('../../vendor/reactive-aspen').Controller
 
-getProperty('$toggle-all-clicks').subscribe \event ->
-  console.log ('$toggle-all-clicks', event)
+log = \label \event -> console.log (label, event)
 
-###
-update-mode = \new-mode ->
-  mapping (-> update-view new-mode)
+reactIntake = getDispatcher('reactIntake')
 
-connect ['$home-clicks', '$signin-clicks', '$signup-clicks'] 'terminus' (->
-  fmap update-mode ['home', 'signin', 'signup'])
-###
+logSubscribe = \label ->
+  getDispatcher(label).subscribe(log label)
+
+[
+  '$toggle-all-clicks'
+  'new-todo'
+  '$toggle-clicks'
+  '$destroy-clicks'
+  '$clear-clicks'
+  '$active-todo-clicks',
+  '$all-todo-clicks'
+  '$completed-todos-clicks'
+  'todo-in-edit',
+  '$todo-label-doubleclicks'
+].forEach logSubscribe
+
+module.exports = null
