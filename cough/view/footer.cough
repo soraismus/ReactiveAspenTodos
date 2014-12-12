@@ -39,12 +39,12 @@ getFilterClassName = (nowShowing, filterType) ->
 
 getFilterOption = ([busLabel, href, linkLabel]) -> (mode, filter) ->
   linkProps = { href, className: getFilterClassName (mode, filter) }
-  li ($link busLabel (linkProps, linkLabel))
+  li (noProps, $link busLabel (linkProps, linkLabel))
 
 fields = [
-  ['ActiveTodos', '/active', 'Active ']
-  ['AllTodos', '/', 'All ']
-  ['CompletedTodos', '/completed', 'Completed']
+  ['ActiveTodos',    'active',    'Active '  ]
+  ['AllTodos',       '',          'All '     ]
+  ['CompletedTodos', 'completed', 'Completed']
 ]
 
 [activeFilter, allFilter, completedFilter] = fields.map getFilterOption
