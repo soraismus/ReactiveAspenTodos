@@ -1,4 +1,6 @@
-{ getDispatcher } = require('../../vendor/reactive-aspen').Controller
+{ Controller, Pando }      = require '../../vendor/reactive-aspen'
+{ connect, getDispatcher } = Controller
+{ mapping }                = Pando
 
 log = \label \event -> console.log (label, event)
 
@@ -18,6 +20,14 @@ logSubscribe = \label ->
   '$completed-todos-clicks'
   'todo-in-edit',
   '$todo-label-doubleclicks'
+  'terminus'
 ].forEach logSubscribe
+
+completeAllTodos = \appState ->
+  appState.footerProps.completed = appState.footerProps.all
+  appState
+
+connect '$toggle-clicks' 'terminus' ->
+  mapping (-> completeAllTodos)
 
 module.exports = null
