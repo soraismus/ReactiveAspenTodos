@@ -4,8 +4,6 @@
 
 log = \label \event -> console.log (label, event)
 
-reactIntake = getDispatcher('reactIntake')
-
 logSubscribe = \label ->
   getDispatcher(label).subscribe(log label)
 
@@ -15,8 +13,8 @@ logSubscribe = \label ->
   '$toggle-clicks'
   '$destroy-clicks'
   '$clear-clicks'
-  '$active-todo-clicks',
-  '$all-todo-clicks'
+  '$active-todos-clicks',
+  '$all-todos-clicks'
   '$completed-todos-clicks'
   'todo-in-edit',
   '$todo-label-doubleclicks'
