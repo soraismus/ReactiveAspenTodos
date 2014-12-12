@@ -6,6 +6,8 @@ viewImports                    = require './controller/view-imports'
 { renderComponent }            = React
 { connectPortsToBuses }        = Adapter
 
+
+# `appNodeId` should be available to 'terminus.cough' of reactive-aspen.
 appNodeId = 'todoapp'
 
 initialize = (appNodeId, topViewFactory, initialAppState, viewImports) ->
