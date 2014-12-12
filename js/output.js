@@ -1,7 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var getDispatcher, log, logSubscribe, reactIntake;
+var Controller, Pando, completeAllTodos, connect, getDispatcher, log, logSubscribe, mapping, _ref;
 
-getDispatcher = require('../../vendor/reactive-aspen').Controller.getDispatcher;
+_ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
+
+connect = Controller.connect, getDispatcher = Controller.getDispatcher;
+
+mapping = Pando.mapping;
 
 log = function(label) {
   return function(event) {
@@ -9,51 +13,82 @@ log = function(label) {
   };
 };
 
-reactIntake = getDispatcher('reactIntake');
-
 logSubscribe = function(label) {
   return getDispatcher(label).subscribe(log(label));
 };
 
-['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todo-clicks', '$all-todo-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks'].forEach(logSubscribe);
+['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
+
+completeAllTodos = function(appState) {
+  appState.footerProps.completed = appState.footerProps.all;
+  return appState;
+};
+
+connect('$toggle-clicks')('terminus')(function() {
+  return mapping(function() {
+    return completeAllTodos;
+  });
+});
 
 module.exports = null;
 
 },{"../../vendor/reactive-aspen":11}],2:[function(require,module,exports){
-var button, checkbox, label, link, text, _ref;
+var preventDefault;
 
-_ref = ['button', 'checkbox', 'label', 'link', 'text'], button = _ref[0], checkbox = _ref[1], label = _ref[2], link = _ref[3], text = _ref[4];
+preventDefault = {
+  preventDefault: true
+};
 
-module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox', checkbox], ['$toggle-clicks', 'completion-toggle', checkbox], ['$destroy-clicks', 'destroy-button', button], ['$clear-clicks', 'ClearButton', button], ['$active-todos-clicks', 'ActiveTodos', link], ['$all-todos-clicks', 'AllTodos', link], ['$completed-todos-clicks', 'CompletedTodos', link], ['new-todo', 'new-todo-input', text], ['todo-in-edit', 'todo-item-input', text], ['$todo-label-doubleclicks', 'todo-item-label', label]];
+module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['new-todo', 'new-todo-input'], ['todo-in-edit', 'todo-item-input'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
 
 },{}],3:[function(require,module,exports){
-var active, all, bodyProps, completed, footerProps, mode, todos;
+var active, activeTodoCount, all, bodyProps, completed, count, footerProps, mode, p, r, t, todos;
 
 todos = [
-  {
+  t = {
     completed: false,
     editing: false,
     editText: '',
     title: 'think'
+  }, p = {
+    completed: true,
+    editing: false,
+    editText: '',
+    title: 'ponder'
+  }, r = {
+    completed: false,
+    editing: false,
+    editText: '',
+    title: 'reflect'
   }
 ];
 
-active = all = mode = todos;
+all = todos;
 
-completed = [];
+active = [t, r];
+
+completed = [p];
+
+mode = all;
+
+activeTodoCount = 1;
+
+count = 3;
 
 bodyProps = {
-  activeTodoCount: 1,
-  count: 1,
+  activeTodoCount: activeTodoCount,
+  count: count,
   todos: todos
 };
 
 footerProps = {
   active: active,
+  activeTodoCount: activeTodoCount,
   all: all,
-  todos: todos,
   completed: completed,
-  mode: mode
+  count: count,
+  mode: mode,
+  todos: todos
 };
 
 module.exports = {
@@ -222,7 +257,7 @@ AppBody = function(props) {
 module.exports = AppBody;
 
 },{"../../vendor/reactive-aspen":11,"./todoItem":10}],8:[function(require,module,exports){
-var $button, $link, AppFooter, Bridge, DOM, React, activeFilter, addons, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, pluralize, span, strong, ul, _ref, _ref1, _ref2;
+var $button, $link, AppFooter, Bridge, DOM, React, activeFilter, addons, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
 
@@ -236,23 +271,25 @@ footer = DOM.footer, li = DOM.li, span = DOM.span, strong = DOM.strong, ul = DOM
 
 _ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 
+noProps = null;
+
 AppFooter = function(props) {
-  var active, all, completed, count, filterOption, mode;
-  active = props.active, all = props.all, completed = props.completed, count = props.count, mode = props.mode;
+  var active, activeTodoCount, all, completed, count, filterOption, mode;
+  active = props.active, activeTodoCount = props.activeTodoCount, all = props.all, completed = props.completed, count = props.count, mode = props.mode;
   filterOption = getFilterOption(mode);
   return footer({
     id: 'footer'
-  }, countSpan(count), ul({
+  }, countSpan(count - activeTodoCount), ul({
     id: 'filters'
-  }, allFilter(mode, all), activeFilter(mode, active), completedFilter(mode, completed)), clearButton(count));
+  }, allFilter(mode, all), activeFilter(mode, active), completedFilter(mode, completed)), clearButton(activeTodoCount));
 };
 
-clearButton = function(count) {
+clearButton = function(completedCount) {
   var label;
-  if (!(count > 0)) {
+  if (!(completedCount > 0)) {
     return null;
   }
-  label = "Clear completed " + count;
+  label = "Clear completed (" + completedCount + ")";
   return $button('ClearButton')({
     id: 'clear-completed'
   }, label);
@@ -263,7 +300,7 @@ countSpan = function(count) {
   activeTodoWord = pluralize(count, 'item');
   return span({
     id: 'todo-count'
-  }, strong(count), "" + activeTodoWord + " left");
+  }, strong(noProps, count), " " + activeTodoWord + " left");
 };
 
 getFilterClassName = function(nowShowing, filterType) {
@@ -281,11 +318,11 @@ getFilterOption = function(_arg) {
       href: href,
       className: getFilterClassName(mode, filter)
     };
-    return li($link(busLabel)(linkProps, linkLabel));
+    return li(noProps, $link(busLabel)(linkProps, linkLabel));
   };
 };
 
-fields = [['ActiveTodos', '/active', 'Active '], ['AllTodos', '/', 'All '], ['CompletedTodos', '/completed', 'Completed']];
+fields = [['ActiveTodos', 'active', 'Active '], ['AllTodos', '', 'All '], ['CompletedTodos', 'completed', 'Completed']];
 
 _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[1], completedFilter = _ref2[2];
 
@@ -386,11 +423,20 @@ module.exports = TodoItem;
 
 },{"../../vendor/reactive-aspen":11}],11:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-var actAsSwitchboard, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetKey, getTargetValue, reactIntake, reactIntakeBus, switches, _ref;
+module.exports = _dereq_('../controller/channel-registrar.js');
+
+},{"../controller/channel-registrar.js":10}],2:[function(_dereq_,module,exports){
+var actAsSwitchboard, blur, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatchableValue, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, preventDefault, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1, _ref2, _ref3;
+
+_ref = _dereq_('./port-utilities.js'), blur = _ref.blur, preventDefault = _ref.preventDefault;
+
+_ref1 = [blur, preventDefault], _blur = _ref1[0], _preventDefault = _ref1[1];
 
 connectBus = _dereq_('./port-registrar.js').connectBus;
 
-_ref = _dereq_('../controller/channel-registrar.js'), getEventStream = _ref.getEventStream, getProperty = _ref.getProperty;
+_ref2 = _dereq_('./channel-registrar.js'), getEventStream = _ref2.getEventStream, getProperty = _ref2.getProperty;
+
+_ref3 = _dereq_('../utilities.js'), isArray = _ref3.isArray, isObject = _ref3.isObject;
 
 reactIntake = _dereq_('./react-intake.js');
 
@@ -400,7 +446,6 @@ switches = [];
 
 actAsSwitchboard = function(event) {
   var condition, dispatch, swich, _i, _len;
-  console.log('actAsSwitchboard event', event);
   for (_i = 0, _len = switches.length; _i < _len; _i++) {
     swich = switches[_i];
     condition = swich.condition, dispatch = swich.dispatch;
@@ -411,15 +456,14 @@ actAsSwitchboard = function(event) {
 };
 
 connectPortsToBuses = function(triplets) {
-  console.log('connectPortsToBuses triplets', triplets);
   return triplets.forEach(connectIntakeToTarget);
 };
 
-connectIntakeToTarget = function(_arg) {
-  var dispatcher, handler, reactViewLabel, tgtBusLabel, type;
-  tgtBusLabel = _arg[0], reactViewLabel = _arg[1], type = _arg[2], handler = _arg[3];
-  console.log('connectIntakeToTarget type', type, 'reactViewLabel', reactViewLabel, 'tgtBusLabel', tgtBusLabel);
+connectIntakeToTarget = function(record) {
+  var config, dispatcher, handler, reactViewLabel, tgtBusLabel, type, _ref4;
+  _ref4 = interpretRecord(record), config = _ref4.config, handler = _ref4.handler, reactViewLabel = _ref4.reactViewLabel, tgtBusLabel = _ref4.tgtBusLabel, type = _ref4.type;
   dispatcher = getDispatcher(tgtBusLabel);
+  manageDispatcher(dispatcher, config);
   return switches.push({
     condition: getFilter(reactViewLabel, type, handler),
     dispatch: dispatchBy(dispatcher)
@@ -427,18 +471,23 @@ connectIntakeToTarget = function(_arg) {
 };
 
 dispatchBy = function(bus) {
-  return function(val) {
-    console.log('dispatchBy bus', bus, 'val', val);
-    console.log('...dispatchBy target.value', getTargetValue(val));
-    if (val.handler === 'onKeyDown') {
-      console.log(' key data', getTargetKey(val));
-    }
-    return bus.dispatch(val, bus.id);
+  return function(capsule) {
+    return bus.dispatch(getDispatchableValue(capsule), bus.id);
   };
 };
 
 eventStreamName_question_ = function(val) {
   return eventStreamRegex.test(val);
+};
+
+getDispatchableValue = function(capsule) {
+  var targetValue;
+  targetValue = getTargetValue(capsule);
+  if (targetValue) {
+    return targetValue;
+  } else {
+    return capsule;
+  }
 };
 
 getDispatcher = function(label) {
@@ -449,46 +498,61 @@ getDispatcher = function(label) {
 
 getFilter = function(label, type, handler) {
   return function(val) {
-    console.log('getFilter type', type, 'label', label, 'val', val);
     return val.label === label && (!type || val.type === type) && (!handler || val.handler === handler);
   };
 };
 
-getTargetKey = function(capsule) {
-  var altKey, charCode, currentTarget, event, key, keyCode, type, view, which;
-  event = capsule.event;
-  if (event) {
-    altKey = event.altKey, charCode = event.charCode, currentTarget = event.currentTarget, key = event.key, keyCode = event.keyCode, type = event.type, view = event.view, which = event.which;
-    return {
-      altKey: altKey,
-      charCode: charCode,
-      currentTarget: currentTarget,
-      key: key,
-      keyCode: keyCode,
-      type: type,
-      view: view,
-      which: which
-    };
+getTargetValue = function(capsule) {
+  var _ref4, _ref5;
+  return capsule != null ? (_ref4 = capsule['event']) != null ? (_ref5 = _ref4['target']) != null ? _ref5['value'] : void 0 : void 0 : void 0;
+};
+
+interpretRecord = function(record) {
+  var config, handler, manage_question_, reactViewLabel, tgtBusLabel, type, _ref4;
+  if (isArray(record)) {
+    tgtBusLabel = record[0], reactViewLabel = record[1], type = record[2], handler = record[3], manage_question_ = record[4];
+    if (isObject(type)) {
+      _ref4 = type, blur = _ref4.blur, preventDefault = _ref4.preventDefault, handler = _ref4.handler, type = _ref4.type;
+    } else {
+      blur = preventDefault = manage_question_;
+    }
+  } else {
+    handler = record.handler, reactViewLabel = record.reactViewLabel, blur = record.blur, preventDefault = record.preventDefault, tgtBusLabel = record.tgtBusLabel, type = record.type;
+  }
+  config = {
+    doBlur: blur,
+    doPreventDefault: preventDefault
+  };
+  return {
+    config: config,
+    handler: handler,
+    reactViewLabel: reactViewLabel,
+    tgtBusLabel: tgtBusLabel,
+    type: type
+  };
+};
+
+manageDispatcher = function(dispatcher, config) {
+  var doBlur, doPreventDefault;
+  doBlur = config.doBlur, doPreventDefault = config.doPreventDefault;
+  if (doBlur) {
+    dispatcher.subscribe(_blur);
+  }
+  if (doPreventDefault) {
+    return dispatcher.subscribe(_preventDefault);
   }
 };
 
-getTargetValue = function(capsule) {
-  var _ref1, _ref2;
-  return capsule != null ? (_ref1 = capsule['event']) != null ? (_ref2 = _ref1['target']) != null ? _ref2['value'] : void 0 : void 0 : void 0;
-};
-
 reactIntakeBus = connectBus(reactIntake);
-
-console.log('reactIntakeBus', reactIntakeBus);
 
 reactIntakeBus.subscribe(actAsSwitchboard);
 
 module.exports = connectPortsToBuses;
 
-},{"../controller/channel-registrar.js":8,"./port-registrar.js":4,"./react-intake.js":6}],2:[function(_dereq_,module,exports){
+},{"../utilities.js":23,"./channel-registrar.js":1,"./port-registrar.js":5,"./port-utilities.js":6,"./react-intake.js":8}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
-connectPortsToBuses = _dereq_('./connectPortsToBuses2.js');
+connectPortsToBuses = _dereq_('./connectPortsToBuses.js');
 
 connectViewToController = _dereq_('./pando-adapter.js');
 
@@ -497,7 +561,7 @@ module.exports = {
   connectViewToController: connectViewToController
 };
 
-},{"./connectPortsToBuses2.js":1,"./pando-adapter.js":3}],3:[function(_dereq_,module,exports){
+},{"./connectPortsToBuses.js":2,"./pando-adapter.js":4}],4:[function(_dereq_,module,exports){
 var connectPort, connectTo, connectViewToController, reactIntake, reactIntakeBus;
 
 connectTo = _dereq_('./react-bridge.js').connectTo;
@@ -514,7 +578,7 @@ connectViewToController = function() {
 
 module.exports = connectViewToController;
 
-},{"./port-registrar.js":4,"./react-bridge.js":5,"./react-intake.js":6}],4:[function(_dereq_,module,exports){
+},{"./port-registrar.js":5,"./react-bridge.js":7,"./react-intake.js":8}],5:[function(_dereq_,module,exports){
 var addComponent, busExt, connectBus, connectPort, connectPortComponent, createEventStreamBus, getComponent, getPortComponent, keypaths, portExt, ports, register, _ref, _ref1;
 
 _ref = _dereq_('../utilities.js'), addComponent = _ref.addComponent, getComponent = _ref.getComponent;
@@ -579,13 +643,33 @@ onValue preventDefault bus
 onValue blur bus
  */
 
-},{"../pando.js":13,"../utilities.js":21}],5:[function(_dereq_,module,exports){
-module.exports = _dereq_('../react-module/exports.js').Bridge;
+},{"../pando.js":15,"../utilities.js":23}],6:[function(_dereq_,module,exports){
+var blur, preventDefault;
 
-},{"../react-module/exports.js":14}],6:[function(_dereq_,module,exports){
-module.exports = '.reactIntake';
+blur = function(capsule) {
+  if (capsule.type === 'link') {
+    return capsule.event.target.blur();
+  }
+};
+
+preventDefault = function(capsule) {
+  if (capsule.event.preventDefault) {
+    return capsule.event.preventDefault();
+  }
+};
+
+module.exports = {
+  blur: blur,
+  preventDefault: preventDefault
+};
 
 },{}],7:[function(_dereq_,module,exports){
+module.exports = _dereq_('../react-module/exports.js').Bridge;
+
+},{"../react-module/exports.js":16}],8:[function(_dereq_,module,exports){
+module.exports = '.reactIntake';
+
+},{}],9:[function(_dereq_,module,exports){
 var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, pandoConnect, plug, push, setAlias, _connect, _ref;
 
 getDispatcher = _dereq_('./channel-registrar.js').getDispatcher;
@@ -596,7 +680,6 @@ pandoConnect = _dereq_('../pando.js').connect;
 
 _connect = function(src, tgt, transform) {
   var _ref1, _src, _tgt;
-  console.log('_connect src', src, ' tgt', tgt);
   _ref1 = [src, tgt].map(interpret), _src = _ref1[0], _tgt = _ref1[1];
   setAlias(_src)(src);
   setAlias(_tgt)(tgt);
@@ -606,7 +689,6 @@ _connect = function(src, tgt, transform) {
 connect = function(sources) {
   return function(targets) {
     return function(thunk) {
-      console.log('channel-controllers.connect sources', sources, 'targets', targets);
       if (isArray(sources)) {
         return connectMultiple(sources, targets, thunk());
       } else {
@@ -702,7 +784,7 @@ module.exports = {
   push: push
 };
 
-},{"../pando.js":13,"../utilities.js":21,"./channel-registrar.js":8}],8:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../utilities.js":23,"./channel-registrar.js":10}],10:[function(_dereq_,module,exports){
 var createEventStreamBus, createNonInitPropertyBus, deleteBus, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, isArray, matchesExistingDispatcher_question_, plug, plugs, register, _ref, _ref1, _register,
   __hasProp = {}.hasOwnProperty;
 
@@ -789,7 +871,7 @@ module.exports = {
   getProperty: getProperty
 };
 
-},{"../pando.js":13,"../utilities.js":21}],9:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../utilities.js":23}],11:[function(_dereq_,module,exports){
 var connect, getDispatcher, getEventStream, getProperty, interpret, linkTogetherMVC, plug, plugIntoTerminus, push, _ref, _ref1;
 
 _ref = _dereq_('./channel-connectors.js'), connect = _ref.connect, interpret = _ref.interpret, plug = _ref.plug, push = _ref.push;
@@ -812,7 +894,7 @@ module.exports = {
   push: push
 };
 
-},{"./channel-connectors.js":7,"./channel-registrar.js":8,"./linkTogetherMVC.js":10,"./terminus.js":11}],10:[function(_dereq_,module,exports){
+},{"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12,"./terminus.js":13}],12:[function(_dereq_,module,exports){
 var appStateChannelName, connectViewToController, linkTogetherMVC, push;
 
 connectViewToController = _dereq_('../adapter/pando-adapter.js');
@@ -831,8 +913,8 @@ linkTogetherMVC = function(topViewFactory, appState) {
 
 module.exports = linkTogetherMVC;
 
-},{"../adapter/pando-adapter.js":3,"./channel-connectors.js":7}],11:[function(_dereq_,module,exports){
-var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getElementById, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, renderComponent, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
+},{"../adapter/pando-adapter.js":4,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
+var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, renderComponent, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
 
 connect = _dereq_('./channel-connectors.js').connect;
 
@@ -850,11 +932,7 @@ blockTillReady = Pando.blockTillReady, checkValue = Pando.checkValue, $onValue =
 
 appState = getProperty('app-state');
 
-APP_DOM_ID = 'reactive-aspen-app';
-
-if (typeof document !== "undefined" && document !== null) {
-  getElementById = document.getElementById;
-}
+APP_DOM_ID = 'todoapp';
 
 renderComponent = React.renderComponent;
 
@@ -870,7 +948,7 @@ plugIntoTerminus = function(observable) {
 
 resetAppState = function(transform) {
   var component, newAppState, node;
-  node = getElementById(APP_DOM_ID);
+  node = document.getElementById(APP_DOM_ID);
   newAppState = checkValue(transform)(appState);
   component = _linkTogetherMVC(topViewFactory, newAppState);
   return blockTillReady(renderComponent)(component, node);
@@ -882,7 +960,7 @@ module.exports = {
   plugIntoTerminus: plugIntoTerminus
 };
 
-},{"../pando.js":13,"../react-module/exports.js":14,"../utilities.js":21,"./channel-connectors.js":7,"./channel-registrar.js":8,"./linkTogetherMVC.js":10}],12:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../react-module/exports.js":16,"../utilities.js":23,"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12}],14:[function(_dereq_,module,exports){
 var Adapter, Bridge, Controller, Pando, React, _ref;
 
 Adapter = _dereq_('./adapter/exports.js');
@@ -901,7 +979,7 @@ module.exports = {
   React: React
 };
 
-},{"./adapter/exports.js":2,"./controller/exports.js":9,"./pando.js":13,"./react-module/exports.js":14}],13:[function(_dereq_,module,exports){
+},{"./adapter/exports.js":3,"./controller/exports.js":11,"./pando.js":15,"./react-module/exports.js":16}],15:[function(_dereq_,module,exports){
 var $dispatch, $onValue, $sample, $subscribe, $transubscribe, CoreCell, CoreDispatcher, CoreSignal, DAG_hyphen_updating_question_, EventStream, FRP, FuncProto, ObjProto, Property, Time, active, any_hyphen_postponement_question_, array_question_, bfiltering, bfilteringNonterminal, bind, bind_hyphen_data, blockTillReady, block_hyphen_N, blocking, bmapping, bracket, call_hyphen_only_hyphen_once, checkValue, clock, connect, createCell, createClock, createDispatcherType, createEventStream, createEventStreamBus, createNonInitProperty, createNonInitPropertyBus, createProperty, createPropertyBus, createSignal, createSignalType, createTime, create_hyphen_singleton, create_hyphen_super_hyphen_type, cytolyse, defined_question_, delaying, display, display_hyphen_cell_hyphen_type, display_hyphen_dispatcher_hyphen_type, display_hyphen_signal_hyphen_type, each, each_hyphen_property, empty_question_, end, endocytate, extend_bang_, extend_hyphen_core_hyphen_dispatcher, extend_hyphen_core_hyphen_signal, extend_hyphen_proto, filtering, filteringDefined, filteringNonterminal, filteringRelevant, flattening, flip, fmapD, fmapS, fromArray, fromCallback, fromDelayedValue, fromDispatcher, fromEventTarget, fromFinitePeriodicSequence, fromInternalDispatchOnly, fromMerger, fromPoll, fromSourceFunction, frpBind, function_question_, functionize, genESOpts, genNonInitPropOpts, genPropOpts, genSignalOpts, genTimeOpts, generate_hyphen_id, getPrototypeOf, getType, get_hyphen_arg_hyphen_array, get_hyphen_initiation_hyphen_status, get_hyphen_key, has_hyphen_postpone_question_, hash_question_, identity, ignoreIrrelevant, inactive, initiating_hyphen_DAG_hyphen_update_question_, isCell, isDispatcher, isEnd, isEventStream, isFromType, isProperty, isRelevant, isSignal, is_hyphen_postpone_question_, liftS, liftS2, map, mapping, merge, monitoringFirst, monitoringLatest, nativeBind, nativeToString, negating, no_hyphen_op, none, nonterminal_question_, object_question_, onFirstAndOnlyValue, onValue, parse_hyphen_opts, parse_hyphen_signal_hyphen_opts, paused, permitting_hyphen_only_hyphen_one_hyphen_value, plug, postpone, postponed_question_, reducing, register, registrar, remerse, removeFromRegistrar, reschedule, reset_hyphen_DAG_hyphen_update_hyphen_process, return_hyphen_no_hyphen_op, sample_hyphen_properties, scanning, seed, sink_hyphen_if_hyphen_sinkable, staggering, stateMachineProcessing, stepper, switcher, taking, transbind, transmit, transubscribe, try_hyphen_10, try_hyphen_N_hyphen_times, _arobase_prototype, _createDispatcherType, _filtering, _mapping, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _subscribe,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -1036,7 +1114,7 @@ try_hyphen_N_hyphen_times = function(N) {
           });
         }
       } else {
-        return fn.apply(null, fmap(cytolyse)(args));
+        return fn.apply(null, map(cytolyse)(args));
       }
     };
   };
@@ -1380,11 +1458,9 @@ _createDispatcherType = function(opts) {
       }
     };
     _dispatch = function(value, source_hyphen_id, subscription_hyphen_id) {
-      console.log('_dispatch value', value, ' source-id', source_hyphen_id);
       return dispatch_hyphen_N(10, value, source_hyphen_id, subscription_hyphen_id);
     };
     dispatch_hyphen_N = function(N, value, source_hyphen_id, sid) {
-      console.log('dispatch-N value', value);
       switch (false) {
         case !postponed_question_(value):
           if (N > 0) {
@@ -1401,7 +1477,6 @@ _createDispatcherType = function(opts) {
     };
     distribute = function(value) {
       var _distrib;
-      console.log('distribute value', value, ' sinks', sinks);
       if (isEnd(value)) {
         return terminate();
       } else {
@@ -1417,7 +1492,6 @@ _createDispatcherType = function(opts) {
       })(sinks);
     };
     _subscribe = function(sink) {
-      console.log('_subscribe', sink);
       if (terminated_question_) {
         sink(end);
         return no_hyphen_op;
@@ -1438,7 +1512,6 @@ _createDispatcherType = function(opts) {
     };
     transact = function(value, source_hyphen_id, sid) {
       var update_hyphen_initiator_question_;
-      console.log('transact value', value);
       update_hyphen_initiator_question_ = get_hyphen_initiation_hyphen_status();
       try {
         distribute(value);
@@ -2328,7 +2401,6 @@ connect = function(src) {
   return function(tgt) {
     return function(transform) {
       var new_hyphen_sink, subscription;
-      console.log('connect src', src, ' tgt', tgt);
       if (transform == null) {
         transform = identity;
       }
@@ -2421,7 +2493,7 @@ if ((typeof define !== "undefined" && define !== null) && (define['amd'] != null
   this.FRP = FRP;
 }
 
-},{}],14:[function(_dereq_,module,exports){
+},{}],16:[function(_dereq_,module,exports){
 var Bridge, React, adapters, connectTo;
 
 adapters = _dereq_('./react-bridge/adapters.js');
@@ -2440,7 +2512,7 @@ module.exports = {
   React: React
 };
 
-},{"./react-bridge/adapters.js":16,"./react-bridge/factory-injector.js":17,"./react-bridge/react.js":18}],15:[function(_dereq_,module,exports){
+},{"./react-bridge/adapters.js":18,"./react-bridge/factory-injector.js":19,"./react-bridge/react.js":20}],17:[function(_dereq_,module,exports){
 var getAdapter, getInjectedFactory, getTemplate, handlerRegex, handler_question_, inject, isFunction,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -2500,7 +2572,7 @@ module.exports = {
   getAdapter: getAdapter
 };
 
-},{"./factory-injector.js":17,"./utilities.js":19}],16:[function(_dereq_,module,exports){
+},{"./factory-injector.js":19,"./utilities.js":21}],18:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, a, button, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, form, getAdapter, getInjectedFactory, input, isObject, isString, label, onChange, onClick, onSubmit, records, shallowCopy, _ref, _ref1;
 
 _ref = _dereq_('./react.js').DOM, a = _ref.a, button = _ref.button, form = _ref.form, input = _ref.input, label = _ref.label;
@@ -2606,7 +2678,7 @@ records = [[onClick, ensureProps, button, BUTTON], [onClick, ensureCheckboxProps
 
 module.exports = collectAdapters({}, records);
 
-},{"./adapter-utilities.js":15,"./factory-injector.js":17,"./react.js":18,"./utilities.js":19}],17:[function(_dereq_,module,exports){
+},{"./adapter-utilities.js":17,"./factory-injector.js":19,"./react.js":20,"./utilities.js":21}],19:[function(_dereq_,module,exports){
 var connectTo, createInjectable, embedEventInside, exportReactEvents, getCapsule, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref, _ref1;
 
 _ref = _dereq_('./utilities.js'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
@@ -2707,10 +2779,10 @@ module.exports = {
   getInjectedFactory: getInjectedFactory
 };
 
-},{"./utilities.js":19}],18:[function(_dereq_,module,exports){
+},{"./utilities.js":21}],20:[function(_dereq_,module,exports){
 module.exports = _dereq_('../react-with-addons.js');
 
-},{"../react-with-addons.js":20}],19:[function(_dereq_,module,exports){
+},{"../react-with-addons.js":22}],21:[function(_dereq_,module,exports){
 var ObjProto, applyUnsplat, hasType_question_, isFunction, isObject, isString, memoize, shallowCopy, shallowFlatten, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -2786,7 +2858,7 @@ module.exports = {
   shallowCopy: shallowCopy
 };
 
-},{}],20:[function(_dereq_,module,exports){
+},{}],22:[function(_dereq_,module,exports){
 (function (global){/**
  * React (with addons) v0.12.0
  */
@@ -22588,7 +22660,7 @@ module.exports = warning;
 
 },{"./emptyFunction":121}]},{},[1])(1)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],21:[function(_dereq_,module,exports){
+},{}],23:[function(_dereq_,module,exports){
 var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
   __hasProp = {}.hasOwnProperty,
   __slice = [].slice;
@@ -22706,12 +22778,13 @@ module.exports = {
   getComponent: getComponent,
   identity: identity,
   isArray: isArray,
+  isObject: isObject,
   isString: isString,
   shallowCopy: shallowCopy,
   useParamListOrArray: useParamListOrArray
 };
 
-},{}]},{},[12])
-(12)
+},{}]},{},[14])
+(14)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[4])

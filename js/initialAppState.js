@@ -1,30 +1,50 @@
-var active, all, bodyProps, completed, footerProps, mode, todos;
+var active, activeTodoCount, all, bodyProps, completed, count, footerProps, mode, p, r, t, todos;
 
 todos = [
-  {
+  t = {
     completed: false,
     editing: false,
     editText: '',
     title: 'think'
+  }, p = {
+    completed: true,
+    editing: false,
+    editText: '',
+    title: 'ponder'
+  }, r = {
+    completed: false,
+    editing: false,
+    editText: '',
+    title: 'reflect'
   }
 ];
 
-active = all = mode = todos;
+all = todos;
 
-completed = [];
+active = [t, r];
+
+completed = [p];
+
+mode = all;
+
+activeTodoCount = 1;
+
+count = 3;
 
 bodyProps = {
-  activeTodoCount: 1,
-  count: 1,
+  activeTodoCount: activeTodoCount,
+  count: count,
   todos: todos
 };
 
 footerProps = {
   active: active,
+  activeTodoCount: activeTodoCount,
   all: all,
-  todos: todos,
   completed: completed,
-  mode: mode
+  count: count,
+  mode: mode,
+  todos: todos
 };
 
 module.exports = {
