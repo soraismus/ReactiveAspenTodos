@@ -5,32 +5,34 @@
 { footer, li, span, strong, ul } = DOM
 { $button, $link }               = Bridge.adapters
 
+noProps = null
+
 AppFooter = \props ->
-  { active, all, completed, count, mode } = props
+  { active, activeTodoCount, all, completed, count, mode } = props
 
   filterOption = getFilterOption mode
 
   footer
     id : 'footer'
-    countSpan count
+    countSpan (count - activeTodoCount)
     ul
       id : 'filters'
       allFilter (mode, all)
       activeFilter (mode, active)
       completedFilter (mode, completed)
-    clearButton count
+    clearButton activeTodoCount
 
-clearButton = \count ->
-  return null unless count > 0
-  label = "Clear completed #{count}"
+clearButton = \completedCount ->
+  return null unless completedCount > 0
+  label = "Clear completed (#{completedCount})"
   $button ('ClearButton') ({ id: 'clear-completed' }, label)
 
 countSpan = \count ->
   activeTodoWord = pluralize (count, 'item')
   span
     id : 'todo-count'
-    strong count
-    "#{activeTodoWord} left"
+    strong (noProps, count)
+    " #{activeTodoWord} left"
 
 getFilterClassName = (nowShowing, filterType) ->
   classSet { selected: nowShowing == filterType }
