@@ -1,9 +1,18 @@
-todos = [{ completed: false, editing: false, editText: '', title: 'think' }]
+todos = [
+  t = { completed: false, editing: false, editText: '', title: 'think'   }
+  p = { completed: true,  editing: false, editText: '', title: 'ponder'  }
+  r = { completed: false, editing: false, editText: '', title: 'reflect' }
+]
 
-active = all = mode =todos
-completed = []
+all       = todos
+active    = [t, r]
+completed = [p]
+mode      = all
 
-bodyProps   = { activeTodoCount: 1, count: 1, todos }
-footerProps = { active, all, todos, completed, mode }
+activeTodoCount = 1
+count           = 3
+
+bodyProps   = { activeTodoCount, count, todos }
+footerProps = { active, activeTodoCount, all, completed, count, mode, todos }
 
 module.exports = { bodyProps, footerProps }
