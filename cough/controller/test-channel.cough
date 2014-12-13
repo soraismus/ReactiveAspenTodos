@@ -21,11 +21,23 @@ logSubscribe = \label ->
   'terminus'
 ].forEach logSubscribe
 
-completeAllTodos = \appState ->
-  appState.footerProps.completed = appState.footerProps.all
+completeAllTodos = \index \appState ->
+  { footerProps }             = appState
+  { activeTodoCount, all }    = appState.footerProps
+  todo                        = all[index]
+  { completed }               = todo
+  footerProps.activeTodoCount = updateCount (activeTodoCount, completed)
+  todo.completed              = !completed
   appState
 
+extractIndex = \capsule ->
+  capsule.index
+
+updateCount = (nbr, completed) ->
+  addend = if completed then -1 else 1
+  nbr + addend
+
 connect '$toggle-clicks' 'terminus' ->
-  mapping (-> completeAllTodos)
+  mapping (\capsule -> completeAllTodos (extractIndex capsule))
 
 module.exports = null
