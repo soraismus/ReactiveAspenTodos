@@ -9,7 +9,7 @@ active = \todo ->
   !todo.completed
 
 AppBody = \props ->
-  { activeTodoCount, count, mode, todos } = props
+  { activeCount, count, mode, todos } = props
 
   return null unless count > 0
 
@@ -20,7 +20,7 @@ AppBody = \props ->
     mainToggle
       id       : 'toggle-all'
       onChange : true
-      checked  : activeTodoCount == 0
+      checked  : activeCount == 0
     ul
       id : 'todo-list'
       todoItems

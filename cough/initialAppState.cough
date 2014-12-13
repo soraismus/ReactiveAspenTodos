@@ -4,8 +4,8 @@ todos = [
   { completed: false, editing: false, editText: '', title: 'reflect' }
 ]
 
-activeTodoCount = 1
+activeCount = 2
 count = 3
 mode = 'all'
 
-module.exports = { activeTodoCount, count, mode, todos }
+module.exports = { activeCount, count, mode, todos }
