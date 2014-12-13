@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, completeAllTodos, connect, getDispatcher, log, logSubscribe, mapping, _ref;
+var Controller, Pando, completeAllTodos, connect, extractIndex, getDispatcher, log, logSubscribe, mapping, updateCount, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -19,14 +19,32 @@ logSubscribe = function(label) {
 
 ['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
 
-completeAllTodos = function(appState) {
-  appState.footerProps.completed = appState.footerProps.all;
-  return appState;
+completeAllTodos = function(index) {
+  return function(appState) {
+    var activeTodoCount, all, completed, footerProps, todo, _ref1;
+    footerProps = appState.footerProps;
+    _ref1 = appState.footerProps, activeTodoCount = _ref1.activeTodoCount, all = _ref1.all;
+    todo = all[index];
+    completed = todo.completed;
+    footerProps.activeTodoCount = updateCount(activeTodoCount, completed);
+    todo.completed = !completed;
+    return appState;
+  };
+};
+
+extractIndex = function(capsule) {
+  return capsule.index;
+};
+
+updateCount = function(nbr, completed) {
+  var addend;
+  addend = completed ? -1 : 1;
+  return nbr + addend;
 };
 
 connect('$toggle-clicks')('terminus')(function() {
-  return mapping(function() {
-    return completeAllTodos;
+  return mapping(function(capsule) {
+    return completeAllTodos(extractIndex(capsule));
   });
 });
 
@@ -69,7 +87,7 @@ active = [t, r];
 
 completed = [p];
 
-mode = all;
+mode = 'all';
 
 activeTodoCount = 1;
 
@@ -97,7 +115,7 @@ module.exports = {
 };
 
 },{}],4:[function(require,module,exports){
-var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, renderComponent, topViewFactory, viewImports, _ref;
+var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, render, topViewFactory, viewImports, _ref;
 
 _ref = require('../vendor/reactive-aspen'), Adapter = _ref.Adapter, Controller = _ref.Controller, React = _ref.React;
 
@@ -109,7 +127,7 @@ viewImports = require('./controller/view-imports');
 
 linkTogetherMVC = Controller.linkTogetherMVC, push = Controller.push;
 
-renderComponent = React.renderComponent;
+render = React.render;
 
 connectPortsToBuses = Adapter.connectPortsToBuses;
 
@@ -119,7 +137,7 @@ initialize = function(appNodeId, topViewFactory, initialAppState, viewImports) {
   var topReactDescriptor;
   push('top-view-factory')(topViewFactory);
   topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
-  renderComponent(topReactDescriptor, document.getElementById(appNodeId));
+  render(topReactDescriptor, document.getElementById(appNodeId));
   return connectPortsToBuses(viewImports);
 };
 
@@ -281,7 +299,7 @@ AppFooter = function(props) {
     id: 'footer'
   }, countSpan(count - activeTodoCount), ul({
     id: 'filters'
-  }, allFilter(mode, all), activeFilter(mode, active), completedFilter(mode, completed)), clearButton(activeTodoCount));
+  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(activeTodoCount));
 };
 
 clearButton = function(completedCount) {
@@ -303,26 +321,26 @@ countSpan = function(count) {
   }, strong(noProps, count), " " + activeTodoWord + " left");
 };
 
-getFilterClassName = function(nowShowing, filterType) {
+getFilterClassName = function(currentMode, filterMode) {
   return classSet({
-    selected: nowShowing === filterType
+    selected: currentMode === filterMode
   });
 };
 
 getFilterOption = function(_arg) {
-  var busLabel, href, linkLabel;
-  busLabel = _arg[0], href = _arg[1], linkLabel = _arg[2];
-  return function(mode, filter) {
+  var busLabel, href, linkLabel, mode;
+  busLabel = _arg[0], href = _arg[1], linkLabel = _arg[2], mode = _arg[3];
+  return function(currentMode) {
     var linkProps;
     linkProps = {
       href: href,
-      className: getFilterClassName(mode, filter)
+      className: getFilterClassName(mode, currentMode)
     };
     return li(noProps, $link(busLabel)(linkProps, linkLabel));
   };
 };
 
-fields = [['ActiveTodos', 'active', 'Active '], ['AllTodos', '', 'All '], ['CompletedTodos', 'completed', 'Completed']];
+fields = [['ActiveTodos', 'active', 'Active ', 'active'], ['AllTodos', '', 'All ', 'all'], ['CompletedTodos', 'completed', 'Completed', 'completed']];
 
 _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[1], completedFilter = _ref2[2];
 
@@ -426,7 +444,7 @@ module.exports = TodoItem;
 module.exports = _dereq_('../controller/channel-registrar.js');
 
 },{"../controller/channel-registrar.js":10}],2:[function(_dereq_,module,exports){
-var actAsSwitchboard, blur, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatchableValue, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, preventDefault, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1, _ref2, _ref3;
+var actAsSwitchboard, blur, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, preventDefault, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1, _ref2, _ref3;
 
 _ref = _dereq_('./port-utilities.js'), blur = _ref.blur, preventDefault = _ref.preventDefault;
 
@@ -472,22 +490,12 @@ connectIntakeToTarget = function(record) {
 
 dispatchBy = function(bus) {
   return function(capsule) {
-    return bus.dispatch(getDispatchableValue(capsule), bus.id);
+    return bus.dispatch(capsule, bus.id);
   };
 };
 
 eventStreamName_question_ = function(val) {
   return eventStreamRegex.test(val);
-};
-
-getDispatchableValue = function(capsule) {
-  var targetValue;
-  targetValue = getTargetValue(capsule);
-  if (targetValue) {
-    return targetValue;
-  } else {
-    return capsule;
-  }
 };
 
 getDispatcher = function(label) {
@@ -914,7 +922,7 @@ linkTogetherMVC = function(topViewFactory, appState) {
 module.exports = linkTogetherMVC;
 
 },{"../adapter/pando-adapter.js":4,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
-var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, renderComponent, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
+var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, render, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
 
 connect = _dereq_('./channel-connectors.js').connect;
 
@@ -934,7 +942,7 @@ appState = getProperty('app-state');
 
 APP_DOM_ID = 'todoapp';
 
-renderComponent = React.renderComponent;
+render = React.render;
 
 _linkTogetherMVC = checkValue(linkTogetherMVC);
 
@@ -951,7 +959,7 @@ resetAppState = function(transform) {
   node = document.getElementById(APP_DOM_ID);
   newAppState = checkValue(transform)(appState);
   component = _linkTogetherMVC(topViewFactory, newAppState);
-  return blockTillReady(renderComponent)(component, node);
+  return blockTillReady(render)(component, node);
 };
 
 $onValue(getEventStream('terminus'))(blockTillReady(resetAppState));

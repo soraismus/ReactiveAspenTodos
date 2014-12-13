@@ -22,7 +22,7 @@ AppFooter = function(props) {
     id: 'footer'
   }, countSpan(count - activeTodoCount), ul({
     id: 'filters'
-  }, allFilter(mode, all), activeFilter(mode, active), completedFilter(mode, completed)), clearButton(activeTodoCount));
+  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(activeTodoCount));
 };
 
 clearButton = function(completedCount) {
@@ -44,26 +44,26 @@ countSpan = function(count) {
   }, strong(noProps, count), " " + activeTodoWord + " left");
 };
 
-getFilterClassName = function(nowShowing, filterType) {
+getFilterClassName = function(currentMode, filterMode) {
   return classSet({
-    selected: nowShowing === filterType
+    selected: currentMode === filterMode
   });
 };
 
 getFilterOption = function(_arg) {
-  var busLabel, href, linkLabel;
-  busLabel = _arg[0], href = _arg[1], linkLabel = _arg[2];
-  return function(mode, filter) {
+  var busLabel, href, linkLabel, mode;
+  busLabel = _arg[0], href = _arg[1], linkLabel = _arg[2], mode = _arg[3];
+  return function(currentMode) {
     var linkProps;
     linkProps = {
       href: href,
-      className: getFilterClassName(mode, filter)
+      className: getFilterClassName(mode, currentMode)
     };
     return li(noProps, $link(busLabel)(linkProps, linkLabel));
   };
 };
 
-fields = [['ActiveTodos', 'active', 'Active '], ['AllTodos', '', 'All '], ['CompletedTodos', 'completed', 'Completed']];
+fields = [['ActiveTodos', 'active', 'Active ', 'active'], ['AllTodos', '', 'All ', 'all'], ['CompletedTodos', 'completed', 'Completed', 'completed']];
 
 _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[1], completedFilter = _ref2[2];
 

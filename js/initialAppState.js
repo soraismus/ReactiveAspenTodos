@@ -25,7 +25,7 @@ active = [t, r];
 
 completed = [p];
 
-mode = all;
+mode = 'all';
 
 activeTodoCount = 1;
 

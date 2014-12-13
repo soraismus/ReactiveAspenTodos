@@ -1,4 +1,4 @@
-var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, renderComponent, topViewFactory, viewImports, _ref;
+var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, render, topViewFactory, viewImports, _ref;
 
 _ref = require('../vendor/reactive-aspen'), Adapter = _ref.Adapter, Controller = _ref.Controller, React = _ref.React;
 
@@ -10,7 +10,7 @@ viewImports = require('./controller/view-imports');
 
 linkTogetherMVC = Controller.linkTogetherMVC, push = Controller.push;
 
-renderComponent = React.renderComponent;
+render = React.render;
 
 connectPortsToBuses = Adapter.connectPortsToBuses;
 
@@ -20,7 +20,7 @@ initialize = function(appNodeId, topViewFactory, initialAppState, viewImports) {
   var topReactDescriptor;
   push('top-view-factory')(topViewFactory);
   topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
-  renderComponent(topReactDescriptor, document.getElementById(appNodeId));
+  render(topReactDescriptor, document.getElementById(appNodeId));
   return connectPortsToBuses(viewImports);
 };
 
