@@ -23,16 +23,30 @@ logSubscribe = \label ->
   'terminus'
 ].forEach logSubscribe
 
-completeAllTodos = \index \appState ->
+activateAllTodos = \appState ->
+  appState.todos.forEach \todo -> todo.completed = false
+  appState.activeTodoCount = 0
+
+extractIndex = \capsule ->
+  capsule.index
+
+toggleAllTodos = \appState ->
+  { todos } = appState
+  for todo, i in todos
+    if todo.completed
+      activateAllTodos appState
+      return appState
+    todo.completed = true
+    appState.activeTodoCount += 1
+  appState
+
+toggleTodo = \index \appState ->
   { activeTodoCount, mode, todos } = appState
   todo = getTodos(mode, todos)[index]
   { completed } = todo
   appState.activeTodoCount = updateCount (activeTodoCount, completed)
   todo.completed = !completed
   appState
-
-extractIndex = \capsule ->
-  capsule.index
 
 updateCount = (nbr, completed) ->
   addend = if completed then -1 else 1
@@ -58,7 +72,7 @@ getTodos = (mode, todos) ->
 # -------------------------------------------------------------------------
 
 connect '$toggle-clicks' TERMINUS ->
-  mapping (\capsule -> completeAllTodos (extractIndex capsule))
+  mapping (\capsule -> toggleTodo (extractIndex capsule))
 
 connect '$active-todos-clicks' TERMINUS ->
   mapping (-> updateMode 'active')
@@ -68,5 +82,8 @@ connect '$all-todos-clicks' TERMINUS ->
 
 connect '$completed-todos-clicks' TERMINUS ->
   mapping (-> updateMode 'completed')
+
+connect '$toggle-all-clicks' TERMINUS ->
+  mapping (-> toggleAllTodos)
 
 module.exports = null
