@@ -1,4 +1,4 @@
-var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -38,6 +38,12 @@ completeAll = function(appState) {
 
 extractIndex = function(capsule) {
   return capsule.index;
+};
+
+removeCompleted = function(appState) {
+  appState.todos = appState.todos.filter(active);
+  appState.activeCount = appState.count = appState.todos.length;
+  return appState;
 };
 
 toggleAllTodos = function(appState) {
@@ -118,6 +124,12 @@ connect('$completed-todos-clicks')(TERMINUS)(function() {
 connect('$toggle-all-clicks')(TERMINUS)(function() {
   return mapping(function() {
     return toggleAllTodos;
+  });
+});
+
+connect('$clear-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return removeCompleted;
   });
 });
 

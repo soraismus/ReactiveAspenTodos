@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -39,6 +39,12 @@ completeAll = function(appState) {
 
 extractIndex = function(capsule) {
   return capsule.index;
+};
+
+removeCompleted = function(appState) {
+  appState.todos = appState.todos.filter(active);
+  appState.activeCount = appState.count = appState.todos.length;
+  return appState;
 };
 
 toggleAllTodos = function(appState) {
@@ -119,6 +125,12 @@ connect('$completed-todos-clicks')(TERMINUS)(function() {
 connect('$toggle-all-clicks')(TERMINUS)(function() {
   return mapping(function() {
     return toggleAllTodos;
+  });
+});
+
+connect('$clear-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return removeCompleted;
   });
 });
 
