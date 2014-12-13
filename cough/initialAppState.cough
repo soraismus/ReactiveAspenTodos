@@ -1,18 +1,11 @@
 todos = [
-  t = { completed: false, editing: false, editText: '', title: 'think'   }
-  p = { completed: true,  editing: false, editText: '', title: 'ponder'  }
-  r = { completed: false, editing: false, editText: '', title: 'reflect' }
+  { completed: false, editing: false, editText: '', title: 'think'   }
+  { completed: true,  editing: false, editText: '', title: 'ponder'  }
+  { completed: false, editing: false, editText: '', title: 'reflect' }
 ]
 
-all       = todos
-active    = [t, r]
-completed = [p]
-mode      = 'all'
-
 activeTodoCount = 1
-count           = 3
+count = 3
+mode = 'all'
 
-bodyProps   = { activeTodoCount, count, todos }
-footerProps = { active, activeTodoCount, all, completed, count, mode, todos }
-
-module.exports = { bodyProps, footerProps }
+module.exports = { activeTodoCount, count, mode, todos }
