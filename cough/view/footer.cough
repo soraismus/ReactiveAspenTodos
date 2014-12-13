@@ -8,19 +8,19 @@
 noProps = null
 
 AppFooter = \props ->
-  { activeTodoCount, count, mode } = props
+  { activeCount, count, mode } = props
 
   filterOption = getFilterOption mode
 
   footer
     id : 'footer'
-    countSpan (count - activeTodoCount)
+    countSpan activeCount
     ul
       id : 'filters'
       allFilter mode
       activeFilter mode
       completedFilter mode
-    clearButton activeTodoCount
+    clearButton (count - activeCount)
 
 clearButton = \completedCount ->
   return null unless completedCount > 0
