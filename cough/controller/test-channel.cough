@@ -2,6 +2,8 @@
 { connect, getDispatcher } = Controller
 { mapping }                = Pando
 
+TERMINUS = 'terminus'
+
 log = \label \event -> console.log (label, event)
 
 logSubscribe = \label ->
@@ -22,12 +24,11 @@ logSubscribe = \label ->
 ].forEach logSubscribe
 
 completeAllTodos = \index \appState ->
-  { footerProps }             = appState
-  { activeTodoCount, all }    = appState.footerProps
-  todo                        = all[index]
-  { completed }               = todo
-  footerProps.activeTodoCount = updateCount (activeTodoCount, completed)
-  todo.completed              = !completed
+  { activeTodoCount, mode, todos } = appState
+  todo = getTodos(mode, todos)[index]
+  { completed } = todo
+  appState.activeTodoCount = updateCount (activeTodoCount, completed)
+  todo.completed = !completed
   appState
 
 extractIndex = \capsule ->
@@ -37,7 +38,35 @@ updateCount = (nbr, completed) ->
   addend = if completed then -1 else 1
   nbr + addend
 
-connect '$toggle-clicks' 'terminus' ->
+updateMode = \newMode \appState ->
+  appState.mode = newMode
+  appState
+
+# -------------------------------------------------------------------------
+# WET.
+active = \todo ->
+  !todo.completed
+
+completed = \todo ->
+  todo.completed
+
+getTodos = (mode, todos) ->
+  switch mode
+    when 'active'    then todos.filter active
+    when 'all'       then todos
+    when 'completed' then todos.filter completed
+# -------------------------------------------------------------------------
+
+connect '$toggle-clicks' TERMINUS ->
   mapping (\capsule -> completeAllTodos (extractIndex capsule))
+
+connect '$active-todos-clicks' TERMINUS ->
+  mapping (-> updateMode 'active')
+
+connect '$all-todos-clicks' TERMINUS ->
+  mapping (-> updateMode 'all')
+
+connect '$completed-todos-clicks' TERMINUS ->
+  mapping (-> updateMode 'completed')
 
 module.exports = null
