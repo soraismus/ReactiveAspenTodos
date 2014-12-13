@@ -17,9 +17,9 @@ AppFooter = \props ->
     countSpan (count - activeTodoCount)
     ul
       id : 'filters'
-      allFilter (mode, all)
-      activeFilter (mode, active)
-      completedFilter (mode, completed)
+      allFilter mode
+      activeFilter mode
+      completedFilter mode
     clearButton activeTodoCount
 
 clearButton = \completedCount ->
@@ -34,17 +34,17 @@ countSpan = \count ->
     strong (noProps, count)
     " #{activeTodoWord} left"
 
-getFilterClassName = (nowShowing, filterType) ->
-  classSet { selected: nowShowing == filterType }
+getFilterClassName = (currentMode, filterMode) ->
+  classSet { selected: currentMode == filterMode }
 
-getFilterOption = ([busLabel, href, linkLabel]) -> (mode, filter) ->
-  linkProps = { href, className: getFilterClassName (mode, filter) }
+getFilterOption = ([busLabel, href, linkLabel, mode]) -> (currentMode) ->
+  linkProps = { href, className: getFilterClassName (mode, currentMode) }
   li (noProps, $link busLabel (linkProps, linkLabel))
 
 fields = [
-  ['ActiveTodos',    'active',    'Active '  ]
-  ['AllTodos',       '',          'All '     ]
-  ['CompletedTodos', 'completed', 'Completed']
+  ['ActiveTodos',    'active',    'Active ',   'active'   ]
+  ['AllTodos',       '',          'All ',      'all'      ]
+  ['CompletedTodos', 'completed', 'Completed', 'completed']
 ]
 
 [activeFilter, allFilter, completedFilter] = fields.map getFilterOption
