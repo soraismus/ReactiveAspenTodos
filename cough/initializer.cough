@@ -3,7 +3,7 @@ initialAppState                = require './initialAppState'
 topViewFactory                 = require './view/app'
 viewImports                    = require './controller/view-imports'
 { linkTogetherMVC, push }      = Controller
-{ renderComponent }            = React
+{ render }                     = React
 { connectPortsToBuses }        = Adapter
 
 
@@ -13,7 +13,7 @@ appNodeId = 'todoapp'
 initialize = (appNodeId, topViewFactory, initialAppState, viewImports) ->
   push 'top-view-factory' topViewFactory
   topReactDescriptor = linkTogetherMVC (topViewFactory, initialAppState)
-  renderComponent (topReactDescriptor, (document.getElementById appNodeId))
+  render (topReactDescriptor, (document.getElementById appNodeId))
   connectPortsToBuses viewImports
 
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
