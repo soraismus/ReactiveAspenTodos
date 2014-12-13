@@ -23,33 +23,33 @@ logSubscribe = \label ->
   'terminus'
 ].forEach logSubscribe
 
-activateAllTodos = \appState ->
-  appState.todos.forEach \todo -> todo.completed = false
-  appState.activeTodoCount = 0
+activateAll = \appState ->
+  todos = appState.todos
+  todos.forEach \todo -> todo.completed = false
+  appState.activeCount = todos.length
+
+completeAll = \appState ->
+  appState.todos.forEach \todo -> todo.completed = true
+  appState.activeCount = 0
 
 extractIndex = \capsule ->
   capsule.index
 
 toggleAllTodos = \appState ->
-  { todos } = appState
-  for todo, i in todos
-    if todo.completed
-      activateAllTodos appState
-      return appState
-    todo.completed = true
-    appState.activeTodoCount += 1
+  manage = if appState.activeCount == 0 then activateAll else completeAll
+  manage appState
   appState
 
 toggleTodo = \index \appState ->
-  { activeTodoCount, mode, todos } = appState
+  { activeCount, mode, todos } = appState
   todo = getTodos(mode, todos)[index]
   { completed } = todo
-  appState.activeTodoCount = updateCount (activeTodoCount, completed)
+  appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
   appState
 
 updateCount = (nbr, completed) ->
-  addend = if completed then -1 else 1
+  addend = if completed then 1 else -1
   nbr + addend
 
 updateMode = \newMode \appState ->
