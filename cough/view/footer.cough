@@ -8,7 +8,7 @@
 noProps = null
 
 AppFooter = \props ->
-  { active, activeTodoCount, all, completed, count, mode } = props
+  { activeTodoCount, count, mode } = props
 
   filterOption = getFilterOption mode
 

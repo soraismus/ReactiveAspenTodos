@@ -5,13 +5,11 @@ AppFooter = require './footer'
 AppHeader = require './header'
 
 TodoApp = \appState ->
-  { bodyProps, footerProps } = appState
-
   div (
     null
     AppHeader ()
-    AppBody bodyProps
-    AppFooter footerProps
+    AppBody appState
+    AppFooter appState
   )
 
 module.exports = TodoApp
