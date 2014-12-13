@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, TERMINUS, activateAllTodos, active, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -21,11 +21,20 @@ logSubscribe = function(label) {
 
 ['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
 
-activateAllTodos = function(appState) {
-  appState.todos.forEach(function(todo) {
+activateAll = function(appState) {
+  var todos;
+  todos = appState.todos;
+  todos.forEach(function(todo) {
     return todo.completed = false;
   });
-  return appState.activeTodoCount = 0;
+  return appState.activeCount = todos.length;
+};
+
+completeAll = function(appState) {
+  appState.todos.forEach(function(todo) {
+    return todo.completed = true;
+  });
+  return appState.activeCount = 0;
 };
 
 extractIndex = function(capsule) {
@@ -33,27 +42,19 @@ extractIndex = function(capsule) {
 };
 
 toggleAllTodos = function(appState) {
-  var i, todo, todos, _i, _len;
-  todos = appState.todos;
-  for (i = _i = 0, _len = todos.length; _i < _len; i = ++_i) {
-    todo = todos[i];
-    if (todo.completed) {
-      activateAllTodos(appState);
-      return appState;
-    }
-    todo.completed = true;
-    appState.activeTodoCount += 1;
-  }
+  var manage;
+  manage = appState.activeCount === 0 ? activateAll : completeAll;
+  manage(appState);
   return appState;
 };
 
 toggleTodo = function(index) {
   return function(appState) {
-    var activeTodoCount, completed, mode, todo, todos;
-    activeTodoCount = appState.activeTodoCount, mode = appState.mode, todos = appState.todos;
+    var activeCount, completed, mode, todo, todos;
+    activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
     todo = getTodos(mode, todos)[index];
     completed = todo.completed;
-    appState.activeTodoCount = updateCount(activeTodoCount, completed);
+    appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
     return appState;
   };
@@ -61,7 +62,7 @@ toggleTodo = function(index) {
 
 updateCount = function(nbr, completed) {
   var addend;
-  addend = completed ? -1 : 1;
+  addend = completed ? 1 : -1;
   return nbr + addend;
 };
 
@@ -133,7 +134,7 @@ preventDefault = {
 module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['new-todo', 'new-todo-input'], ['todo-in-edit', 'todo-item-input'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
 
 },{}],3:[function(require,module,exports){
-var activeTodoCount, count, mode, todos;
+var activeCount, count, mode, todos;
 
 todos = [
   {
@@ -154,14 +155,14 @@ todos = [
   }
 ];
 
-activeTodoCount = 1;
+activeCount = 2;
 
 count = 3;
 
 mode = 'all';
 
 module.exports = {
-  activeTodoCount: activeTodoCount,
+  activeCount: activeCount,
   count: count,
   mode: mode,
   todos: todos
@@ -310,8 +311,8 @@ active = function(todo) {
 };
 
 AppBody = function(props) {
-  var activeTodoCount, count, mode, todoItems, todos;
-  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode, todos = props.todos;
+  var activeCount, count, mode, todoItems, todos;
+  activeCount = props.activeCount, count = props.count, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
@@ -321,7 +322,7 @@ AppBody = function(props) {
   }, mainToggle({
     id: 'toggle-all',
     onChange: true,
-    checked: activeTodoCount === 0
+    checked: activeCount === 0
   }), ul({
     id: 'todo-list'
   }, todoItems));
@@ -362,14 +363,14 @@ _ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 noProps = null;
 
 AppFooter = function(props) {
-  var activeTodoCount, count, filterOption, mode;
-  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode;
+  var activeCount, count, filterOption, mode;
+  activeCount = props.activeCount, count = props.count, mode = props.mode;
   filterOption = getFilterOption(mode);
   return footer({
     id: 'footer'
-  }, countSpan(count - activeTodoCount), ul({
+  }, countSpan(activeCount), ul({
     id: 'filters'
-  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(activeTodoCount));
+  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(count - activeCount));
 };
 
 clearButton = function(completedCount) {

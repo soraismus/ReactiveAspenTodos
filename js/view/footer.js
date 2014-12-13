@@ -15,14 +15,14 @@ _ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 noProps = null;
 
 AppFooter = function(props) {
-  var activeTodoCount, count, filterOption, mode;
-  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode;
+  var activeCount, count, filterOption, mode;
+  activeCount = props.activeCount, count = props.count, mode = props.mode;
   filterOption = getFilterOption(mode);
   return footer({
     id: 'footer'
-  }, countSpan(count - activeTodoCount), ul({
+  }, countSpan(activeCount), ul({
     id: 'filters'
-  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(activeTodoCount));
+  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(count - activeCount));
 };
 
 clearButton = function(completedCount) {

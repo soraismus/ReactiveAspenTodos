@@ -15,8 +15,8 @@ active = function(todo) {
 };
 
 AppBody = function(props) {
-  var activeTodoCount, count, mode, todoItems, todos;
-  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode, todos = props.todos;
+  var activeCount, count, mode, todoItems, todos;
+  activeCount = props.activeCount, count = props.count, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
@@ -26,7 +26,7 @@ AppBody = function(props) {
   }, mainToggle({
     id: 'toggle-all',
     onChange: true,
-    checked: activeTodoCount === 0
+    checked: activeCount === 0
   }), ul({
     id: 'todo-list'
   }, todoItems));

@@ -1,4 +1,4 @@
-var activeTodoCount, count, mode, todos;
+var activeCount, count, mode, todos;
 
 todos = [
   {
@@ -19,14 +19,14 @@ todos = [
   }
 ];
 
-activeTodoCount = 1;
+activeCount = 2;
 
 count = 3;
 
 mode = 'all';
 
 module.exports = {
-  activeTodoCount: activeTodoCount,
+  activeCount: activeCount,
   count: count,
   mode: mode,
   todos: todos

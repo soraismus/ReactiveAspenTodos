@@ -1,4 +1,4 @@
-var Controller, Pando, TERMINUS, activateAllTodos, active, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -20,11 +20,20 @@ logSubscribe = function(label) {
 
 ['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
 
-activateAllTodos = function(appState) {
-  appState.todos.forEach(function(todo) {
+activateAll = function(appState) {
+  var todos;
+  todos = appState.todos;
+  todos.forEach(function(todo) {
     return todo.completed = false;
   });
-  return appState.activeTodoCount = 0;
+  return appState.activeCount = todos.length;
+};
+
+completeAll = function(appState) {
+  appState.todos.forEach(function(todo) {
+    return todo.completed = true;
+  });
+  return appState.activeCount = 0;
 };
 
 extractIndex = function(capsule) {
@@ -32,27 +41,19 @@ extractIndex = function(capsule) {
 };
 
 toggleAllTodos = function(appState) {
-  var i, todo, todos, _i, _len;
-  todos = appState.todos;
-  for (i = _i = 0, _len = todos.length; _i < _len; i = ++_i) {
-    todo = todos[i];
-    if (todo.completed) {
-      activateAllTodos(appState);
-      return appState;
-    }
-    todo.completed = true;
-    appState.activeTodoCount += 1;
-  }
+  var manage;
+  manage = appState.activeCount === 0 ? activateAll : completeAll;
+  manage(appState);
   return appState;
 };
 
 toggleTodo = function(index) {
   return function(appState) {
-    var activeTodoCount, completed, mode, todo, todos;
-    activeTodoCount = appState.activeTodoCount, mode = appState.mode, todos = appState.todos;
+    var activeCount, completed, mode, todo, todos;
+    activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
     todo = getTodos(mode, todos)[index];
     completed = todo.completed;
-    appState.activeTodoCount = updateCount(activeTodoCount, completed);
+    appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
     return appState;
   };
@@ -60,7 +61,7 @@ toggleTodo = function(index) {
 
 updateCount = function(nbr, completed) {
   var addend;
-  addend = completed ? -1 : 1;
+  addend = completed ? 1 : -1;
   return nbr + addend;
 };
 
