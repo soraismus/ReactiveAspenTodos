@@ -35,6 +35,11 @@ completeAll = \appState ->
 extractIndex = \capsule ->
   capsule.index
 
+removeCompleted = \appState ->
+  appState.todos = appState.todos.filter active
+  appState.activeCount = appState.count = appState.todos.length
+  appState
+
 toggleAllTodos = \appState ->
   manage = if appState.activeCount == 0 then activateAll else completeAll
   manage appState
@@ -85,5 +90,8 @@ connect '$completed-todos-clicks' TERMINUS ->
 
 connect '$toggle-all-clicks' TERMINUS ->
   mapping (-> toggleAllTodos)
+
+connect '$clear-clicks' TERMINUS ->
+  mapping (-> removeCompleted)
 
 module.exports = null
