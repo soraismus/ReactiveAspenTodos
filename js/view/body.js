@@ -1,4 +1,4 @@
-var $checkbox, AppBody, Bridge, React, TodoItem, mainToggle, section, ul, _ref, _ref1;
+var $checkbox, AppBody, Bridge, React, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
 
@@ -10,13 +10,17 @@ $checkbox = Bridge.adapters.$checkbox;
 
 mainToggle = $checkbox('toggle-all-checkbox');
 
+active = function(todo) {
+  return !todo.completed;
+};
+
 AppBody = function(props) {
-  var activeTodoCount, count, todoItems, todos;
-  activeTodoCount = props.activeTodoCount, count = props.count, todos = props.todos;
+  var activeTodoCount, count, mode, todoItems, todos;
+  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
-  todoItems = todos.map(TodoItem);
+  todoItems = getTodos(todos, mode).map(TodoItem);
   return section({
     id: 'main'
   }, mainToggle({
@@ -26,6 +30,21 @@ AppBody = function(props) {
   }), ul({
     id: 'todo-list'
   }, todoItems));
+};
+
+completed = function(todo) {
+  return todo.completed;
+};
+
+getTodos = function(todos, mode) {
+  switch (mode) {
+    case 'all':
+      return todos;
+    case 'active':
+      return todos.filter(active);
+    case 'completed':
+      return todos.filter(completed);
+  }
 };
 
 module.exports = AppBody;

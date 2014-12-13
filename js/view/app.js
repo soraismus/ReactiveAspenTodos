@@ -9,9 +9,7 @@ AppFooter = require('./footer');
 AppHeader = require('./header');
 
 TodoApp = function(appState) {
-  var bodyProps, footerProps;
-  bodyProps = appState.bodyProps, footerProps = appState.footerProps;
-  return div(null, AppHeader(), AppBody(bodyProps), AppFooter(footerProps));
+  return div(null, AppHeader(), AppBody(appState), AppFooter(appState));
 };
 
 module.exports = TodoApp;

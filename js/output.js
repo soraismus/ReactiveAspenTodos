@@ -1,11 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, completeAllTodos, connect, extractIndex, getDispatcher, log, logSubscribe, mapping, updateCount, _ref;
+var Controller, Pando, TERMINUS, activateAllTodos, active, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
 connect = Controller.connect, getDispatcher = Controller.getDispatcher;
 
 mapping = Pando.mapping;
+
+TERMINUS = 'terminus';
 
 log = function(label) {
   return function(event) {
@@ -19,21 +21,42 @@ logSubscribe = function(label) {
 
 ['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
 
-completeAllTodos = function(index) {
-  return function(appState) {
-    var activeTodoCount, all, completed, footerProps, todo, _ref1;
-    footerProps = appState.footerProps;
-    _ref1 = appState.footerProps, activeTodoCount = _ref1.activeTodoCount, all = _ref1.all;
-    todo = all[index];
-    completed = todo.completed;
-    footerProps.activeTodoCount = updateCount(activeTodoCount, completed);
-    todo.completed = !completed;
-    return appState;
-  };
+activateAllTodos = function(appState) {
+  appState.todos.forEach(function(todo) {
+    return todo.completed = false;
+  });
+  return appState.activeTodoCount = 0;
 };
 
 extractIndex = function(capsule) {
   return capsule.index;
+};
+
+toggleAllTodos = function(appState) {
+  var i, todo, todos, _i, _len;
+  todos = appState.todos;
+  for (i = _i = 0, _len = todos.length; _i < _len; i = ++_i) {
+    todo = todos[i];
+    if (todo.completed) {
+      activateAllTodos(appState);
+      return appState;
+    }
+    todo.completed = true;
+    appState.activeTodoCount += 1;
+  }
+  return appState;
+};
+
+toggleTodo = function(index) {
+  return function(appState) {
+    var activeTodoCount, completed, mode, todo, todos;
+    activeTodoCount = appState.activeTodoCount, mode = appState.mode, todos = appState.todos;
+    todo = getTodos(mode, todos)[index];
+    completed = todo.completed;
+    appState.activeTodoCount = updateCount(activeTodoCount, completed);
+    todo.completed = !completed;
+    return appState;
+  };
 };
 
 updateCount = function(nbr, completed) {
@@ -42,9 +65,59 @@ updateCount = function(nbr, completed) {
   return nbr + addend;
 };
 
-connect('$toggle-clicks')('terminus')(function() {
+updateMode = function(newMode) {
+  return function(appState) {
+    appState.mode = newMode;
+    return appState;
+  };
+};
+
+active = function(todo) {
+  return !todo.completed;
+};
+
+completed = function(todo) {
+  return todo.completed;
+};
+
+getTodos = function(mode, todos) {
+  switch (mode) {
+    case 'active':
+      return todos.filter(active);
+    case 'all':
+      return todos;
+    case 'completed':
+      return todos.filter(completed);
+  }
+};
+
+connect('$toggle-clicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
-    return completeAllTodos(extractIndex(capsule));
+    return toggleTodo(extractIndex(capsule));
+  });
+});
+
+connect('$active-todos-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return updateMode('active');
+  });
+});
+
+connect('$all-todos-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return updateMode('all');
+  });
+});
+
+connect('$completed-todos-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return updateMode('completed');
+  });
+});
+
+connect('$toggle-all-clicks')(TERMINUS)(function() {
+  return mapping(function() {
+    return toggleAllTodos;
   });
 });
 
@@ -60,20 +133,20 @@ preventDefault = {
 module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['new-todo', 'new-todo-input'], ['todo-in-edit', 'todo-item-input'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
 
 },{}],3:[function(require,module,exports){
-var active, activeTodoCount, all, bodyProps, completed, count, footerProps, mode, p, r, t, todos;
+var activeTodoCount, count, mode, todos;
 
 todos = [
-  t = {
+  {
     completed: false,
     editing: false,
     editText: '',
     title: 'think'
-  }, p = {
+  }, {
     completed: true,
     editing: false,
     editText: '',
     title: 'ponder'
-  }, r = {
+  }, {
     completed: false,
     editing: false,
     editText: '',
@@ -81,37 +154,17 @@ todos = [
   }
 ];
 
-all = todos;
-
-active = [t, r];
-
-completed = [p];
-
-mode = 'all';
-
 activeTodoCount = 1;
 
 count = 3;
 
-bodyProps = {
-  activeTodoCount: activeTodoCount,
-  count: count,
-  todos: todos
-};
+mode = 'all';
 
-footerProps = {
-  active: active,
+module.exports = {
   activeTodoCount: activeTodoCount,
-  all: all,
-  completed: completed,
   count: count,
   mode: mode,
   todos: todos
-};
-
-module.exports = {
-  bodyProps: bodyProps,
-  footerProps: footerProps
 };
 
 },{}],4:[function(require,module,exports){
@@ -234,15 +287,13 @@ AppFooter = require('./footer');
 AppHeader = require('./header');
 
 TodoApp = function(appState) {
-  var bodyProps, footerProps;
-  bodyProps = appState.bodyProps, footerProps = appState.footerProps;
-  return div(null, AppHeader(), AppBody(bodyProps), AppFooter(footerProps));
+  return div(null, AppHeader(), AppBody(appState), AppFooter(appState));
 };
 
 module.exports = TodoApp;
 
 },{"../../vendor/reactive-aspen":11,"./body":7,"./footer":8,"./header":9}],7:[function(require,module,exports){
-var $checkbox, AppBody, Bridge, React, TodoItem, mainToggle, section, ul, _ref, _ref1;
+var $checkbox, AppBody, Bridge, React, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
 
@@ -254,13 +305,17 @@ $checkbox = Bridge.adapters.$checkbox;
 
 mainToggle = $checkbox('toggle-all-checkbox');
 
+active = function(todo) {
+  return !todo.completed;
+};
+
 AppBody = function(props) {
-  var activeTodoCount, count, todoItems, todos;
-  activeTodoCount = props.activeTodoCount, count = props.count, todos = props.todos;
+  var activeTodoCount, count, mode, todoItems, todos;
+  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
-  todoItems = todos.map(TodoItem);
+  todoItems = getTodos(todos, mode).map(TodoItem);
   return section({
     id: 'main'
   }, mainToggle({
@@ -270,6 +325,21 @@ AppBody = function(props) {
   }), ul({
     id: 'todo-list'
   }, todoItems));
+};
+
+completed = function(todo) {
+  return todo.completed;
+};
+
+getTodos = function(todos, mode) {
+  switch (mode) {
+    case 'all':
+      return todos;
+    case 'active':
+      return todos.filter(active);
+    case 'completed':
+      return todos.filter(completed);
+  }
 };
 
 module.exports = AppBody;
@@ -292,8 +362,8 @@ _ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 noProps = null;
 
 AppFooter = function(props) {
-  var active, activeTodoCount, all, completed, count, filterOption, mode;
-  active = props.active, activeTodoCount = props.activeTodoCount, all = props.all, completed = props.completed, count = props.count, mode = props.mode;
+  var activeTodoCount, count, filterOption, mode;
+  activeTodoCount = props.activeTodoCount, count = props.count, mode = props.mode;
   filterOption = getFilterOption(mode);
   return footer({
     id: 'footer'
