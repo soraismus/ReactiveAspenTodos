@@ -1,11 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, TERMINUS, activateAll, active, completeAll, completed, connect, extractIndex, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, toggleAllTodos, toggleTodo, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, createTodo, enterKey_question_, extractIndex, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
 connect = Controller.connect, getDispatcher = Controller.getDispatcher;
 
-mapping = Pando.mapping;
+filtering = Pando.filtering, mapping = Pando.mapping;
 
 TERMINUS = 'terminus';
 
@@ -19,7 +19,7 @@ logSubscribe = function(label) {
   return getDispatcher(label).subscribe(log(label));
 };
 
-['$toggle-all-clicks', 'new-todo', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
+['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
 
 activateAll = function(appState) {
   var todos;
@@ -30,6 +30,15 @@ activateAll = function(appState) {
   return appState.activeCount = todos.length;
 };
 
+addTodo = function(title) {
+  return function(appState) {
+    appState.todos.push(createTodo(title));
+    appState.activeCount += 1;
+    appState.count += 1;
+    return appState;
+  };
+};
+
 completeAll = function(appState) {
   appState.todos.forEach(function(todo) {
     return todo.completed = true;
@@ -37,14 +46,48 @@ completeAll = function(appState) {
   return appState.activeCount = 0;
 };
 
+createTodo = function(title) {
+  return {
+    completed: false,
+    editing: false,
+    editText: '',
+    title: title
+  };
+};
+
+enterKey_question_ = function(capsule) {
+  return capsule.event.keyCode === 13;
+};
+
 extractIndex = function(capsule) {
   return capsule.index;
+};
+
+extractNewTodo = function(capsule) {
+  var value;
+  value = capsule.event.target.value;
+  capsule.event.target.value = '';
+  return addTodo(value);
 };
 
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
   return appState;
+};
+
+removeTodo = function(index) {
+  return function(appState) {
+    var completed, todos;
+    todos = appState.todos;
+    completed = todos[index].completed;
+    todos.splice(index, 1);
+    if (!completed) {
+      appState.activeCount -= 1;
+    }
+    appState.count -= 1;
+    return appState;
+  };
 };
 
 toggleAllTodos = function(appState) {
@@ -62,6 +105,13 @@ toggleTodo = function(index) {
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
+    return appState;
+  };
+};
+
+transformAppState = function(transform) {
+  return function(appState) {
+    transform(appState);
     return appState;
   };
 };
@@ -134,16 +184,36 @@ connect('$clear-clicks')(TERMINUS)(function() {
   });
 });
 
+connect('$new-todo-keydowns')(TERMINUS)(function() {
+  return function(__i) {
+    return filtering(enterKey_question_)(mapping(extractNewTodo)(__i));
+  };
+});
+
+connect('$destroy-clicks')(TERMINUS)(function() {
+  return mapping(function(capsule) {
+    return removeTodo(extractIndex(capsule));
+  });
+});
+
 module.exports = null;
 
 },{"../../vendor/reactive-aspen":11}],2:[function(require,module,exports){
-var preventDefault;
+var onChange, onKeyDown, preventDefault;
+
+onChange = {
+  handler: 'onChange'
+};
+
+onKeyDown = {
+  handler: 'onKeyDown'
+};
 
 preventDefault = {
   preventDefault: true
 };
 
-module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['new-todo', 'new-todo-input'], ['todo-in-edit', 'todo-item-input'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
+module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['todo-in-edit', 'todo-item-input'], ['$new-todo-keydowns', 'new-todo-input'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
 
 },{}],3:[function(require,module,exports){
 var activeCount, count, mode, todos;
@@ -451,7 +521,6 @@ AppHeader = function() {
     id: 'new-todo',
     placeholder: 'What needs to be done?',
     onKeyDown: true,
-    onChange: true,
     autofocus: true
   }));
 };
