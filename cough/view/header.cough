@@ -12,11 +12,9 @@ AppHeader = ->
     id : 'header'
     todosCaption ()
     todoInput
-      #ref         : 'newField'
       id          : 'new-todo'
       placeholder : 'What needs to be done?'
-      autofocus   : true
       onKeyDown   : true
-      onChange    : true
+      autofocus   : true
 
 module.exports = AppHeader
