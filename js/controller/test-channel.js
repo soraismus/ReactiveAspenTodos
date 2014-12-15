@@ -1,4 +1,4 @@
-var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, createTodo, enterKey_question_, extractIndex, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -18,7 +18,7 @@ logSubscribe = function(label) {
   return getDispatcher(label).subscribe(log(label));
 };
 
-['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
+['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$edit-blurs', '$edit-focuses', '$edit-keydowns', '$todo-label-doubleclicks'].forEach(logSubscribe);
 
 activateAll = function(appState) {
   var todos;
@@ -45,12 +45,55 @@ completeAll = function(appState) {
   return appState.activeCount = 0;
 };
 
+continueEditingTodo = function(todo, text) {
+  return todo.editText = text;
+};
+
+continueEditingAppState = function(props) {
+  var index, value;
+  index = props.index, value = props.value;
+  return function(appState) {
+    var todos;
+    todos = appState.todos;
+    continueEditingTodo(todos[index], value);
+    return appState;
+  };
+};
+
 createTodo = function(title) {
   return {
     completed: false,
     editing: false,
     editText: '',
     title: title
+  };
+};
+
+editTodo = function(todo) {
+  todo.editing = true;
+  todo.editText = todo.title;
+  return todo;
+};
+
+editAppState = function(index) {
+  return function(appState) {
+    var todos;
+    todos = appState.todos;
+    todos[index] = editTodo(todos[index]);
+    return appState;
+  };
+};
+
+endEditing = function(capsule) {
+  var index;
+  index = capsule.index;
+  return function(appState) {
+    var todo;
+    todo = appState.todos[index];
+    todo.editing = false;
+    todo.title = todo.editText;
+    todo.editText = '';
+    return appState;
   };
 };
 
@@ -62,9 +105,19 @@ extractIndex = function(capsule) {
   return capsule.index;
 };
 
+extractIndexAndValue = function(capsule) {
+  var index, value;
+  index = capsule.index;
+  value = capsule.event.target.value;
+  return {
+    index: index,
+    value: value
+  };
+};
+
 extractNewTodo = function(capsule) {
   var value;
-  value = capsule.event.target.value;
+  value = capsule.event.target.value.trim();
   capsule.event.target.value = '';
   return addTodo(value);
 };
@@ -193,6 +246,24 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
     return removeTodo(extractIndex(capsule));
   });
+});
+
+connect('$todo-label-doubleclicks')(TERMINUS)(function() {
+  return mapping(function(capsule) {
+    return editAppState(extractIndex(capsule));
+  });
+});
+
+connect('todo-in-edit')(TERMINUS)(function() {
+  return mapping((function(__i) {
+    return continueEditingAppState(extractIndexAndValue(__i));
+  }));
+});
+
+connect('$edit-keydowns')(TERMINUS)(function() {
+  return function(__i) {
+    return filtering(enterKey_question_)(mapping(endEditing)(__i));
+  };
 });
 
 module.exports = null;

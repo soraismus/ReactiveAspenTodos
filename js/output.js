@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, createTodo, enterKey_question_, extractIndex, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
+var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
@@ -19,7 +19,7 @@ logSubscribe = function(label) {
   return getDispatcher(label).subscribe(log(label));
 };
 
-['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$todo-label-doubleclicks', 'terminus'].forEach(logSubscribe);
+['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$edit-blurs', '$edit-focuses', '$edit-keydowns', '$todo-label-doubleclicks'].forEach(logSubscribe);
 
 activateAll = function(appState) {
   var todos;
@@ -46,12 +46,55 @@ completeAll = function(appState) {
   return appState.activeCount = 0;
 };
 
+continueEditingTodo = function(todo, text) {
+  return todo.editText = text;
+};
+
+continueEditingAppState = function(props) {
+  var index, value;
+  index = props.index, value = props.value;
+  return function(appState) {
+    var todos;
+    todos = appState.todos;
+    continueEditingTodo(todos[index], value);
+    return appState;
+  };
+};
+
 createTodo = function(title) {
   return {
     completed: false,
     editing: false,
     editText: '',
     title: title
+  };
+};
+
+editTodo = function(todo) {
+  todo.editing = true;
+  todo.editText = todo.title;
+  return todo;
+};
+
+editAppState = function(index) {
+  return function(appState) {
+    var todos;
+    todos = appState.todos;
+    todos[index] = editTodo(todos[index]);
+    return appState;
+  };
+};
+
+endEditing = function(capsule) {
+  var index;
+  index = capsule.index;
+  return function(appState) {
+    var todo;
+    todo = appState.todos[index];
+    todo.editing = false;
+    todo.title = todo.editText;
+    todo.editText = '';
+    return appState;
   };
 };
 
@@ -63,9 +106,19 @@ extractIndex = function(capsule) {
   return capsule.index;
 };
 
+extractIndexAndValue = function(capsule) {
+  var index, value;
+  index = capsule.index;
+  value = capsule.event.target.value;
+  return {
+    index: index,
+    value: value
+  };
+};
+
 extractNewTodo = function(capsule) {
   var value;
-  value = capsule.event.target.value;
+  value = capsule.event.target.value.trim();
   capsule.event.target.value = '';
   return addTodo(value);
 };
@@ -196,10 +249,32 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   });
 });
 
+connect('$todo-label-doubleclicks')(TERMINUS)(function() {
+  return mapping(function(capsule) {
+    return editAppState(extractIndex(capsule));
+  });
+});
+
+connect('todo-in-edit')(TERMINUS)(function() {
+  return mapping((function(__i) {
+    return continueEditingAppState(extractIndexAndValue(__i));
+  }));
+});
+
+connect('$edit-keydowns')(TERMINUS)(function() {
+  return function(__i) {
+    return filtering(enterKey_question_)(mapping(endEditing)(__i));
+  };
+});
+
 module.exports = null;
 
 },{"../../vendor/reactive-aspen":11}],2:[function(require,module,exports){
-var onChange, onKeyDown, preventDefault;
+var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
+
+onBlur = {
+  handler: 'onBlur'
+};
 
 onChange = {
   handler: 'onChange'
@@ -213,7 +288,9 @@ preventDefault = {
   preventDefault: true
 };
 
-module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['todo-in-edit', 'todo-item-input'], ['$new-todo-keydowns', 'new-todo-input'], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
+todoItemInput = 'todo-item-input';
+
+module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$new-todo-keydowns', 'new-todo-input'], ['$edit-blurs', todoItemInput, onBlur], ['todo-in-edit', todoItemInput, onChange], ['$edit-keydowns', todoItemInput, onKeyDown], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
 
 },{}],3:[function(require,module,exports){
 var activeCount, count, mode, todos;
@@ -521,7 +598,7 @@ AppHeader = function() {
     id: 'new-todo',
     placeholder: 'What needs to be done?',
     onKeyDown: true,
-    autofocus: true
+    autoFocus: true
   }));
 };
 
@@ -1103,7 +1180,9 @@ TERMINUS = 'terminus';
 topViewFactory = getProperty('top-view-factory');
 
 plugIntoTerminus = function(observable) {
-  return connect(observable)(TERMINUS)(identity);
+  return connect(observable)(TERMINUS)(function() {
+    return identity;
+  });
 };
 
 resetAppState = function(transform) {
