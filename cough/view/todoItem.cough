@@ -41,7 +41,6 @@ TodoItem = (todoProps, index) ->
         className : 'destroy'
         onClick   : true
     todoItemInput(index)
-      #ref       : 'editField'
       className : 'edit'
       value     : editText
       onBlur    : true
