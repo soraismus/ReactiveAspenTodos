@@ -15,6 +15,6 @@ AppHeader = ->
       id          : 'new-todo'
       placeholder : 'What needs to be done?'
       onKeyDown   : true
-      autofocus   : true
+      autoFocus   : true
 
 module.exports = AppHeader
