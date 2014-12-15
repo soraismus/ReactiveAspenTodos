@@ -18,9 +18,11 @@ logSubscribe = \label ->
   '$active-todos-clicks',
   '$all-todos-clicks'
   '$completed-todos-clicks'
-  'todo-in-edit',
+  'todo-in-edit'
+  '$edit-blurs'
+  '$edit-focuses'
+  '$edit-keydowns'
   '$todo-label-doubleclicks'
-  'terminus'
 ].forEach logSubscribe
 
 activateAll = \appState ->
@@ -38,8 +40,37 @@ completeAll = \appState ->
   appState.todos.forEach \todo -> todo.completed = true
   appState.activeCount = 0
 
+continueEditingTodo = (todo, text) ->
+  todo.editText = text
+
+continueEditingAppState = \props ->
+  { index, value } = props
+  \appState ->
+    { todos }        = appState
+    continueEditingTodo (todos[index], value)
+    appState
+
 createTodo = \title ->
   { completed: false, editing: false, editText: '', title }
+
+editTodo = \todo ->
+  todo.editing = true
+  todo.editText = todo.title
+  todo
+
+editAppState = \index \appState ->
+  { todos } = appState
+  todos[index] = editTodo(todos[index])
+  appState
+
+endEditing = \capsule ->
+  { index } = capsule
+  \appState ->
+    todo = appState.todos[index]
+    todo.editing = false
+    todo.title   = todo.editText
+    todo.editText = ''
+    appState
 
 enterKey? = \capsule ->
   capsule.event.keyCode == 13
@@ -47,8 +78,13 @@ enterKey? = \capsule ->
 extractIndex = \capsule ->
   capsule.index
 
+extractIndexAndValue = \capsule ->
+  { index } = capsule
+  { value } = capsule.event.target
+  { index, value }
+
 extractNewTodo = \capsule ->
-  value = capsule.event.target.value
+  value = capsule.event.target.value.trim ()
   capsule.event.target.value = ''
   addTodo value
 
@@ -128,5 +164,14 @@ connect '$new-todo-keydowns' TERMINUS ->
 
 connect '$destroy-clicks' TERMINUS ->
   mapping (\capsule -> removeTodo (extractIndex capsule))
+
+connect '$todo-label-doubleclicks' TERMINUS ->
+  mapping (\capsule -> editAppState (extractIndex capsule))
+
+connect 'todo-in-edit' TERMINUS ->
+  mapping (; continueEditingAppState extractIndexAndValue ;)
+
+connect '$edit-keydowns' TERMINUS ->
+  ; filtering (enterKey?) mapping (endEditing) ;
 
 module.exports = null
