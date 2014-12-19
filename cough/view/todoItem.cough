@@ -1,9 +1,9 @@
-{ Bridge, React } = require '../../vendor/reactive-aspen'
-{ addons, DOM }   = React
-{ classSet }      = addons
-{ div, li }       = DOM
-
-{ $button, $checkbox, $label, $text } = Bridge.adapters 
+{ Bridge, React }                     = require '../../vendor/reactive-aspen'
+{ adapters, sensitize }               = Bridge
+{ $button, $checkbox, $label, $text } = adapters 
+{ addons, DOM }                       = React
+{ classSet }                          = addons
+{ div, li }                           = DOM
 
 fields = [
   [$checkbox, 'completion-toggle']
@@ -21,12 +21,15 @@ indexifyAdapter = ([adapter, label]) -> (index) ->
 [completionToggle, destroyButton, todoItemInput, todoItemLabel] =
   fields.map indexifyAdapter
 
+TodoItemInput = \index ->
+  sensitize { index, label: 'TodoItemInput' } (todoItemInput index)
+
 TodoItem = (todoProps, index) ->
   { completed, editing, editText, title } = todoProps
   className = classSet { completed, editing }
 
   li
-    key       : "todo-item-#{index}"
+    key       : "todo-item-#{title}"
     className : className
     div
       className : 'view'
@@ -40,11 +43,12 @@ TodoItem = (todoProps, index) ->
       destroyButton(index)
         className : 'destroy'
         onClick   : true
-    todoItemInput(index)
-      className : 'edit'
-      value     : editText
-      onBlur    : true
-      onChange  : true
-      onKeyDown : true
+    TodoItemInput(index)
+      className    : 'edit'
+      key          : 'todo-item-input' + index
+      defaultValue : editText
+      onBlur       : true
+      onChange     : true
+      onKeyDown    : true
 
 module.exports = TodoItem
