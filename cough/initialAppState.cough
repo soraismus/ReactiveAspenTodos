@@ -1,7 +1,7 @@
 todos = [
-  { completed: false, editing: false, editText: '', title: 'think'   }
-  { completed: true,  editing: false, editText: '', title: 'ponder'  }
-  { completed: false, editing: false, editText: '', title: 'reflect' }
+  { completed: false, editing: false, editText: null, title: 'think'   }
+  { completed: true,  editing: false, editText: null, title: 'ponder'  }
+  { completed: false, editing: false, editText: null, title: 'reflect' }
 ]
 
 activeCount = 2
