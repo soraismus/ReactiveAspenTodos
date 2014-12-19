@@ -4,17 +4,17 @@ todos = [
   {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'think'
   }, {
     completed: true,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'ponder'
   }, {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'reflect'
   }
 ];

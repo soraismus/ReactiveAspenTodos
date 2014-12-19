@@ -1,14 +1,16 @@
-var $button, $checkbox, $label, $text, Bridge, DOM, React, TodoItem, addons, classSet, completionToggle, destroyButton, div, fields, includeIndex, indexifyAdapter, li, todoItemInput, todoItemLabel, _ref, _ref1, _ref2;
+var $button, $checkbox, $label, $text, Bridge, DOM, React, TodoItem, TodoItemInput, adapters, addons, classSet, completionToggle, destroyButton, div, fields, includeIndex, indexifyAdapter, li, sensitize, todoItemInput, todoItemLabel, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+
+adapters = Bridge.adapters, sensitize = Bridge.sensitize;
+
+$button = adapters.$button, $checkbox = adapters.$checkbox, $label = adapters.$label, $text = adapters.$text;
 
 addons = React.addons, DOM = React.DOM;
 
 classSet = addons.classSet;
 
 div = DOM.div, li = DOM.li;
-
-_ref1 = Bridge.adapters, $button = _ref1.$button, $checkbox = _ref1.$checkbox, $label = _ref1.$label, $text = _ref1.$text;
 
 fields = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$text, 'todo-item-input'], [$label, 'todo-item-label']];
 
@@ -27,7 +29,14 @@ indexifyAdapter = function(_arg) {
   };
 };
 
-_ref2 = fields.map(indexifyAdapter), completionToggle = _ref2[0], destroyButton = _ref2[1], todoItemInput = _ref2[2], todoItemLabel = _ref2[3];
+_ref1 = fields.map(indexifyAdapter), completionToggle = _ref1[0], destroyButton = _ref1[1], todoItemInput = _ref1[2], todoItemLabel = _ref1[3];
+
+TodoItemInput = function(index) {
+  return sensitize({
+    index: index,
+    label: 'TodoItemInput'
+  })(todoItemInput(index));
+};
 
 TodoItem = function(todoProps, index) {
   var className, completed, editText, editing, title;
@@ -37,7 +46,7 @@ TodoItem = function(todoProps, index) {
     editing: editing
   });
   return li({
-    key: "todo-item-" + index,
+    key: "todo-item-" + title,
     className: className
   }, div({
     className: 'view'
@@ -50,9 +59,10 @@ TodoItem = function(todoProps, index) {
   }, title), destroyButton(index)({
     className: 'destroy',
     onClick: true
-  })), todoItemInput(index)({
+  })), TodoItemInput(index)({
     className: 'edit',
-    value: editText,
+    key: 'todo-item-input' + index,
+    defaultValue: editText,
     onBlur: true,
     onChange: true,
     onKeyDown: true

@@ -1,25 +1,29 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
+var $router_hyphen_events, Controller, Pando, TERMINUS, activateAll, active, addTodo, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getProperty, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
-connect = Controller.connect, getDispatcher = Controller.getDispatcher;
+connect = Controller.connect, getDispatcher = Controller.getDispatcher, getProperty = Controller.getProperty;
 
-filtering = Pando.filtering, mapping = Pando.mapping;
+checkValue = Pando.checkValue, filtering = Pando.filtering, mapping = Pando.mapping;
 
 TERMINUS = 'terminus';
 
-log = function(label) {
-  return function(event) {
-    return console.log(label, event);
+$router_hyphen_events = getDispatcher('$router-events', true);
+
+setModeTo = function(mode) {
+  return function() {
+    return $router_hyphen_events.dispatch(mode);
   };
 };
 
-logSubscribe = function(label) {
-  return getDispatcher(label).subscribe(log(label));
-};
+router = Router({
+  '/': setModeTo('all'),
+  '/active': setModeTo('active'),
+  '/completed': setModeTo('completed')
+});
 
-['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$edit-blurs', '$edit-focuses', '$edit-keydowns', '$todo-label-doubleclicks'].forEach(logSubscribe);
+router.init('/');
 
 activateAll = function(appState) {
   var todos;
@@ -32,6 +36,9 @@ activateAll = function(appState) {
 
 addTodo = function(title) {
   return function(appState) {
+    if (!title) {
+      return appState;
+    }
     appState.todos.push(createTodo(title));
     appState.activeCount += 1;
     appState.count += 1;
@@ -47,7 +54,7 @@ completeAll = function(appState) {
 };
 
 continueEditingTodo = function(todo, text) {
-  return todo.editText = text;
+  return todo.title = text;
 };
 
 continueEditingAppState = function(props) {
@@ -65,7 +72,7 @@ createTodo = function(title) {
   return {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: title
   };
 };
@@ -92,9 +99,12 @@ endEditing = function(capsule) {
     var todo;
     todo = appState.todos[index];
     todo.editing = false;
-    todo.title = todo.editText;
-    todo.editText = '';
-    return appState;
+    todo.title = getTitle().trim();
+    if (todo.title) {
+      return appState;
+    } else {
+      return removeTodo(index)(appState);
+    }
   };
 };
 
@@ -123,6 +133,18 @@ extractNewTodo = function(capsule) {
   return addTodo(value);
 };
 
+_ref1 = (function() {
+  var getTitle, storeTitle, _title;
+  _title = null;
+  getTitle = function() {
+    return _title;
+  };
+  storeTitle = function(title) {
+    return _title = title;
+  };
+  return [getTitle, storeTitle];
+})(), getTitle = _ref1[0], storeTitle = _ref1[1];
+
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
@@ -141,6 +163,10 @@ removeTodo = function(index) {
     appState.count -= 1;
     return appState;
   };
+};
+
+storeTitleForIndex = function(appState, capsule) {
+  return storeTitle(appState.todos[capsule.index].title);
 };
 
 toggleAllTodos = function(appState) {
@@ -207,22 +233,8 @@ connect('$toggle-clicks')(TERMINUS)(function() {
   });
 });
 
-connect('$active-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('active');
-  });
-});
-
-connect('$all-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('all');
-  });
-});
-
-connect('$completed-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('completed');
-  });
+connect('$router-events')(TERMINUS)(function() {
+  return mapping(updateMode);
 });
 
 connect('$toggle-all-clicks')(TERMINUS)(function() {
@@ -249,22 +261,32 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   });
 });
 
+connect('$todo-label-doubleclick')('index')(function() {
+  return mapping(extractIndex);
+});
+
 connect('$todo-label-doubleclicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
     return editAppState(extractIndex(capsule));
   });
 });
 
-connect('todo-in-edit')(TERMINUS)(function() {
-  return mapping((function(__i) {
-    return continueEditingAppState(extractIndexAndValue(__i));
-  }));
+getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
+  return checkValue(storeTitleForIndex)(getProperty('app-state'), capsule);
+});
+
+getDispatcher('todo-in-edit').subscribe(function(capsule) {
+  return storeTitle(capsule.event.target.value);
 });
 
 connect('$edit-keydowns')(TERMINUS)(function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(endEditing)(__i));
   };
+});
+
+connect('$edit-blurs')(TERMINUS)(function() {
+  return mapping(endEditing);
 });
 
 module.exports = null;
@@ -290,7 +312,7 @@ preventDefault = {
 
 todoItemInput = 'todo-item-input';
 
-module.exports = [['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$new-todo-keydowns', 'new-todo-input'], ['$edit-blurs', todoItemInput, onBlur], ['todo-in-edit', todoItemInput, onChange], ['$edit-keydowns', todoItemInput, onKeyDown], ['$active-todos-clicks', 'ActiveTodos', preventDefault], ['$all-todos-clicks', 'AllTodos', preventDefault], ['$completed-todos-clicks', 'CompletedTodos', preventDefault]];
+module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$new-todo-keydowns', 'new-todo-input'], ['$edit-blurs', todoItemInput, onBlur], ['todo-in-edit', todoItemInput, onChange], ['$edit-keydowns', todoItemInput, onKeyDown], ['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$completed-todos-clicks', 'CompletedTodos']];
 
 },{}],3:[function(require,module,exports){
 var activeCount, count, mode, todos;
@@ -299,17 +321,17 @@ todos = [
   {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'think'
   }, {
     completed: true,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'ponder'
   }, {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: 'reflect'
   }
 ];
@@ -570,7 +592,7 @@ getFilterOption = function(_arg) {
   };
 };
 
-fields = [['ActiveTodos', 'active', 'Active ', 'active'], ['AllTodos', '', 'All ', 'all'], ['CompletedTodos', 'completed', 'Completed', 'completed']];
+fields = [['ActiveTodos', '#/active', 'Active ', 'active'], ['AllTodos', '#/', 'All ', 'all'], ['CompletedTodos', '#/completed', 'Completed', 'completed']];
 
 _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[1], completedFilter = _ref2[2];
 
@@ -605,17 +627,19 @@ AppHeader = function() {
 module.exports = AppHeader;
 
 },{"../../vendor/reactive-aspen":11}],10:[function(require,module,exports){
-var $button, $checkbox, $label, $text, Bridge, DOM, React, TodoItem, addons, classSet, completionToggle, destroyButton, div, fields, includeIndex, indexifyAdapter, li, todoItemInput, todoItemLabel, _ref, _ref1, _ref2;
+var $button, $checkbox, $label, $text, Bridge, DOM, React, TodoItem, TodoItemInput, adapters, addons, classSet, completionToggle, destroyButton, div, fields, includeIndex, indexifyAdapter, li, sensitize, todoItemInput, todoItemLabel, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+
+adapters = Bridge.adapters, sensitize = Bridge.sensitize;
+
+$button = adapters.$button, $checkbox = adapters.$checkbox, $label = adapters.$label, $text = adapters.$text;
 
 addons = React.addons, DOM = React.DOM;
 
 classSet = addons.classSet;
 
 div = DOM.div, li = DOM.li;
-
-_ref1 = Bridge.adapters, $button = _ref1.$button, $checkbox = _ref1.$checkbox, $label = _ref1.$label, $text = _ref1.$text;
 
 fields = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$text, 'todo-item-input'], [$label, 'todo-item-label']];
 
@@ -634,7 +658,14 @@ indexifyAdapter = function(_arg) {
   };
 };
 
-_ref2 = fields.map(indexifyAdapter), completionToggle = _ref2[0], destroyButton = _ref2[1], todoItemInput = _ref2[2], todoItemLabel = _ref2[3];
+_ref1 = fields.map(indexifyAdapter), completionToggle = _ref1[0], destroyButton = _ref1[1], todoItemInput = _ref1[2], todoItemLabel = _ref1[3];
+
+TodoItemInput = function(index) {
+  return sensitize({
+    index: index,
+    label: 'TodoItemInput'
+  })(todoItemInput(index));
+};
 
 TodoItem = function(todoProps, index) {
   var className, completed, editText, editing, title;
@@ -644,7 +675,7 @@ TodoItem = function(todoProps, index) {
     editing: editing
   });
   return li({
-    key: "todo-item-" + index,
+    key: "todo-item-" + title,
     className: className
   }, div({
     className: 'view'
@@ -657,9 +688,10 @@ TodoItem = function(todoProps, index) {
   }, title), destroyButton(index)({
     className: 'destroy',
     onClick: true
-  })), todoItemInput(index)({
+  })), TodoItemInput(index)({
     className: 'edit',
-    value: editText,
+    key: 'todo-item-input' + index,
+    defaultValue: editText,
     onBlur: true,
     onChange: true,
     onKeyDown: true
@@ -786,7 +818,7 @@ reactIntakeBus.subscribe(actAsSwitchboard);
 
 module.exports = connectPortsToBuses;
 
-},{"../utilities.js":23,"./channel-registrar.js":1,"./port-registrar.js":5,"./port-utilities.js":6,"./react-intake.js":8}],3:[function(_dereq_,module,exports){
+},{"../utilities.js":25,"./channel-registrar.js":1,"./port-registrar.js":5,"./port-utilities.js":6,"./react-intake.js":8}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
 connectPortsToBuses = _dereq_('./connectPortsToBuses.js');
@@ -880,7 +912,7 @@ onValue preventDefault bus
 onValue blur bus
  */
 
-},{"../pando.js":15,"../utilities.js":23}],6:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../utilities.js":25}],6:[function(_dereq_,module,exports){
 var blur, preventDefault;
 
 blur = function(capsule) {
@@ -1021,7 +1053,7 @@ module.exports = {
   push: push
 };
 
-},{"../pando.js":15,"../utilities.js":23,"./channel-registrar.js":10}],10:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../utilities.js":25,"./channel-registrar.js":10}],10:[function(_dereq_,module,exports){
 var createEventStreamBus, createNonInitPropertyBus, deleteBus, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, isArray, matchesExistingDispatcher_question_, plug, plugs, register, _ref, _ref1, _register,
   __hasProp = {}.hasOwnProperty;
 
@@ -1108,7 +1140,7 @@ module.exports = {
   getProperty: getProperty
 };
 
-},{"../pando.js":15,"../utilities.js":23}],11:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../utilities.js":25}],11:[function(_dereq_,module,exports){
 var connect, getDispatcher, getEventStream, getProperty, interpret, linkTogetherMVC, plug, plugIntoTerminus, push, _ref, _ref1;
 
 _ref = _dereq_('./channel-connectors.js'), connect = _ref.connect, interpret = _ref.interpret, plug = _ref.plug, push = _ref.push;
@@ -1132,25 +1164,30 @@ module.exports = {
 };
 
 },{"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12,"./terminus.js":13}],12:[function(_dereq_,module,exports){
-var appStateChannelName, connectViewToController, linkTogetherMVC, push;
+var appStateChannelName, connectViewToController, isFunction, linkTogetherMVC, push;
 
 connectViewToController = _dereq_('../adapter/pando-adapter.js');
+
+isFunction = _dereq_('../utilities.js').isFunction;
 
 push = _dereq_('./channel-connectors.js').push;
 
 appStateChannelName = 'app-state';
 
-linkTogetherMVC = function(topViewFactory, appState) {
+linkTogetherMVC = function(topViewFactory, appState, manage) {
   var descriptor;
   push(appStateChannelName)(appState);
   descriptor = topViewFactory(appState);
   connectViewToController();
+  if (isFunction(manage)) {
+    manage();
+  }
   return descriptor;
 };
 
 module.exports = linkTogetherMVC;
 
-},{"../adapter/pando-adapter.js":4,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
+},{"../adapter/pando-adapter.js":4,"../utilities.js":25,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
 var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, render, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
 
 connect = _dereq_('./channel-connectors.js').connect;
@@ -1199,7 +1236,7 @@ module.exports = {
   plugIntoTerminus: plugIntoTerminus
 };
 
-},{"../pando.js":15,"../react-module/exports.js":16,"../utilities.js":23,"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12}],14:[function(_dereq_,module,exports){
+},{"../pando.js":15,"../react-module/exports.js":16,"../utilities.js":25,"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12}],14:[function(_dereq_,module,exports){
 var Adapter, Bridge, Controller, Pando, React, _ref;
 
 Adapter = _dereq_('./adapter/exports.js');
@@ -2733,25 +2770,18 @@ if ((typeof define !== "undefined" && define !== null) && (define['amd'] != null
 }
 
 },{}],16:[function(_dereq_,module,exports){
-var Bridge, React, adapters, connectTo;
+var Bridge, React;
 
-adapters = _dereq_('./react-bridge/adapters.js');
-
-connectTo = _dereq_('./react-bridge/factory-injector.js').connectTo;
+Bridge = _dereq_('./react-bridge/exports.js');
 
 React = _dereq_('./react-bridge/react.js');
-
-Bridge = {
-  adapters: adapters,
-  connectTo: connectTo
-};
 
 module.exports = {
   Bridge: Bridge,
   React: React
 };
 
-},{"./react-bridge/adapters.js":18,"./react-bridge/factory-injector.js":19,"./react-bridge/react.js":20}],17:[function(_dereq_,module,exports){
+},{"./react-bridge/exports.js":19,"./react-bridge/react.js":21}],17:[function(_dereq_,module,exports){
 var getAdapter, getInjectedFactory, getTemplate, handlerRegex, handler_question_, inject, isFunction,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -2811,7 +2841,7 @@ module.exports = {
   getAdapter: getAdapter
 };
 
-},{"./factory-injector.js":19,"./utilities.js":21}],18:[function(_dereq_,module,exports){
+},{"./factory-injector.js":20,"./utilities.js":23}],18:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, a, button, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, form, getAdapter, getInjectedFactory, input, isObject, isString, label, onChange, onClick, onSubmit, records, shallowCopy, _ref, _ref1;
 
 _ref = _dereq_('./react.js').DOM, a = _ref.a, button = _ref.button, form = _ref.form, input = _ref.input, label = _ref.label;
@@ -2917,7 +2947,22 @@ records = [[onClick, ensureProps, button, BUTTON], [onClick, ensureCheckboxProps
 
 module.exports = collectAdapters({}, records);
 
-},{"./adapter-utilities.js":17,"./factory-injector.js":19,"./react.js":20,"./utilities.js":21}],19:[function(_dereq_,module,exports){
+},{"./adapter-utilities.js":17,"./factory-injector.js":20,"./react.js":21,"./utilities.js":23}],19:[function(_dereq_,module,exports){
+var adapters, connectTo, sensitize;
+
+adapters = _dereq_('./adapters.js');
+
+connectTo = _dereq_('./factory-injector.js').connectTo;
+
+sensitize = _dereq_('./sensitive-component.js');
+
+module.exports = {
+  adapters: adapters,
+  connectTo: connectTo,
+  sensitize: sensitize
+};
+
+},{"./adapters.js":18,"./factory-injector.js":20,"./sensitive-component.js":22}],20:[function(_dereq_,module,exports){
 var connectTo, createInjectable, embedEventInside, exportReactEvents, getCapsule, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref, _ref1;
 
 _ref = _dereq_('./utilities.js'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
@@ -3018,10 +3063,80 @@ module.exports = {
   getInjectedFactory: getInjectedFactory
 };
 
-},{"./utilities.js":21}],20:[function(_dereq_,module,exports){
+},{"./utilities.js":23}],21:[function(_dereq_,module,exports){
 module.exports = _dereq_('../react-with-addons.js');
 
-},{"../react-with-addons.js":22}],21:[function(_dereq_,module,exports){
+},{"../react-with-addons.js":24}],22:[function(_dereq_,module,exports){
+var createClass, createFactory, encapsulateInfo, getInjectedFactory, isObject, sensitiveRenderMixin, sensitize, template, _ref,
+  __slice = [].slice;
+
+getInjectedFactory = _dereq_('./factory-injector.js').getInjectedFactory;
+
+_ref = _dereq_('../react-with-addons.js'), createClass = _ref.createClass, createFactory = _ref.createFactory;
+
+isObject = _dereq_('./utilities.js').isObject;
+
+encapsulateInfo = function(state) {
+  return {
+    component: this,
+    state: state
+  };
+};
+
+sensitiveRenderMixin = function(getHandlerForType) {
+  var trigger;
+  trigger = function(state) {
+    return getHandlerForType('onStateChange')(encapsulateInfo(state));
+  };
+  return {
+    componentDidMount: function() {
+      return trigger('didMount');
+    },
+    componentDidUpdate: function() {
+      return trigger('didUpdate');
+    },
+    componentWillMount: function() {
+      return trigger('willMount');
+    },
+    componentWillReceiveProps: function() {
+      return trigger('willReceiveProps');
+    },
+    componentWillUnmount: function() {
+      return trigger('willUnmount');
+    },
+    componentWillUpdate: function() {
+      return trigger('willUpdate');
+    }
+  };
+};
+
+template = function(getHandlerForType) {
+  return function(factory) {
+    return function() {
+      var args, key, properties;
+      key = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+      if (isObject(key)) {
+        args.unshift(key);
+        key = args[0].key;
+      }
+      console.log('sensitive-component template key', key);
+      properties = {
+        key: key,
+        mixins: [sensitiveRenderMixin(getHandlerForType)],
+        render: function() {
+          return factory.apply(null, args);
+        }
+      };
+      return createFactory(createClass(properties))('TEST-ARGUMENT');
+    };
+  };
+};
+
+sensitize = getInjectedFactory(template, 'sensitive');
+
+module.exports = sensitize;
+
+},{"../react-with-addons.js":24,"./factory-injector.js":20,"./utilities.js":23}],23:[function(_dereq_,module,exports){
 var ObjProto, applyUnsplat, hasType_question_, isFunction, isObject, isString, memoize, shallowCopy, shallowFlatten, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -3097,7 +3212,7 @@ module.exports = {
   shallowCopy: shallowCopy
 };
 
-},{}],22:[function(_dereq_,module,exports){
+},{}],24:[function(_dereq_,module,exports){
 (function (global){/**
  * React (with addons) v0.12.0
  */
@@ -3172,6 +3287,7 @@ var focusNode = _dereq_("./focusNode");
 
 var AutoFocusMixin = {
   componentDidMount: function() {
+    //console.log('AutoFocusMixin_componentDidMount autoFocus', this.props.autoFocus);
     if (this.props.autoFocus) {
       focusNode(this.getDOMNode());
     }
@@ -11467,6 +11583,14 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
 
   getInitialState: function() {
     var defaultValue = this.props.defaultValue;
+    /*
+    console.log(
+        'ReactDOMInput_getInitialState',
+        'autoFocus', this.props.autoFocus,
+        'defaultValue', this.props.defaultValue,
+        'props', assign({}, this.props)
+    );
+    */
     return {
       initialChecked: this.props.defaultChecked || false,
       initialValue: defaultValue != null ? defaultValue : null
@@ -11481,12 +11605,23 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
     props.defaultValue = null;
 
     var value = LinkedValueUtils.getValue(this);
+    /*
+    console.log(
+      'ReactDOMInput_render',
+      'initialValue', this.state.initialValue,
+      'defaultValue', this.props.defaultValue,
+      'autoFocus', this.props.autoFocus,
+      'state', assign({}, this.state),
+      'props', assign({}, this.props)
+    );
+    */
     props.value = value != null ? value : this.state.initialValue;
 
     var checked = LinkedValueUtils.getChecked(this);
     props.checked = checked != null ? checked : this.state.initialChecked;
 
     props.onChange = this._handleChange;
+    //console.log('... edited props', assign({}, props));
 
     return input(props, this.props.children);
   },
@@ -11521,6 +11656,7 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
   },
 
   _handleChange: function(event) {
+    //console.log('ReactDOMInput__handleChange event', assign({}, event));
     var returnValue;
     var onChange = LinkedValueUtils.getOnChange(this);
     if (onChange) {
@@ -12985,6 +13121,7 @@ ReactElement.createElement = function(type, config, children) {
     // TODO: Change this back to `config.key === undefined`
     key = config.key == null ? null : '' + config.key;
     // Remaining properties are added to a new props object
+    //if (type === 'input') console.log ('config', config);
     for (propName in config) {
       if (config.hasOwnProperty(propName) &&
           !RESERVED_PROPS.hasOwnProperty(propName)) {
@@ -22898,9 +23035,10 @@ if ("production" !== "development") {
 module.exports = warning;
 
 },{"./emptyFunction":121}]},{},[1])(1)
-});}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],23:[function(_dereq_,module,exports){
-var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
+});
+}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{}],25:[function(_dereq_,module,exports){
+var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isFunction, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
   __hasProp = {}.hasOwnProperty,
   __slice = [].slice;
 
@@ -22961,7 +23099,7 @@ hasType_question_ = function(type) {
   };
 };
 
-_ref = ['Object', 'String'].map(hasType_question_), isObject = _ref[0], isString = _ref[1];
+_ref = ['Function', 'Object', 'String'].map(hasType_question_), isFunction = _ref[0], isObject = _ref[1], isString = _ref[2];
 
 processKeypath = function(keypath) {
   return keypathRegex.exec(keypath).slice(1, 3);
@@ -23017,6 +23155,7 @@ module.exports = {
   getComponent: getComponent,
   identity: identity,
   isArray: isArray,
+  isFunction: isFunction,
   isObject: isObject,
   isString: isString,
   shallowCopy: shallowCopy,

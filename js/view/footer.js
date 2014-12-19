@@ -63,7 +63,7 @@ getFilterOption = function(_arg) {
   };
 };
 
-fields = [['ActiveTodos', 'active', 'Active ', 'active'], ['AllTodos', '', 'All ', 'all'], ['CompletedTodos', 'completed', 'Completed', 'completed']];
+fields = [['ActiveTodos', '#/active', 'Active ', 'active'], ['AllTodos', '#/', 'All ', 'all'], ['CompletedTodos', '#/completed', 'Completed', 'completed']];
 
 _ref2 = fields.map(getFilterOption), activeFilter = _ref2[0], allFilter = _ref2[1], completedFilter = _ref2[2];
 

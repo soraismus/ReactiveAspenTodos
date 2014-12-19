@@ -1,24 +1,28 @@
-var Controller, Pando, TERMINUS, activateAll, active, addTodo, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTodos, log, logSubscribe, mapping, removeCompleted, removeTodo, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref;
+var $router_hyphen_events, Controller, Pando, TERMINUS, activateAll, active, addTodo, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getProperty, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
-connect = Controller.connect, getDispatcher = Controller.getDispatcher;
+connect = Controller.connect, getDispatcher = Controller.getDispatcher, getProperty = Controller.getProperty;
 
-filtering = Pando.filtering, mapping = Pando.mapping;
+checkValue = Pando.checkValue, filtering = Pando.filtering, mapping = Pando.mapping;
 
 TERMINUS = 'terminus';
 
-log = function(label) {
-  return function(event) {
-    return console.log(label, event);
+$router_hyphen_events = getDispatcher('$router-events', true);
+
+setModeTo = function(mode) {
+  return function() {
+    return $router_hyphen_events.dispatch(mode);
   };
 };
 
-logSubscribe = function(label) {
-  return getDispatcher(label).subscribe(log(label));
-};
+router = Router({
+  '/': setModeTo('all'),
+  '/active': setModeTo('active'),
+  '/completed': setModeTo('completed')
+});
 
-['$toggle-all-clicks', '$new-todo-keydowns', '$toggle-clicks', '$destroy-clicks', '$clear-clicks', '$active-todos-clicks', '$all-todos-clicks', '$completed-todos-clicks', 'todo-in-edit', '$edit-blurs', '$edit-focuses', '$edit-keydowns', '$todo-label-doubleclicks'].forEach(logSubscribe);
+router.init('/');
 
 activateAll = function(appState) {
   var todos;
@@ -31,6 +35,9 @@ activateAll = function(appState) {
 
 addTodo = function(title) {
   return function(appState) {
+    if (!title) {
+      return appState;
+    }
     appState.todos.push(createTodo(title));
     appState.activeCount += 1;
     appState.count += 1;
@@ -46,7 +53,7 @@ completeAll = function(appState) {
 };
 
 continueEditingTodo = function(todo, text) {
-  return todo.editText = text;
+  return todo.title = text;
 };
 
 continueEditingAppState = function(props) {
@@ -64,7 +71,7 @@ createTodo = function(title) {
   return {
     completed: false,
     editing: false,
-    editText: '',
+    editText: null,
     title: title
   };
 };
@@ -91,9 +98,12 @@ endEditing = function(capsule) {
     var todo;
     todo = appState.todos[index];
     todo.editing = false;
-    todo.title = todo.editText;
-    todo.editText = '';
-    return appState;
+    todo.title = getTitle().trim();
+    if (todo.title) {
+      return appState;
+    } else {
+      return removeTodo(index)(appState);
+    }
   };
 };
 
@@ -122,6 +132,18 @@ extractNewTodo = function(capsule) {
   return addTodo(value);
 };
 
+_ref1 = (function() {
+  var getTitle, storeTitle, _title;
+  _title = null;
+  getTitle = function() {
+    return _title;
+  };
+  storeTitle = function(title) {
+    return _title = title;
+  };
+  return [getTitle, storeTitle];
+})(), getTitle = _ref1[0], storeTitle = _ref1[1];
+
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
@@ -140,6 +162,10 @@ removeTodo = function(index) {
     appState.count -= 1;
     return appState;
   };
+};
+
+storeTitleForIndex = function(appState, capsule) {
+  return storeTitle(appState.todos[capsule.index].title);
 };
 
 toggleAllTodos = function(appState) {
@@ -206,22 +232,8 @@ connect('$toggle-clicks')(TERMINUS)(function() {
   });
 });
 
-connect('$active-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('active');
-  });
-});
-
-connect('$all-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('all');
-  });
-});
-
-connect('$completed-todos-clicks')(TERMINUS)(function() {
-  return mapping(function() {
-    return updateMode('completed');
-  });
+connect('$router-events')(TERMINUS)(function() {
+  return mapping(updateMode);
 });
 
 connect('$toggle-all-clicks')(TERMINUS)(function() {
@@ -248,22 +260,32 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   });
 });
 
+connect('$todo-label-doubleclick')('index')(function() {
+  return mapping(extractIndex);
+});
+
 connect('$todo-label-doubleclicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
     return editAppState(extractIndex(capsule));
   });
 });
 
-connect('todo-in-edit')(TERMINUS)(function() {
-  return mapping((function(__i) {
-    return continueEditingAppState(extractIndexAndValue(__i));
-  }));
+getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
+  return checkValue(storeTitleForIndex)(getProperty('app-state'), capsule);
+});
+
+getDispatcher('todo-in-edit').subscribe(function(capsule) {
+  return storeTitle(capsule.event.target.value);
 });
 
 connect('$edit-keydowns')(TERMINUS)(function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(endEditing)(__i));
   };
+});
+
+connect('$edit-blurs')(TERMINUS)(function() {
+  return mapping(endEditing);
 });
 
 module.exports = null;
