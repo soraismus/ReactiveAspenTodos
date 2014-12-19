@@ -6,6 +6,7 @@ preventDefault = { preventDefault: true }
 todoItemInput = 'todo-item-input'
 
 module.exports = [
+  ['$todo-item-input-events',  'TodoItemInput'      ]
   ['$toggle-all-clicks',       'toggle-all-checkbox']
   ['$toggle-clicks',           'completion-toggle'  ]
   ['$destroy-clicks',          'destroy-button'     ]
@@ -17,7 +18,7 @@ module.exports = [
   ['todo-in-edit',             todoItemInput,    onChange ]
   ['$edit-keydowns',           todoItemInput,    onKeyDown]
 
-  ['$active-todos-clicks',     'ActiveTodos',    preventDefault]
-  ['$all-todos-clicks',        'AllTodos',       preventDefault]
-  ['$completed-todos-clicks',  'CompletedTodos', preventDefault]
+  ['$active-todos-clicks',     'ActiveTodos'   ]
+  ['$all-todos-clicks',        'AllTodos'      ]
+  ['$completed-todos-clicks',  'CompletedTodos']
 ]
