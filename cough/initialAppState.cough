@@ -4,19 +4,22 @@ focus       = true
 mode        = 'all'
 
 todos = [
-  { completed : false
+  {
+    completed : false
     editing   : false
     editText  : null
     focus     : false
     title     : 'think'
   }
-  { completed : true
+  {
+    completed : true
     editing   : false
     editText  : null
     focus     : false
     title     : 'ponder'
   }
-  { completed : false
+  {
+    completed : false
     editing   : false
     editText  : null
     focus     : false
