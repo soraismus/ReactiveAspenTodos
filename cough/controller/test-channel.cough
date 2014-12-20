@@ -47,18 +47,22 @@ createTodo = \title ->
 editTodo = \todo ->
   todo.editing  = true
   todo.editText = todo.title
+  todo.focus    = true
   todo
 
 editAppState = \index \appState ->
   { todos }    = appState
-  todos[index] = editTodo todos[index]
+  appState.focus = false
+  todos[index]   = editTodo todos[index]
   appState
 
 endEditing = \capsule ->
   { index } = capsule
   \appState ->
+    appState.focus = true
     todo = appState.todos[index]
     todo.editing = false
+    todo.focus   = false
     todo.title   = getTitle().trim()
     if todo.title then appState else removeTodo index appState
 
@@ -161,9 +165,6 @@ connect '$destroy-clicks' TERMINUS ->
   mapping (\capsule -> removeTodo (extractIndex capsule))
 
 # -------------------------------------------------------------------------
-connect '$todo-label-doubleclick' 'index' ->
-  mapping extractIndex
-  
 connect '$todo-label-doubleclicks' TERMINUS ->
   mapping (\capsule -> editAppState (extractIndex capsule))
 
