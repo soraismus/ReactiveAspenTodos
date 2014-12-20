@@ -1,3 +1,5 @@
+{ store } = require './utilities'
+
 activeCount = 2
 count       = 3
 focus       = true
@@ -27,4 +29,12 @@ todos = [
   }
 ]
 
-module.exports = { activeCount, count, focus, mode, todos }
+empty? = \array -> array.length == 0
+
+cachedState     = store 'reactive-aspen-todos'
+defaultState    = { activeCount, count, focus, mode, todos }
+initialAppState = if empty? cachedState then defaultState else cachedState
+
+console.log ('Store', cachedState, 'default', defaultState)
+
+module.exports  = initialAppState
