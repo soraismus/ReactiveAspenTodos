@@ -80,6 +80,7 @@ createTodo = function(title) {
 editTodo = function(todo) {
   todo.editing = true;
   todo.editText = todo.title;
+  todo.focus = true;
   return todo;
 };
 
@@ -87,6 +88,7 @@ editAppState = function(index) {
   return function(appState) {
     var todos;
     todos = appState.todos;
+    appState.focus = false;
     todos[index] = editTodo(todos[index]);
     return appState;
   };
@@ -97,8 +99,10 @@ endEditing = function(capsule) {
   index = capsule.index;
   return function(appState) {
     var todo;
+    appState.focus = true;
     todo = appState.todos[index];
     todo.editing = false;
+    todo.focus = false;
     todo.title = getTitle().trim();
     if (todo.title) {
       return appState;
@@ -259,10 +263,6 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
     return removeTodo(extractIndex(capsule));
   });
-});
-
-connect('$todo-label-doubleclick')('index')(function() {
-  return mapping(extractIndex);
 });
 
 connect('$todo-label-doubleclicks')(TERMINUS)(function() {
@@ -469,7 +469,7 @@ AppFooter = require('./footer');
 AppHeader = require('./header');
 
 TodoApp = function(appState) {
-  return div(null, AppHeader(), AppBody(appState), AppFooter(appState));
+  return div(null, AppHeader(appState.focus), AppBody(appState), AppFooter(appState));
 };
 
 module.exports = TodoApp;
@@ -613,14 +613,14 @@ todosCaption = function() {
 
 todoInput = $text('new-todo-input');
 
-AppHeader = function() {
+AppHeader = function(focus) {
   return header({
     id: 'header'
   }, todosCaption(), todoInput({
     id: 'new-todo',
     placeholder: 'What needs to be done?',
     onKeyDown: true,
-    autoFocus: true
+    autoFocus: focus
   }));
 };
 
@@ -668,8 +668,8 @@ TodoItemInput = function(index) {
 };
 
 TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, title;
-  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, title = todoProps.title;
+  var className, completed, editText, editing, focus, title;
+  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
@@ -694,7 +694,8 @@ TodoItem = function(todoProps, index) {
     defaultValue: editText,
     onBlur: true,
     onChange: true,
-    onKeyDown: true
+    onKeyDown: true,
+    autoFocus: focus
   }));
 };
 
@@ -21065,6 +21066,7 @@ function focusNode(node) {
   // reasons that are too expensive and fragile to test.
   try {
     node.focus();
+    node.setSelectionRange(node.value.length, node.value.length);
   } catch(e) {
   }
 }

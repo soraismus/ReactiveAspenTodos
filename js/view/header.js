@@ -12,14 +12,14 @@ todosCaption = function() {
 
 todoInput = $text('new-todo-input');
 
-AppHeader = function() {
+AppHeader = function(focus) {
   return header({
     id: 'header'
   }, todosCaption(), todoInput({
     id: 'new-todo',
     placeholder: 'What needs to be done?',
     onKeyDown: true,
-    autoFocus: true
+    autoFocus: focus
   }));
 };
 

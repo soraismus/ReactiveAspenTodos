@@ -39,8 +39,8 @@ TodoItemInput = function(index) {
 };
 
 TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, title;
-  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, title = todoProps.title;
+  var className, completed, editText, editing, focus, title;
+  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
@@ -65,7 +65,8 @@ TodoItem = function(todoProps, index) {
     defaultValue: editText,
     onBlur: true,
     onChange: true,
-    onKeyDown: true
+    onKeyDown: true,
+    autoFocus: focus
   }));
 };
 

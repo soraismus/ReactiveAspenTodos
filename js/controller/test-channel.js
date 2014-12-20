@@ -79,6 +79,7 @@ createTodo = function(title) {
 editTodo = function(todo) {
   todo.editing = true;
   todo.editText = todo.title;
+  todo.focus = true;
   return todo;
 };
 
@@ -86,6 +87,7 @@ editAppState = function(index) {
   return function(appState) {
     var todos;
     todos = appState.todos;
+    appState.focus = false;
     todos[index] = editTodo(todos[index]);
     return appState;
   };
@@ -96,8 +98,10 @@ endEditing = function(capsule) {
   index = capsule.index;
   return function(appState) {
     var todo;
+    appState.focus = true;
     todo = appState.todos[index];
     todo.editing = false;
+    todo.focus = false;
     todo.title = getTitle().trim();
     if (todo.title) {
       return appState;
@@ -258,10 +262,6 @@ connect('$destroy-clicks')(TERMINUS)(function() {
   return mapping(function(capsule) {
     return removeTodo(extractIndex(capsule));
   });
-});
-
-connect('$todo-label-doubleclick')('index')(function() {
-  return mapping(extractIndex);
 });
 
 connect('$todo-label-doubleclicks')(TERMINUS)(function() {
