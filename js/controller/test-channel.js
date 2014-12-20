@@ -1,12 +1,21 @@
-var $router_hyphen_events, Controller, Pando, TERMINUS, activateAll, active, addTodo, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getProperty, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
+var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
-connect = Controller.connect, getDispatcher = Controller.getDispatcher, getProperty = Controller.getProperty;
+connect = Controller.connect, getDispatcher = Controller.getDispatcher;
 
 checkValue = Pando.checkValue, filtering = Pando.filtering, mapping = Pando.mapping;
 
+store = require('../utilities').store;
+
+NAMESPACE = 'reactive-aspen-todos';
+
 TERMINUS = 'terminus';
+
+cacheAppData = function(appState) {
+  store(NAMESPACE, appState);
+  return appState;
+};
 
 $router_hyphen_events = getDispatcher('$router-events', true);
 
@@ -41,7 +50,7 @@ addTodo = function(title) {
     appState.todos.push(createTodo(title));
     appState.activeCount += 1;
     appState.count += 1;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -63,7 +72,7 @@ continueEditingAppState = function(props) {
     var todos;
     todos = appState.todos;
     continueEditingTodo(todos[index], value);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -89,7 +98,7 @@ editAppState = function(index) {
     todos = appState.todos;
     appState.focus = false;
     todos[index] = editTodo(todos[index]);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -103,11 +112,8 @@ endEditing = function(capsule) {
     todo.editing = false;
     todo.focus = false;
     todo.title = getTitle().trim();
-    if (todo.title) {
-      return appState;
-    } else {
-      return removeTodo(index)(appState);
-    }
+    result(todo.title ? appState : removeTodo(index)(appState));
+    return cacheAppData(result);
   };
 };
 
@@ -151,7 +157,7 @@ _ref1 = (function() {
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
-  return appState;
+  return cacheAppData(appState);
 };
 
 removeTodo = function(index) {
@@ -164,7 +170,7 @@ removeTodo = function(index) {
       appState.activeCount -= 1;
     }
     appState.count -= 1;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -176,7 +182,7 @@ toggleAllTodos = function(appState) {
   var manage;
   manage = appState.activeCount === 0 ? activateAll : completeAll;
   manage(appState);
-  return appState;
+  return cacheAppData(appState);
 };
 
 toggleTodo = function(index) {
@@ -187,14 +193,14 @@ toggleTodo = function(index) {
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
 transformAppState = function(transform) {
   return function(appState) {
     transform(appState);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -207,7 +213,7 @@ updateCount = function(nbr, completed) {
 updateMode = function(newMode) {
   return function(appState) {
     appState.mode = newMode;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -271,7 +277,7 @@ connect('$todo-label-doubleclicks')(TERMINUS)(function() {
 });
 
 getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
-  return checkValue(storeTitleForIndex)(getProperty('app-state'), capsule);
+  return checkValue(storeTitleForIndex)(getDispatcher('app-state'), capsule);
 });
 
 getDispatcher('todo-in-edit').subscribe(function(capsule) {

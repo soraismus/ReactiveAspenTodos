@@ -1,13 +1,22 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, Controller, Pando, TERMINUS, activateAll, active, addTodo, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getProperty, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
+var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, checkValue, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, updateCount, updateMode, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
-connect = Controller.connect, getDispatcher = Controller.getDispatcher, getProperty = Controller.getProperty;
+connect = Controller.connect, getDispatcher = Controller.getDispatcher;
 
 checkValue = Pando.checkValue, filtering = Pando.filtering, mapping = Pando.mapping;
 
+store = require('../utilities').store;
+
+NAMESPACE = 'reactive-aspen-todos';
+
 TERMINUS = 'terminus';
+
+cacheAppData = function(appState) {
+  store(NAMESPACE, appState);
+  return appState;
+};
 
 $router_hyphen_events = getDispatcher('$router-events', true);
 
@@ -42,7 +51,7 @@ addTodo = function(title) {
     appState.todos.push(createTodo(title));
     appState.activeCount += 1;
     appState.count += 1;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -64,7 +73,7 @@ continueEditingAppState = function(props) {
     var todos;
     todos = appState.todos;
     continueEditingTodo(todos[index], value);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -90,7 +99,7 @@ editAppState = function(index) {
     todos = appState.todos;
     appState.focus = false;
     todos[index] = editTodo(todos[index]);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -104,11 +113,8 @@ endEditing = function(capsule) {
     todo.editing = false;
     todo.focus = false;
     todo.title = getTitle().trim();
-    if (todo.title) {
-      return appState;
-    } else {
-      return removeTodo(index)(appState);
-    }
+    result(todo.title ? appState : removeTodo(index)(appState));
+    return cacheAppData(result);
   };
 };
 
@@ -152,7 +158,7 @@ _ref1 = (function() {
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
-  return appState;
+  return cacheAppData(appState);
 };
 
 removeTodo = function(index) {
@@ -165,7 +171,7 @@ removeTodo = function(index) {
       appState.activeCount -= 1;
     }
     appState.count -= 1;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -177,7 +183,7 @@ toggleAllTodos = function(appState) {
   var manage;
   manage = appState.activeCount === 0 ? activateAll : completeAll;
   manage(appState);
-  return appState;
+  return cacheAppData(appState);
 };
 
 toggleTodo = function(index) {
@@ -188,14 +194,14 @@ toggleTodo = function(index) {
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
 transformAppState = function(transform) {
   return function(appState) {
     transform(appState);
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -208,7 +214,7 @@ updateCount = function(nbr, completed) {
 updateMode = function(newMode) {
   return function(appState) {
     appState.mode = newMode;
-    return appState;
+    return cacheAppData(appState);
   };
 };
 
@@ -272,7 +278,7 @@ connect('$todo-label-doubleclicks')(TERMINUS)(function() {
 });
 
 getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
-  return checkValue(storeTitleForIndex)(getProperty('app-state'), capsule);
+  return checkValue(storeTitleForIndex)(getDispatcher('app-state'), capsule);
 });
 
 getDispatcher('todo-in-edit').subscribe(function(capsule) {
@@ -291,7 +297,7 @@ connect('$edit-blurs')(TERMINUS)(function() {
 
 module.exports = null;
 
-},{"../../vendor/reactive-aspen":11}],2:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":11,"../utilities":5}],2:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -315,7 +321,9 @@ todoItemInput = 'todo-item-input';
 module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$new-todo-keydowns', 'new-todo-input'], ['$edit-blurs', todoItemInput, onBlur], ['todo-in-edit', todoItemInput, onChange], ['$edit-keydowns', todoItemInput, onKeyDown], ['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$completed-todos-clicks', 'CompletedTodos']];
 
 },{}],3:[function(require,module,exports){
-var activeCount, count, focus, mode, todos;
+var activeCount, cachedState, count, defaultState, empty_question_, focus, initialAppState, mode, store, todos;
+
+store = require('./utilities').store;
 
 activeCount = 2;
 
@@ -347,7 +355,13 @@ todos = [
   }
 ];
 
-module.exports = {
+empty_question_ = function(array) {
+  return array.length === 0;
+};
+
+cachedState = store('reactive-aspen-todos');
+
+defaultState = {
   activeCount: activeCount,
   count: count,
   focus: focus,
@@ -355,7 +369,13 @@ module.exports = {
   todos: todos
 };
 
-},{}],4:[function(require,module,exports){
+initialAppState = empty_question_(cachedState) ? defaultState : cachedState;
+
+console.log('Store', cachedState, 'default', defaultState);
+
+module.exports = initialAppState;
+
+},{"./utilities":5}],4:[function(require,module,exports){
 var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, render, topViewFactory, viewImports, _ref;
 
 _ref = require('../vendor/reactive-aspen'), Adapter = _ref.Adapter, Controller = _ref.Controller, React = _ref.React;
