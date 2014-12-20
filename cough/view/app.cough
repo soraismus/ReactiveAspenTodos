@@ -7,7 +7,7 @@ AppHeader = require './header'
 TodoApp = \appState ->
   div (
     null
-    AppHeader ()
+    AppHeader appState.focus
     AppBody appState
     AppFooter appState
   )

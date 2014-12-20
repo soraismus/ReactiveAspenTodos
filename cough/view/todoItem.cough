@@ -25,7 +25,7 @@ TodoItemInput = \index ->
   sensitize { index, label: 'TodoItemInput' } (todoItemInput index)
 
 TodoItem = (todoProps, index) ->
-  { completed, editing, editText, title } = todoProps
+  { completed, editing, editText, focus, title } = todoProps
   className = classSet { completed, editing }
 
   li
@@ -50,5 +50,6 @@ TodoItem = (todoProps, index) ->
       onBlur       : true
       onChange     : true
       onKeyDown    : true
+      autoFocus    : focus
 
 module.exports = TodoItem
