@@ -98,7 +98,7 @@ editAppState = function(index) {
     todos = appState.todos;
     appState.focus = false;
     todos[index] = editTodo(todos[index]);
-    return cacheAppData(appState);
+    return appState;
   };
 };
 
@@ -106,13 +106,13 @@ endEditing = function(capsule) {
   var index;
   index = capsule.index;
   return function(appState) {
-    var todo;
+    var result, todo;
     appState.focus = true;
     todo = appState.todos[index];
     todo.editing = false;
     todo.focus = false;
     todo.title = getTitle().trim();
-    result(todo.title ? appState : removeTodo(index)(appState));
+    result = todo.title ? appState : removeTodo(index)(appState);
     return cacheAppData(result);
   };
 };

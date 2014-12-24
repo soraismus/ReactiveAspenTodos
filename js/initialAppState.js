@@ -48,6 +48,4 @@ defaultState = {
 
 initialAppState = empty_question_(cachedState) ? defaultState : cachedState;
 
-console.log('Store', cachedState, 'default', defaultState);
-
 module.exports = initialAppState;

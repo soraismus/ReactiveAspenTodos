@@ -99,7 +99,7 @@ editAppState = function(index) {
     todos = appState.todos;
     appState.focus = false;
     todos[index] = editTodo(todos[index]);
-    return cacheAppData(appState);
+    return appState;
   };
 };
 
@@ -107,13 +107,13 @@ endEditing = function(capsule) {
   var index;
   index = capsule.index;
   return function(appState) {
-    var todo;
+    var result, todo;
     appState.focus = true;
     todo = appState.todos[index];
     todo.editing = false;
     todo.focus = false;
     todo.title = getTitle().trim();
-    result(todo.title ? appState : removeTodo(index)(appState));
+    result = todo.title ? appState : removeTodo(index)(appState);
     return cacheAppData(result);
   };
 };
@@ -371,14 +371,12 @@ defaultState = {
 
 initialAppState = empty_question_(cachedState) ? defaultState : cachedState;
 
-console.log('Store', cachedState, 'default', defaultState);
-
 module.exports = initialAppState;
 
 },{"./utilities":5}],4:[function(require,module,exports){
-var Adapter, Controller, React, appNodeId, connectPortsToBuses, initialAppState, initialize, linkTogetherMVC, push, render, topViewFactory, viewImports, _ref;
+var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
-_ref = require('../vendor/reactive-aspen'), Adapter = _ref.Adapter, Controller = _ref.Controller, React = _ref.React;
+initialize = require('../vendor/reactive-aspen').Initializer.initialize;
 
 initialAppState = require('./initialAppState');
 
@@ -386,21 +384,7 @@ topViewFactory = require('./view/app');
 
 viewImports = require('./controller/view-imports');
 
-linkTogetherMVC = Controller.linkTogetherMVC, push = Controller.push;
-
-render = React.render;
-
-connectPortsToBuses = Adapter.connectPortsToBuses;
-
 appNodeId = 'todoapp';
-
-initialize = function(appNodeId, topViewFactory, initialAppState, viewImports) {
-  var topReactDescriptor;
-  push('top-view-factory')(topViewFactory);
-  topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
-  render(topReactDescriptor, document.getElementById(appNodeId));
-  return connectPortsToBuses(viewImports);
-};
 
 initialize(appNodeId, topViewFactory, initialAppState, viewImports);
 
@@ -845,7 +829,7 @@ reactIntakeBus.subscribe(actAsSwitchboard);
 
 module.exports = connectPortsToBuses;
 
-},{"../utilities.js":25,"./channel-registrar.js":1,"./port-registrar.js":5,"./port-utilities.js":6,"./react-intake.js":8}],3:[function(_dereq_,module,exports){
+},{"../utilities.js":27,"./channel-registrar.js":1,"./port-registrar.js":5,"./port-utilities.js":6,"./react-intake.js":8}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
 connectPortsToBuses = _dereq_('./connectPortsToBuses.js');
@@ -939,7 +923,7 @@ onValue preventDefault bus
 onValue blur bus
  */
 
-},{"../pando.js":15,"../utilities.js":25}],6:[function(_dereq_,module,exports){
+},{"../pando.js":17,"../utilities.js":27}],6:[function(_dereq_,module,exports){
 var blur, preventDefault;
 
 blur = function(capsule) {
@@ -962,7 +946,7 @@ module.exports = {
 },{}],7:[function(_dereq_,module,exports){
 module.exports = _dereq_('../react-module/exports.js').Bridge;
 
-},{"../react-module/exports.js":16}],8:[function(_dereq_,module,exports){
+},{"../react-module/exports.js":18}],8:[function(_dereq_,module,exports){
 module.exports = '.reactIntake';
 
 },{}],9:[function(_dereq_,module,exports){
@@ -1080,7 +1064,7 @@ module.exports = {
   push: push
 };
 
-},{"../pando.js":15,"../utilities.js":25,"./channel-registrar.js":10}],10:[function(_dereq_,module,exports){
+},{"../pando.js":17,"../utilities.js":27,"./channel-registrar.js":10}],10:[function(_dereq_,module,exports){
 var createEventStreamBus, createNonInitPropertyBus, deleteBus, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, isArray, matchesExistingDispatcher_question_, plug, plugs, register, _ref, _ref1, _register,
   __hasProp = {}.hasOwnProperty;
 
@@ -1167,7 +1151,7 @@ module.exports = {
   getProperty: getProperty
 };
 
-},{"../pando.js":15,"../utilities.js":25}],11:[function(_dereq_,module,exports){
+},{"../pando.js":17,"../utilities.js":27}],11:[function(_dereq_,module,exports){
 var connect, getDispatcher, getEventStream, getProperty, interpret, linkTogetherMVC, plug, plugIntoTerminus, push, _ref, _ref1;
 
 _ref = _dereq_('./channel-connectors.js'), connect = _ref.connect, interpret = _ref.interpret, plug = _ref.plug, push = _ref.push;
@@ -1191,31 +1175,26 @@ module.exports = {
 };
 
 },{"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12,"./terminus.js":13}],12:[function(_dereq_,module,exports){
-var appStateChannelName, connectViewToController, isFunction, linkTogetherMVC, push;
+var appStateChannelName, connectViewToController, linkTogetherMVC, push;
 
 connectViewToController = _dereq_('../adapter/pando-adapter.js');
-
-isFunction = _dereq_('../utilities.js').isFunction;
 
 push = _dereq_('./channel-connectors.js').push;
 
 appStateChannelName = 'app-state';
 
-linkTogetherMVC = function(topViewFactory, appState, manage) {
+linkTogetherMVC = function(topViewFactory, appState) {
   var descriptor;
   push(appStateChannelName)(appState);
   descriptor = topViewFactory(appState);
   connectViewToController();
-  if (isFunction(manage)) {
-    manage();
-  }
   return descriptor;
 };
 
 module.exports = linkTogetherMVC;
 
-},{"../adapter/pando-adapter.js":4,"../utilities.js":25,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
-var $onValue, APP_DOM_ID, Pando, React, TERMINUS, appState, blockTillReady, checkValue, connect, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, render, resetAppState, topViewFactory, _linkTogetherMVC, _ref;
+},{"../adapter/pando-adapter.js":4,"./channel-connectors.js":9}],13:[function(_dereq_,module,exports){
+var $onValue, TERMINUS, appNodeId, appState, blockTillReady, checkValue, connect, doAsync, getEventStream, getProperty, identity, linkTogetherMVC, plugIntoTerminus, render, resetAppState, topViewFactory, _getElementById, _linkTogetherMVC, _ref, _ref1, _ref2;
 
 connect = _dereq_('./channel-connectors.js').connect;
 
@@ -1225,23 +1204,19 @@ identity = _dereq_('../utilities.js').identity;
 
 linkTogetherMVC = _dereq_('./linkTogetherMVC.js');
 
-Pando = _dereq_('../pando.js');
+render = _dereq_('../react-module/exports.js').React.render;
 
-React = _dereq_('../react-module/exports.js').React;
+_ref1 = _dereq_('../pando.js'), blockTillReady = _ref1.blockTillReady, checkValue = _ref1.checkValue, $onValue = _ref1.$onValue;
 
-blockTillReady = Pando.blockTillReady, checkValue = Pando.checkValue, $onValue = Pando.$onValue;
+_ref2 = ['app-node-id', 'app-state', 'top-view-factory'].map(getProperty), appNodeId = _ref2[0], appState = _ref2[1], topViewFactory = _ref2[2];
 
-appState = getProperty('app-state');
+doAsync = checkValue;
 
-APP_DOM_ID = 'todoapp';
+_getElementById = doAsync(document.getElementById.bind(document));
 
-render = React.render;
-
-_linkTogetherMVC = checkValue(linkTogetherMVC);
+_linkTogetherMVC = doAsync(linkTogetherMVC);
 
 TERMINUS = 'terminus';
-
-topViewFactory = getProperty('top-view-factory');
 
 plugIntoTerminus = function(observable) {
   return connect(observable)(TERMINUS)(function() {
@@ -1251,8 +1226,8 @@ plugIntoTerminus = function(observable) {
 
 resetAppState = function(transform) {
   var component, newAppState, node;
-  node = document.getElementById(APP_DOM_ID);
-  newAppState = checkValue(transform)(appState);
+  node = _getElementById(appNodeId);
+  newAppState = doAsync(transform)(appState);
   component = _linkTogetherMVC(topViewFactory, newAppState);
   return blockTillReady(render)(component, node);
 };
@@ -1263,8 +1238,8 @@ module.exports = {
   plugIntoTerminus: plugIntoTerminus
 };
 
-},{"../pando.js":15,"../react-module/exports.js":16,"../utilities.js":25,"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12}],14:[function(_dereq_,module,exports){
-var Adapter, Bridge, Controller, Pando, React, _ref;
+},{"../pando.js":17,"../react-module/exports.js":18,"../utilities.js":27,"./channel-connectors.js":9,"./channel-registrar.js":10,"./linkTogetherMVC.js":12}],14:[function(_dereq_,module,exports){
+var Adapter, Bridge, Controller, Initializer, Pando, React, _ref;
 
 Adapter = _dereq_('./adapter/exports.js');
 
@@ -1272,17 +1247,49 @@ _ref = _dereq_('./react-module/exports.js'), Bridge = _ref.Bridge, React = _ref.
 
 Controller = _dereq_('./controller/exports.js');
 
+Initializer = _dereq_('./initializer/exports.js');
+
 Pando = _dereq_('./pando.js');
 
 module.exports = {
   Adapter: Adapter,
   Bridge: Bridge,
   Controller: Controller,
+  Initializer: Initializer,
   Pando: Pando,
   React: React
 };
 
-},{"./adapter/exports.js":3,"./controller/exports.js":11,"./pando.js":15,"./react-module/exports.js":16}],15:[function(_dereq_,module,exports){
+},{"./adapter/exports.js":3,"./controller/exports.js":11,"./initializer/exports.js":15,"./pando.js":17,"./react-module/exports.js":18}],15:[function(_dereq_,module,exports){
+var initialize;
+
+initialize = _dereq_('./initialize.js');
+
+module.exports = {
+  initialize: initialize
+};
+
+},{"./initialize.js":16}],16:[function(_dereq_,module,exports){
+var connectPortsToBuses, initialize, linkTogetherMVC, push, render, _ref;
+
+connectPortsToBuses = _dereq_('../adapter/exports.js').connectPortsToBuses;
+
+_ref = _dereq_('../controller/exports.js'), linkTogetherMVC = _ref.linkTogetherMVC, push = _ref.push;
+
+render = _dereq_('../react-module/exports.js').React.render;
+
+initialize = function(appNodeID, topViewFactory, initialAppState, viewImports) {
+  var topReactDescriptor;
+  push('app-node-id')(appNodeID);
+  push('top-view-factory')(topViewFactory);
+  topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
+  render(topReactDescriptor, document.getElementById(appNodeID));
+  return connectPortsToBuses(viewImports);
+};
+
+module.exports = initialize;
+
+},{"../adapter/exports.js":3,"../controller/exports.js":11,"../react-module/exports.js":18}],17:[function(_dereq_,module,exports){
 var $dispatch, $onValue, $sample, $subscribe, $transubscribe, CoreCell, CoreDispatcher, CoreSignal, DAG_hyphen_updating_question_, EventStream, FRP, FuncProto, ObjProto, Property, Time, active, any_hyphen_postponement_question_, array_question_, bfiltering, bfilteringNonterminal, bind, bind_hyphen_data, blockTillReady, block_hyphen_N, blocking, bmapping, bracket, call_hyphen_only_hyphen_once, checkValue, clock, connect, createCell, createClock, createDispatcherType, createEventStream, createEventStreamBus, createNonInitProperty, createNonInitPropertyBus, createProperty, createPropertyBus, createSignal, createSignalType, createTime, create_hyphen_singleton, create_hyphen_super_hyphen_type, cytolyse, defined_question_, delaying, display, display_hyphen_cell_hyphen_type, display_hyphen_dispatcher_hyphen_type, display_hyphen_signal_hyphen_type, each, each_hyphen_property, empty_question_, end, endocytate, extend_bang_, extend_hyphen_core_hyphen_dispatcher, extend_hyphen_core_hyphen_signal, extend_hyphen_proto, filtering, filteringDefined, filteringNonterminal, filteringRelevant, flattening, flip, fmapD, fmapS, fromArray, fromCallback, fromDelayedValue, fromDispatcher, fromEventTarget, fromFinitePeriodicSequence, fromInternalDispatchOnly, fromMerger, fromPoll, fromSourceFunction, frpBind, function_question_, functionize, genESOpts, genNonInitPropOpts, genPropOpts, genSignalOpts, genTimeOpts, generate_hyphen_id, getPrototypeOf, getType, get_hyphen_arg_hyphen_array, get_hyphen_initiation_hyphen_status, get_hyphen_key, has_hyphen_postpone_question_, hash_question_, identity, ignoreIrrelevant, inactive, initiating_hyphen_DAG_hyphen_update_question_, isCell, isDispatcher, isEnd, isEventStream, isFromType, isProperty, isRelevant, isSignal, is_hyphen_postpone_question_, liftS, liftS2, map, mapping, merge, monitoringFirst, monitoringLatest, nativeBind, nativeToString, negating, no_hyphen_op, none, nonterminal_question_, object_question_, onFirstAndOnlyValue, onValue, parse_hyphen_opts, parse_hyphen_signal_hyphen_opts, paused, permitting_hyphen_only_hyphen_one_hyphen_value, plug, postpone, postponed_question_, reducing, register, registrar, remerse, removeFromRegistrar, reschedule, reset_hyphen_DAG_hyphen_update_hyphen_process, return_hyphen_no_hyphen_op, sample_hyphen_properties, scanning, seed, sink_hyphen_if_hyphen_sinkable, staggering, stateMachineProcessing, stepper, switcher, taking, transbind, transmit, transubscribe, try_hyphen_10, try_hyphen_N_hyphen_times, _arobase_prototype, _createDispatcherType, _filtering, _mapping, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _subscribe,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -2796,7 +2803,7 @@ if ((typeof define !== "undefined" && define !== null) && (define['amd'] != null
   this.FRP = FRP;
 }
 
-},{}],16:[function(_dereq_,module,exports){
+},{}],18:[function(_dereq_,module,exports){
 var Bridge, React;
 
 Bridge = _dereq_('./react-bridge/exports.js');
@@ -2808,7 +2815,7 @@ module.exports = {
   React: React
 };
 
-},{"./react-bridge/exports.js":19,"./react-bridge/react.js":21}],17:[function(_dereq_,module,exports){
+},{"./react-bridge/exports.js":21,"./react-bridge/react.js":23}],19:[function(_dereq_,module,exports){
 var getAdapter, getInjectedFactory, getTemplate, handlerRegex, handler_question_, inject, isFunction,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -2868,7 +2875,7 @@ module.exports = {
   getAdapter: getAdapter
 };
 
-},{"./factory-injector.js":20,"./utilities.js":23}],18:[function(_dereq_,module,exports){
+},{"./factory-injector.js":22,"./utilities.js":25}],20:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, a, button, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, form, getAdapter, getInjectedFactory, input, isObject, isString, label, onChange, onClick, onSubmit, records, shallowCopy, _ref, _ref1;
 
 _ref = _dereq_('./react.js').DOM, a = _ref.a, button = _ref.button, form = _ref.form, input = _ref.input, label = _ref.label;
@@ -2974,7 +2981,7 @@ records = [[onClick, ensureProps, button, BUTTON], [onClick, ensureCheckboxProps
 
 module.exports = collectAdapters({}, records);
 
-},{"./adapter-utilities.js":17,"./factory-injector.js":20,"./react.js":21,"./utilities.js":23}],19:[function(_dereq_,module,exports){
+},{"./adapter-utilities.js":19,"./factory-injector.js":22,"./react.js":23,"./utilities.js":25}],21:[function(_dereq_,module,exports){
 var adapters, connectTo, sensitize;
 
 adapters = _dereq_('./adapters.js');
@@ -2989,7 +2996,7 @@ module.exports = {
   sensitize: sensitize
 };
 
-},{"./adapters.js":18,"./factory-injector.js":20,"./sensitive-component.js":22}],20:[function(_dereq_,module,exports){
+},{"./adapters.js":20,"./factory-injector.js":22,"./sensitive-component.js":24}],22:[function(_dereq_,module,exports){
 var connectTo, createInjectable, embedEventInside, exportReactEvents, getCapsule, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref, _ref1;
 
 _ref = _dereq_('./utilities.js'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
@@ -3090,10 +3097,10 @@ module.exports = {
   getInjectedFactory: getInjectedFactory
 };
 
-},{"./utilities.js":23}],21:[function(_dereq_,module,exports){
+},{"./utilities.js":25}],23:[function(_dereq_,module,exports){
 module.exports = _dereq_('../react-with-addons.js');
 
-},{"../react-with-addons.js":24}],22:[function(_dereq_,module,exports){
+},{"../react-with-addons.js":26}],24:[function(_dereq_,module,exports){
 var createClass, createFactory, encapsulateInfo, getInjectedFactory, isObject, sensitiveRenderMixin, sensitize, template, _ref,
   __slice = [].slice;
 
@@ -3148,13 +3155,18 @@ template = function(getHandlerForType) {
       }
       console.log('sensitive-component template key', key);
       properties = {
-        key: key,
         mixins: [sensitiveRenderMixin(getHandlerForType)],
         render: function() {
           return factory.apply(null, args);
         }
       };
-      return createFactory(createClass(properties))('TEST-ARGUMENT');
+      return createFactory(createClass(properties))({
+        key: key,
+        componentDidMount: function() {
+          return console.log('COMPONENT_DID_MOUNT :)');
+        },
+        test: (function() {})
+      });
     };
   };
 };
@@ -3163,7 +3175,7 @@ sensitize = getInjectedFactory(template, 'sensitive');
 
 module.exports = sensitize;
 
-},{"../react-with-addons.js":24,"./factory-injector.js":20,"./utilities.js":23}],23:[function(_dereq_,module,exports){
+},{"../react-with-addons.js":26,"./factory-injector.js":22,"./utilities.js":25}],25:[function(_dereq_,module,exports){
 var ObjProto, applyUnsplat, hasType_question_, isFunction, isObject, isString, memoize, shallowCopy, shallowFlatten, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -3239,7 +3251,7 @@ module.exports = {
   shallowCopy: shallowCopy
 };
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],26:[function(_dereq_,module,exports){
 (function (global){/**
  * React (with addons) v0.12.0
  */
@@ -3314,7 +3326,6 @@ var focusNode = _dereq_("./focusNode");
 
 var AutoFocusMixin = {
   componentDidMount: function() {
-    //console.log('AutoFocusMixin_componentDidMount autoFocus', this.props.autoFocus);
     if (this.props.autoFocus) {
       focusNode(this.getDOMNode());
     }
@@ -9773,6 +9784,7 @@ var ReactCompositeComponentMixin = {
         transaction,
         mountDepth
       );
+      console.log('mountComponent');
       this._compositeLifeCycleState = CompositeLifeCycle.MOUNTING;
 
       if (this.__reactAutoBindMap) {
@@ -9828,6 +9840,7 @@ var ReactCompositeComponentMixin = {
    * @internal
    */
   unmountComponent: function() {
+    console.log('unmountComponent');
     this._compositeLifeCycleState = CompositeLifeCycle.UNMOUNTING;
     if (this.componentWillUnmount) {
       this.componentWillUnmount();
@@ -9863,6 +9876,7 @@ var ReactCompositeComponentMixin = {
    * @protected
    */
   setState: function(partialState, callback) {
+    console.log('setState partialState', partialState);
     ("production" !== "development" ? invariant(
       typeof partialState === 'object' || partialState == null,
       'setState(...): takes an object of state variables to update.'
@@ -9894,6 +9908,7 @@ var ReactCompositeComponentMixin = {
    * @protected
    */
   replaceState: function(completeState, callback) {
+    console.log('replaceState completeState', completeState);
     validateLifeCycleOnReplaceState(this);
     this._pendingState = completeState;
     if (this._compositeLifeCycleState !== CompositeLifeCycle.MOUNTING) {
@@ -9979,6 +9994,7 @@ var ReactCompositeComponentMixin = {
    * @private
    */
   _processProps: function(newProps) {
+    console.log('_processProps newProps', newProps);
     if ("production" !== "development") {
       var propTypes = this.constructor.propTypes;
       if (propTypes) {
@@ -10023,6 +10039,7 @@ var ReactCompositeComponentMixin = {
    * @internal
    */
   performUpdateIfNecessary: function(transaction) {
+    console.log('performUpdateIfNecessary');
     var compositeLifeCycleState = this._compositeLifeCycleState;
     // Do not trigger a state transition if we are in the middle of mounting or
     // receiving props because both of those will already be doing this.
@@ -10062,6 +10079,7 @@ var ReactCompositeComponentMixin = {
       !this.shouldComponentUpdate ||
       this.shouldComponentUpdate(nextProps, nextState, nextContext);
 
+    console.log('shouldUpdate', shouldUpdate);
     if ("production" !== "development") {
       if (typeof shouldUpdate === "undefined") {
         console.warn(
@@ -10114,6 +10132,8 @@ var ReactCompositeComponentMixin = {
     nextContext,
     transaction
   ) {
+    console.log('_performComponentUpdate nextElement', nextElement,
+                'nextProps', nextProps, 'nextState', nextState);
     var prevElement = this._currentElement;
     var prevProps = this.props;
     var prevState = this.state;
@@ -10146,6 +10166,7 @@ var ReactCompositeComponentMixin = {
   },
 
   receiveComponent: function(nextElement, transaction) {
+    console.log('receiveComponent nextElement', nextElement);
     if (nextElement === this._currentElement &&
         nextElement._owner != null) {
       // Since elements are immutable after the owner is rendered,
@@ -10172,7 +10193,7 @@ var ReactCompositeComponentMixin = {
    * Sophisticated clients may wish to override this.
    *
    * @param {ReactReconcileTransaction} transaction
-   * @param {ReactElement} prevElement
+   * @param {ReactEljement} prevElement
    * @internal
    * @overridable
    */
@@ -10180,6 +10201,7 @@ var ReactCompositeComponentMixin = {
     'ReactCompositeComponent',
     'updateComponent',
     function(transaction, prevParentElement) {
+      console.log('updateComponent prevParentElement', prevParentElement);
       ReactComponent.Mixin.updateComponent.call(
         this,
         transaction,
@@ -10228,6 +10250,7 @@ var ReactCompositeComponentMixin = {
    * @protected
    */
   forceUpdate: function(callback) {
+    console.log('forceUpdate');
     var compositeLifeCycleState = this._compositeLifeCycleState;
     ("production" !== "development" ? invariant(
       this.isMounted() ||
@@ -11610,14 +11633,6 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
 
   getInitialState: function() {
     var defaultValue = this.props.defaultValue;
-    /*
-    console.log(
-        'ReactDOMInput_getInitialState',
-        'autoFocus', this.props.autoFocus,
-        'defaultValue', this.props.defaultValue,
-        'props', assign({}, this.props)
-    );
-    */
     return {
       initialChecked: this.props.defaultChecked || false,
       initialValue: defaultValue != null ? defaultValue : null
@@ -11632,23 +11647,12 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
     props.defaultValue = null;
 
     var value = LinkedValueUtils.getValue(this);
-    /*
-    console.log(
-      'ReactDOMInput_render',
-      'initialValue', this.state.initialValue,
-      'defaultValue', this.props.defaultValue,
-      'autoFocus', this.props.autoFocus,
-      'state', assign({}, this.state),
-      'props', assign({}, this.props)
-    );
-    */
     props.value = value != null ? value : this.state.initialValue;
 
     var checked = LinkedValueUtils.getChecked(this);
     props.checked = checked != null ? checked : this.state.initialChecked;
 
     props.onChange = this._handleChange;
-    //console.log('... edited props', assign({}, props));
 
     return input(props, this.props.children);
   },
@@ -11683,7 +11687,6 @@ var ReactDOMInput = ReactCompositeComponent.createClass({
   },
 
   _handleChange: function(event) {
-    //console.log('ReactDOMInput__handleChange event', assign({}, event));
     var returnValue;
     var onChange = LinkedValueUtils.getOnChange(this);
     if (onChange) {
@@ -13148,7 +13151,6 @@ ReactElement.createElement = function(type, config, children) {
     // TODO: Change this back to `config.key === undefined`
     key = config.key == null ? null : '' + config.key;
     // Remaining properties are added to a new props object
-    //if (type === 'input') console.log ('config', config);
     for (propName in config) {
       if (config.hasOwnProperty(propName) &&
           !RESERVED_PROPS.hasOwnProperty(propName)) {
@@ -21092,7 +21094,6 @@ function focusNode(node) {
   // reasons that are too expensive and fragile to test.
   try {
     node.focus();
-    node.setSelectionRange(node.value.length, node.value.length);
   } catch(e) {
   }
 }
@@ -23065,8 +23066,8 @@ module.exports = warning;
 },{"./emptyFunction":121}]},{},[1])(1)
 });
 }).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],25:[function(_dereq_,module,exports){
-var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isFunction, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
+},{}],27:[function(_dereq_,module,exports){
+var ObjProto, addComponent, atomicKeypath_question_, compose, compositeRegex, dot, getComponent, getKeys, hasType_question_, identity, isArray, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, useParamListOrArray, _ref,
   __hasProp = {}.hasOwnProperty,
   __slice = [].slice;
 
@@ -23127,7 +23128,7 @@ hasType_question_ = function(type) {
   };
 };
 
-_ref = ['Function', 'Object', 'String'].map(hasType_question_), isFunction = _ref[0], isObject = _ref[1], isString = _ref[2];
+_ref = ['Object', 'String'].map(hasType_question_), isObject = _ref[0], isString = _ref[1];
 
 processKeypath = function(keypath) {
   return keypathRegex.exec(keypath).slice(1, 3);
@@ -23183,7 +23184,6 @@ module.exports = {
   getComponent: getComponent,
   identity: identity,
   isArray: isArray,
-  isFunction: isFunction,
   isObject: isObject,
   isString: isString,
   shallowCopy: shallowCopy,
