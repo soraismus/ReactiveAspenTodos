@@ -35,6 +35,4 @@ cachedState     = store 'reactive-aspen-todos'
 defaultState    = { activeCount, count, focus, mode, todos }
 initialAppState = if empty? cachedState then defaultState else cachedState
 
-console.log ('Store', cachedState, 'default', defaultState)
-
 module.exports  = initialAppState
