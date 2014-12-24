@@ -1,9 +1,63 @@
-{ Bridge, React }                     = require '../../vendor/reactive-aspen'
+{ Bridge, Mixins, React }             = require '../../vendor/reactive-aspen'
 { adapters, sensitize }               = Bridge
+{ AutoPostFocusMixin }                = Mixins
 { $button, $checkbox, $label, $text } = adapters 
 { addons, DOM }                       = React
 { classSet }                          = addons
 { div, li }                           = DOM
+
+# ----------
+# Functions
+# ----------
+
+applyIndex = \index \adapter ->
+  adapter index
+
+includeIndex = (label, index) ->
+  { index, label }
+
+indexifyAdapter = ([adapter, label]) -> (index) ->
+  adapter (includeIndex (label, index))
+
+TodoItem = (todoProps, index) ->
+  { completed, editing, editText, focus, title } = todoProps
+  className = classSet { completed, editing }
+
+  [_completionToggle, _destroyButton, _TodoItemInput, _todoItemLabel] =
+    factories.map (applyIndex index)
+
+  li
+    key       : "todo-item-#{title}"
+    className : className
+    div
+      className : 'view'
+      _completionToggle
+        className : 'toggle'
+        checked   : completed
+        onChange  : true
+      _todoItemLabel
+        onDoubleClick : true
+        title
+      _destroyButton
+        className : 'destroy'
+        onClick   : true
+    _TodoItemInput
+      className      : 'edit'
+      defaultValue   : editText
+      onBlur         : true
+      onChange       : true
+      onKeyDown      : true
+      sensitiveProps :
+        autoPostFocus  : focus
+        key            : 'todo-item-input' + index
+
+TodoItemInput = \index ->
+  sensitize { index, label: 'TodoItemInput' } (
+    (todoItemInput index), AutoPostFocusMixin)
+
+# -----------------------
+# Non-Function Constants
+# -----------------------
 
 fields = [
   [$checkbox, 'completion-toggle']
@@ -12,44 +66,9 @@ fields = [
   [$label,    'todo-item-label'  ]
 ]
 
-includeIndex = (label, index) ->
-  { index, label }
-
-indexifyAdapter = ([adapter, label]) -> (index) ->
-  adapter (includeIndex (label, index))
-
 [completionToggle, destroyButton, todoItemInput, todoItemLabel] =
   fields.map indexifyAdapter
 
-TodoItemInput = \index ->
-  sensitize { index, label: 'TodoItemInput' } (todoItemInput index)
-
-TodoItem = (todoProps, index) ->
-  { completed, editing, editText, focus, title } = todoProps
-  className = classSet { completed, editing }
-
-  li
-    key       : "todo-item-#{title}"
-    className : className
-    div
-      className : 'view'
-      completionToggle(index)
-        className : 'toggle'
-        checked   : completed
-        onChange  : true
-      todoItemLabel(index)
-        onDoubleClick : true
-        title
-      destroyButton(index)
-        className : 'destroy'
-        onClick   : true
-    TodoItemInput(index)
-      className    : 'edit'
-      key          : 'todo-item-input' + index
-      defaultValue : editText
-      onBlur       : true
-      onChange     : true
-      onKeyDown    : true
-      autoFocus    : focus
+factories = [completionToggle, destroyButton, TodoItemInput, todoItemLabel]
 
 module.exports = TodoItem
