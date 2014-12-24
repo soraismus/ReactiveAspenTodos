@@ -60,7 +60,7 @@ editAppState = \index \appState ->
   { todos }    = appState
   appState.focus = false
   todos[index]   = editTodo todos[index]
-  cacheAppData appState
+  appState
 
 endEditing = \capsule ->
   { index } = capsule
@@ -70,7 +70,7 @@ endEditing = \capsule ->
     todo.editing = false
     todo.focus   = false
     todo.title   = getTitle().trim()
-    result if todo.title then appState else removeTodo (index) (appState)
+    result = if todo.title then appState else removeTodo (index) (appState)
     cacheAppData result
 
 enterKey? = \capsule ->
