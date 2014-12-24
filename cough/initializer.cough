@@ -1,20 +1,10 @@
-{ Adapter, Controller, React } = require '../vendor/reactive-aspen'
-initialAppState                = require './initialAppState'
-topViewFactory                 = require './view/app'
-viewImports                    = require './controller/view-imports'
-{ linkTogetherMVC, push }      = Controller
-{ render }                     = React
-{ connectPortsToBuses }        = Adapter
-
+{ initialize }  = require('../vendor/reactive-aspen').Initializer
+initialAppState = require './initialAppState'
+topViewFactory  = require './view/app'
+viewImports     = require './controller/view-imports'
 
 # `appNodeId` should be available to 'terminus.cough' of reactive-aspen.
 appNodeId = 'todoapp'
-
-initialize = (appNodeId, topViewFactory, initialAppState, viewImports) ->
-  push 'top-view-factory' topViewFactory
-  topReactDescriptor = linkTogetherMVC (topViewFactory, initialAppState)
-  render (topReactDescriptor, (document.getElementById appNodeId))
-  connectPortsToBuses viewImports
 
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
 
