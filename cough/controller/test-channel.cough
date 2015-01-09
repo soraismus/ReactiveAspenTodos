@@ -1,7 +1,9 @@
 { Controller, Pando }              = require '../../vendor/reactive-aspen'
-{ connect, getDispatcher }         = Controller
-{ checkValue, filtering, mapping } = Pando
 { store }                          = require '../utilities'
+{ connect, getDispatcher }         = Controller
+{ transforms, utilities }          = Pando
+{ doAsync }                        = utilities
+{ filtering, mapping }             = transforms
 
 NAMESPACE = 'reactive-aspen-todos'
 TERMINUS  = 'terminus'
@@ -43,8 +45,7 @@ continueEditingTodo = (todo, text) ->
 continueEditingAppState = \props ->
   { index, value } = props
   \appState ->
-    { todos }        = appState
-    continueEditingTodo (todos[index], value)
+    continueEditingTodo (appState.todos[index], value)
     cacheAppData appState
 
 createTodo = \title ->
@@ -176,7 +177,7 @@ connect '$todo-label-doubleclicks' TERMINUS ->
   mapping (\capsule -> editAppState (extractIndex capsule))
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
-  checkValue (storeTitleForIndex) ((getDispatcher 'app-state'), capsule)
+  doAsync (storeTitleForIndex) ((getDispatcher 'app-state'), capsule)
 
 getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
