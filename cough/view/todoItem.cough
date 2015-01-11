@@ -1,6 +1,6 @@
 { Bridge, Mixins, React }             = require '../../vendor/reactive-aspen'
 { adapters, sensitize }               = Bridge
-{ AutoPostFocusMixin }                = Mixins
+AutoPostFocusMixin                    = require 'react-auto-post-focus-mixin'
 { $button, $checkbox, $label, $text } = adapters 
 { addons, DOM }                       = React
 { classSet }                          = addons
