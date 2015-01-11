@@ -1,9 +1,9 @@
-{ Controller, Pando }              = require '../../vendor/reactive-aspen'
-{ store }                          = require '../utilities'
-{ connect, getDispatcher }         = Controller
-{ transforms, utilities }          = Pando
-{ doAsync }                        = utilities
-{ filtering, mapping }             = transforms
+{ Controller, Pando }      = require '../../vendor/reactive-aspen'
+{ store }                  = require '../utilities'
+{ connect, getDispatcher } = Controller
+{ transforms, utilities }  = Pando
+{ doAsync }                = utilities
+{ filtering, mapping }     = transforms
 
 NAMESPACE = 'reactive-aspen-todos'
 TERMINUS  = 'terminus'
