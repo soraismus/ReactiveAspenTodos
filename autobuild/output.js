@@ -418,7 +418,7 @@ module.exports = initialAppState;
 },{"./utilities":6}],5:[function(require,module,exports){
 var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
-initialize = require('../vendor/reactive-aspen').Initializer.initialize;
+initialize = require('../vendor/reactive-aspen').initialize;
 
 initialAppState = require('./initialAppState');
 
@@ -2503,7 +2503,7 @@ module.exports = connectPortsToBuses;
 
 
 
-},{"../aspen-state":7,"../controller/exports":11,"../utilities":23,"./port-registrar":5,"./port-utilities":6}],3:[function(_dereq_,module,exports){
+},{"../aspen-state":7,"../controller/exports":11,"../utilities":22,"./port-registrar":5,"./port-utilities":6}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
 connectPortsToBuses = _dereq_('./connectPortsToBuses');
@@ -2587,7 +2587,7 @@ module.exports = {
 
 
 
-},{"../pando/factories":18,"../utilities":23}],6:[function(_dereq_,module,exports){
+},{"../pando/factories":17,"../utilities":22}],6:[function(_dereq_,module,exports){
 var blur, preventDefault;
 
 blur = function(capsule) {
@@ -2612,7 +2612,7 @@ module.exports = {
 },{}],7:[function(_dereq_,module,exports){
 var appState, appStateProperty, getAppNodeID, getEventStream, getProperty, getTopViewFactory, reactIntake, setAppState, terminusEventStream, _ref;
 
-_ref = _dereq_('./controller/exports'), getEventStream = _ref.getEventStream, getProperty = _ref.getProperty;
+_ref = _dereq_('./controller/channel-registrar'), getEventStream = _ref.getEventStream, getProperty = _ref.getProperty;
 
 appState = null;
 
@@ -2645,19 +2645,21 @@ module.exports = {
 
 
 
-},{"./controller/exports":11}],8:[function(_dereq_,module,exports){
+},{"./controller/channel-registrar":10}],8:[function(_dereq_,module,exports){
 module.exports = _dereq_('../vendor/bridge');
 
 
 
-},{"../vendor/bridge":24}],9:[function(_dereq_,module,exports){
-var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, pandoConnect, plug, push, setAlias, _connect, _ref;
+},{"../vendor/bridge":23}],9:[function(_dereq_,module,exports){
+var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, pandoConnect, plug, plugIntoTerminus, push, setAlias, terminusEventStream, _connect, _ref;
 
 getDispatcher = _dereq_('./channel-registrar').getDispatcher;
 
 _ref = _dereq_('../utilities'), isArray = _ref.isArray, isString = _ref.isString;
 
 pandoConnect = _dereq_('../pando/connect');
+
+terminusEventStream = _dereq_('../aspen-state').terminusEventStream;
 
 _connect = function(src, tgt, transform) {
   var _ref1, _src, _tgt;
@@ -2742,6 +2744,10 @@ plug = function(targets) {
   };
 };
 
+plugIntoTerminus = function(source, transform) {
+  return connect(source)(terminusEventStream)(transform);
+};
+
 push = function(label) {
   return function(val) {
     var bus;
@@ -2760,12 +2766,13 @@ module.exports = {
   connect: connect,
   interpret: interpret,
   plug: plug,
+  plugIntoTerminus: plugIntoTerminus,
   push: push
 };
 
 
 
-},{"../pando/connect":17,"../utilities":23,"./channel-registrar":10}],10:[function(_dereq_,module,exports){
+},{"../aspen-state":7,"../pando/connect":16,"../utilities":22,"./channel-registrar":10}],10:[function(_dereq_,module,exports){
 var connect, createEventStreamBus, createNonInitPropertyBus, deleteDispatcher, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, isArray, matchesExistingDispatcher_question_, plugs, register, _ref, _ref1, _register,
   __hasProp = {}.hasOwnProperty;
 
@@ -2857,54 +2864,38 @@ module.exports = {
 
 
 
-},{"../pando/connect":17,"../pando/factories":18,"../utilities":23}],11:[function(_dereq_,module,exports){
-var connect, deleteDispatcher, getDispatcher, getEventStream, getProperty, interpret, plug, push, _ref, _ref1;
+},{"../pando/connect":16,"../pando/factories":17,"../utilities":22}],11:[function(_dereq_,module,exports){
+var connectors, extend, registrationUtilities;
 
-_ref = _dereq_('./channel-connectors'), connect = _ref.connect, interpret = _ref.interpret, plug = _ref.plug, push = _ref.push;
+connectors = _dereq_('./channel-connectors');
 
-_ref1 = _dereq_('./channel-registrar'), deleteDispatcher = _ref1.deleteDispatcher, getDispatcher = _ref1.getDispatcher, getEventStream = _ref1.getEventStream, getProperty = _ref1.getProperty;
+extend = _dereq_('../utilities').extend;
 
-module.exports = {
-  connect: connect,
-  deleteDispatcher: deleteDispatcher,
-  getDispatcher: getDispatcher,
-  getEventStream: getEventStream,
-  getProperty: getProperty,
-  interpret: interpret,
-  plug: plug,
-  push: push
-};
+registrationUtilities = _dereq_('./channel-registrar');
+
+module.exports = extend({}, connectors, registrationUtilities);
 
 
 
-},{"./channel-connectors":9,"./channel-registrar":10}],12:[function(_dereq_,module,exports){
+},{"../utilities":22,"./channel-connectors":9,"./channel-registrar":10}],12:[function(_dereq_,module,exports){
 module.exports = {
   Adapter: _dereq_('./adapter/exports'),
   appStateProperty: _dereq_('./aspen-state').appStateProperty,
   Bridge: _dereq_('./bridge'),
   Controller: _dereq_('./controller/exports'),
-  Initializer: _dereq_('./initializer/exports'),
+  initialize: _dereq_('./initializer/exports'),
   Pando: _dereq_('./pando/pando'),
   React: _dereq_('./react/react')
 };
 
 
 
-},{"./adapter/exports":3,"./aspen-state":7,"./bridge":8,"./controller/exports":11,"./initializer/exports":13,"./pando/pando":19,"./react/react":21}],13:[function(_dereq_,module,exports){
-var initialize, plugIntoTerminus;
-
-initialize = _dereq_('./initialize');
-
-plugIntoTerminus = _dereq_('./terminus').plugIntoTerminus;
-
-module.exports = {
-  initialize: initialize,
-  plugIntoTerminus: plugIntoTerminus
-};
+},{"./adapter/exports":3,"./aspen-state":7,"./bridge":8,"./controller/exports":11,"./initializer/exports":13,"./pando/pando":18,"./react/react":20}],13:[function(_dereq_,module,exports){
+module.exports = _dereq_('./initialize');
 
 
 
-},{"./initialize":14,"./terminus":16}],14:[function(_dereq_,module,exports){
+},{"./initialize":14}],14:[function(_dereq_,module,exports){
 var connectPortsToBuses, initialize, linkTogetherMVC, push, render, setAppState;
 
 connectPortsToBuses = _dereq_('../adapter/exports').connectPortsToBuses;
@@ -2932,7 +2923,7 @@ module.exports = initialize;
 
 
 
-},{"../adapter/exports":3,"../aspen-state":7,"../controller/exports":11,"../react/render":22,"./linkTogetherMVC":15}],15:[function(_dereq_,module,exports){
+},{"../adapter/exports":3,"../aspen-state":7,"../controller/exports":11,"../react/render":21,"./linkTogetherMVC":15}],15:[function(_dereq_,module,exports){
 var appStateProperty, connectViewToController, linkTogetherMVC, push;
 
 appStateProperty = _dereq_('../aspen-state').appStateProperty;
@@ -2954,66 +2945,38 @@ module.exports = linkTogetherMVC;
 
 
 },{"../adapter/exports":3,"../aspen-state":7,"../controller/exports":11}],16:[function(_dereq_,module,exports){
-var appStateProperty, blockTillReady, connect, doAsync, getAppNodeID, getEventStream, getProperty, getTopViewFactory, linkTogetherMVC, onValue, render, resetAppState, terminusEventStream, _linkTogetherMVC, _ref, _ref1, _ref2, _render;
-
-_ref = _dereq_('../aspen-state'), appStateProperty = _ref.appStateProperty, getAppNodeID = _ref.getAppNodeID, getTopViewFactory = _ref.getTopViewFactory, terminusEventStream = _ref.terminusEventStream;
-
-_ref1 = _dereq_('../pando/utilities'), blockTillReady = _ref1.blockTillReady, doAsync = _ref1.doAsync, onValue = _ref1.onValue;
-
-_ref2 = _dereq_('../controller/exports'), connect = _ref2.connect, getEventStream = _ref2.getEventStream, getProperty = _ref2.getProperty;
-
-linkTogetherMVC = _dereq_('./linkTogetherMVC');
-
-render = _dereq_('../react/render');
-
-_linkTogetherMVC = doAsync(linkTogetherMVC);
-
-_render = blockTillReady(render);
-
-resetAppState = function(transform) {
-  var newAppState, node, reactElement;
-  node = document.getElementById(getAppNodeID());
-  newAppState = doAsync(transform)(appStateProperty);
-  reactElement = _linkTogetherMVC(getTopViewFactory(), newAppState);
-  return _render(reactElement, node);
-};
-
-onValue(terminusEventStream)(blockTillReady(resetAppState));
-
-
-
-},{"../aspen-state":7,"../controller/exports":11,"../pando/utilities":20,"../react/render":22,"./linkTogetherMVC":15}],17:[function(_dereq_,module,exports){
 module.exports = _dereq_('./utilities').connect;
 
 
 
-},{"./utilities":20}],18:[function(_dereq_,module,exports){
+},{"./utilities":19}],17:[function(_dereq_,module,exports){
 module.exports = _dereq_('./pando').factories;
 
 
 
-},{"./pando":19}],19:[function(_dereq_,module,exports){
+},{"./pando":18}],18:[function(_dereq_,module,exports){
 module.exports = _dereq_('pando');
 
 
 
-},{"pando":1}],20:[function(_dereq_,module,exports){
+},{"pando":1}],19:[function(_dereq_,module,exports){
 module.exports = _dereq_('./pando').utilities;
 
 
 
-},{"./pando":19}],21:[function(_dereq_,module,exports){
+},{"./pando":18}],20:[function(_dereq_,module,exports){
 module.exports = _dereq_('../bridge').React;
 
 
 
-},{"../bridge":8}],22:[function(_dereq_,module,exports){
+},{"../bridge":8}],21:[function(_dereq_,module,exports){
 module.exports = _dereq_('./react').render;
 
 
 
-},{"./react":21}],23:[function(_dereq_,module,exports){
-var ObjProto, addComponent, compositeRegex, dot, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
+},{"./react":20}],22:[function(_dereq_,module,exports){
+var ObjProto, addComponent, compositeRegex, dot, extend, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
+  __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
 
 dot = '.';
@@ -3037,6 +3000,20 @@ addComponent = function(keypath, newComponent, recipient) {
     proxy = proxy[key];
   }
   return proxy[keys[last]] = newComponent;
+};
+
+extend = function() {
+  var key, mixin, mixins, obj, val, _i, _len;
+  obj = arguments[0], mixins = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+  for (_i = 0, _len = mixins.length; _i < _len; _i++) {
+    mixin = mixins[_i];
+    for (key in mixin) {
+      if (!__hasProp.call(mixin, key)) continue;
+      val = mixin[key];
+      obj[key] = val;
+    }
+  }
+  return obj;
 };
 
 getComponent = function(keypath, obj) {
@@ -3107,6 +3084,7 @@ transformResult = function(result, fn) {
 
 module.exports = {
   addComponent: addComponent,
+  extend: extend,
   getComponent: getComponent,
   isArray: isArray,
   isObject: isObject,
@@ -3116,7 +3094,7 @@ module.exports = {
 
 
 
-},{}],24:[function(_dereq_,module,exports){
+},{}],23:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactBridge=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 // shim for using process in browser
 
