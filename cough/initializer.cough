@@ -3,7 +3,6 @@ initialAppState = require './initialAppState'
 topViewFactory  = require './view/app'
 viewImports     = require './controller/view-imports'
 
-# `appNodeId` should be available to 'terminus.cough' of reactive-aspen.
 appNodeId = 'todoapp'
 
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
