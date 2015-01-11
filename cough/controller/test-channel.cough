@@ -6,7 +6,7 @@
 { filtering, mapping }     = transforms
 
 NAMESPACE = 'reactive-aspen-todos'
-TERMINUS  = 'terminus'
+TERMINUS  = '_terminus_'
 
 cacheAppData = \appState ->
   store (NAMESPACE, appState)
