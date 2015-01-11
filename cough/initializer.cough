@@ -1,4 +1,4 @@
-{ initialize }  = require('../vendor/reactive-aspen').Initializer
+{ initialize }  = require '../vendor/reactive-aspen'
 initialAppState = require './initialAppState'
 topViewFactory  = require './view/app'
 viewImports     = require './controller/view-imports'
