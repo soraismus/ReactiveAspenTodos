@@ -1,55 +1,17 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/**
- * Derivative of source code copyrighted by Facebook.
- * This source code is licensed under Facebook's  BSD-style license.
- *
- * @providesModule UpdatePostFocusMixin
- */
+var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1, _ref2;
 
-"use strict";
+_ref = require('../vendor/Controller'), connect = _ref.connect, getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
 
-/**
- * @param {DOMElement} node input/textarea to focus
- */
-function focusPostNode(node) {
-  // IE8 can throw "Can't move focus to the control because it is invisible,
-  // not enabled, or of a type that does not accept the focus." for all kinds of
-  // reasons that are too expensive and fragile to test.
-  try {
-    node.focus();
-    node.setSelectionRange(node.value.length, node.value.length);
-  } catch(e) {
-  }
-}
-
-var UpdatePostFocusMixin = {
-  componentDidUpdate: function() {
-    if (this.props.autoPostFocus) {
-      focusPostNode(this.getDOMNode());
-    }
-  }
-};
-
-module.exports = UpdatePostFocusMixin;
-
-},{}],2:[function(require,module,exports){
-var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1;
-
-_ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
+_ref1 = require('../vendor/Pando'), transforms = _ref1.transforms, utilities = _ref1.utilities;
 
 store = require('../utilities').store;
-
-connect = Controller.connect, getDispatcher = Controller.getDispatcher, plugIntoTerminus = Controller.plugIntoTerminus;
-
-transforms = Pando.transforms, utilities = Pando.utilities;
 
 doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
 NAMESPACE = 'reactive-aspen-todos';
-
-TERMINUS = '_terminus_';
 
 cacheAppData = function(appState) {
   store(NAMESPACE, appState);
@@ -181,7 +143,7 @@ extractNewTodo = function(capsule) {
   return addTodo(value);
 };
 
-_ref1 = (function() {
+_ref2 = (function() {
   var getTitle, storeTitle, _title;
   _title = null;
   getTitle = function() {
@@ -191,7 +153,7 @@ _ref1 = (function() {
     return _title = title;
   };
   return [getTitle, storeTitle];
-})(), getTitle = _ref1[0], storeTitle = _ref1[1];
+})(), getTitle = _ref2[0], storeTitle = _ref2[1];
 
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
@@ -337,7 +299,7 @@ module.exports = null;
 
 
 
-},{"../../vendor/reactive-aspen":13,"../utilities":6}],3:[function(require,module,exports){
+},{"../utilities":6,"../vendor/Controller":9,"../vendor/Pando":11}],2:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -362,7 +324,7 @@ module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-cl
 
 
 
-},{}],4:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 var activeCount, cachedState, count, defaultState, empty_question_, focus, initialAppState, mode, store, todos;
 
 store = require('./utilities').store;
@@ -417,10 +379,10 @@ module.exports = initialAppState;
 
 
 
-},{"./utilities":6}],5:[function(require,module,exports){
+},{"./utilities":6}],4:[function(require,module,exports){
 var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
-initialize = require('../vendor/reactive-aspen').initialize;
+initialize = require('./vendor/Aspen').initialize;
 
 initialAppState = require('./initialAppState');
 
@@ -436,7 +398,41 @@ require('./controller/test-channel');
 
 
 
-},{"../vendor/reactive-aspen":13,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./view/app":7}],6:[function(require,module,exports){
+},{"./controller/test-channel":1,"./controller/view-imports":2,"./initialAppState":3,"./vendor/Aspen":7,"./view/app":15}],5:[function(require,module,exports){
+/**
+ * Derivative of source code copyrighted by Facebook.
+ * This source code is licensed under Facebook's  BSD-style license.
+ *
+ * @providesModule UpdatePostFocusMixin
+ */
+
+"use strict";
+
+/**
+ * @param {DOMElement} node input/textarea to focus
+ */
+function focusPostNode(node) {
+  // IE8 can throw "Can't move focus to the control because it is invisible,
+  // not enabled, or of a type that does not accept the focus." for all kinds of
+  // reasons that are too expensive and fragile to test.
+  try {
+    node.focus();
+    node.setSelectionRange(node.value.length, node.value.length);
+  } catch(e) {
+  }
+}
+
+var UpdatePostFocusMixin = {
+  componentDidUpdate: function() {
+    if (this.props.autoPostFocus) {
+      focusPostNode(this.getDOMNode());
+    }
+  }
+};
+
+module.exports = UpdatePostFocusMixin;
+
+},{}],6:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -516,9 +512,49 @@ module.exports = {
 
 
 },{}],7:[function(require,module,exports){
+module.exports = require('../../vendor/reactive-aspen');
+
+
+
+},{"../../vendor/reactive-aspen":21}],8:[function(require,module,exports){
+module.exports = require('./Aspen').Bridge;
+
+
+
+},{"./Aspen":7}],9:[function(require,module,exports){
+module.exports = require('./Aspen').Controller;
+
+
+
+},{"./Aspen":7}],10:[function(require,module,exports){
+module.exports = require('./React').DOM;
+
+
+
+},{"./React":12}],11:[function(require,module,exports){
+module.exports = require('./Aspen').Pando;
+
+
+
+},{"./Aspen":7}],12:[function(require,module,exports){
+module.exports = require('./Aspen').React;
+
+
+
+},{"./Aspen":7}],13:[function(require,module,exports){
+module.exports = require('./Bridge').adapters;
+
+
+
+},{"./Bridge":8}],14:[function(require,module,exports){
+module.exports = require('./React').addons.classSet;
+
+
+
+},{"./React":12}],15:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div;
 
-div = require('../../vendor/reactive-aspen').React.DOM.div;
+div = require('../vendor/DOM').div;
 
 AppBody = require('./body');
 
@@ -534,16 +570,14 @@ module.exports = TodoApp;
 
 
 
-},{"../../vendor/reactive-aspen":13,"./body":8,"./footer":9,"./header":10}],8:[function(require,module,exports){
-var $checkbox, AppBody, Bridge, React, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref, _ref1;
+},{"../vendor/DOM":10,"./body":16,"./footer":17,"./header":18}],16:[function(require,module,exports){
+var $checkbox, AppBody, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref;
 
-_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+$checkbox = require('../vendor/adapters').$checkbox;
+
+_ref = require('../vendor/DOM'), section = _ref.section, ul = _ref.ul;
 
 TodoItem = require('./todoItem');
-
-_ref1 = React.DOM, section = _ref1.section, ul = _ref1.ul;
-
-$checkbox = Bridge.adapters.$checkbox;
 
 mainToggle = $checkbox('toggle-all-checkbox');
 
@@ -588,20 +622,16 @@ module.exports = AppBody;
 
 
 
-},{"../../vendor/reactive-aspen":13,"./todoItem":11}],9:[function(require,module,exports){
-var $button, $link, AppFooter, Bridge, DOM, React, activeFilter, addons, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
+},{"../vendor/DOM":10,"../vendor/adapters":13,"./todoItem":19}],17:[function(require,module,exports){
+var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
-_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+_ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
+
+classSet = require('../vendor/classSet');
+
+_ref1 = require('../vendor/DOM'), footer = _ref1.footer, li = _ref1.li, span = _ref1.span, strong = _ref1.strong, ul = _ref1.ul;
 
 pluralize = require('../utilities').pluralize;
-
-addons = React.addons, DOM = React.DOM;
-
-classSet = addons.classSet;
-
-footer = DOM.footer, li = DOM.li, span = DOM.span, strong = DOM.strong, ul = DOM.ul;
-
-_ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 
 noProps = null;
 
@@ -661,14 +691,12 @@ module.exports = AppFooter;
 
 
 
-},{"../../vendor/reactive-aspen":13,"../utilities":6}],10:[function(require,module,exports){
-var $text, AppHeader, Bridge, React, h1, header, todoInput, todosCaption, _ref, _ref1;
+},{"../utilities":6,"../vendor/DOM":10,"../vendor/adapters":13,"../vendor/classSet":14}],18:[function(require,module,exports){
+var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
-_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+_ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
 
-_ref1 = React.DOM, h1 = _ref1.h1, header = _ref1.header;
-
-$text = Bridge.adapters.$text;
+$text = require('../vendor/adapters').$text;
 
 todosCaption = function() {
   return h1(null, 'todos');
@@ -691,22 +719,18 @@ module.exports = AppHeader;
 
 
 
-},{"../../vendor/reactive-aspen":13}],11:[function(require,module,exports){
-var $button, $checkbox, $label, Bridge, DOM, Mixins, React, TodoItem, adapters, addons, applyIndex, classSet, createFactory, div, factories, includeIndex, indexifyAdapter, li, sensitize, todoItemInputClass, todoItemInputFactory, _ref;
+},{"../vendor/DOM":10,"../vendor/adapters":13}],19:[function(require,module,exports){
+var $button, $checkbox, $label, TodoItem, applyIndex, classSet, createFactory, div, factories, includeIndex, indexifyAdapter, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
-_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, Mixins = _ref.Mixins, React = _ref.React;
+_ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
+
+classSet = require('../vendor/classSet');
+
+createFactory = require('../vendor/React').createFactory;
+
+_ref1 = require('../vendor/DOM'), div = _ref1.div, li = _ref1.li;
 
 todoItemInputClass = require('./todoItemInputClass');
-
-adapters = Bridge.adapters, sensitize = Bridge.sensitize;
-
-$button = adapters.$button, $checkbox = adapters.$checkbox, $label = adapters.$label;
-
-addons = React.addons, createFactory = React.createFactory, DOM = React.DOM;
-
-classSet = addons.classSet;
-
-div = DOM.div, li = DOM.li;
 
 applyIndex = function(index) {
   return function(adapter) {
@@ -730,13 +754,13 @@ indexifyAdapter = function(_arg) {
 };
 
 TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, focus, title, _completionToggle, _destroyButton, _ref1, _todoItemLabel;
+  var className, completed, editText, editing, focus, title, _completionToggle, _destroyButton, _ref2, _todoItemLabel;
   completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
   });
-  _ref1 = factories.map(applyIndex(index)), _completionToggle = _ref1[0], _destroyButton = _ref1[1], _todoItemLabel = _ref1[2];
+  _ref2 = factories.map(applyIndex(index)), _completionToggle = _ref2[0], _destroyButton = _ref2[1], _todoItemLabel = _ref2[2];
   return li({
     key: "todo-item-" + title,
     className: className
@@ -766,16 +790,14 @@ module.exports = TodoItem;
 
 
 
-},{"../../vendor/reactive-aspen":13,"./todoItemInputClass":12}],12:[function(require,module,exports){
-var $text, Bridge, React, UpdatePostFocusMixin, createClass, todoItemInputClass, _ref, _todoItemInput;
+},{"../vendor/DOM":10,"../vendor/React":12,"../vendor/adapters":13,"../vendor/classSet":14,"./todoItemInputClass":20}],20:[function(require,module,exports){
+var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
-_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+createClass = require('../vendor/React').createClass;
 
-createClass = React.createClass;
+$text = require('../vendor/adapters').$text;
 
-$text = Bridge.adapters.$text;
-
-UpdatePostFocusMixin = require('../UpdatePostFocusMixin');
+UpdatePostFocusMixin = require('../mixins/UpdatePostFocusMixin');
 
 _todoItemInput = function(index) {
   return $text({
@@ -787,8 +809,8 @@ _todoItemInput = function(index) {
 todoItemInputClass = createClass({
   mixins: [UpdatePostFocusMixin],
   render: function() {
-    var editText, focus, index, _ref1;
-    _ref1 = this.props, editText = _ref1.editText, focus = _ref1.focus, index = _ref1.index;
+    var editText, focus, index, _ref;
+    _ref = this.props, editText = _ref.editText, focus = _ref.focus, index = _ref.index;
     return _todoItemInput(index)({
       autoPostFocus: focus,
       className: 'edit',
@@ -805,7 +827,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../../vendor/reactive-aspen":13,"../UpdatePostFocusMixin":1}],13:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":12,"../vendor/adapters":13}],21:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
@@ -23411,4 +23433,4 @@ module.exports = {
 },{}]},{},[12])
 (12)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[5])
+},{}]},{},[4])
