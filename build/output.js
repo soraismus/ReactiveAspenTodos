@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
+var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppState, editAppStateByID, editTodo, endEditing, endEditingByID, enterKey_question_, extractID, extractIndex, extractIndexAndValue, extractNewTodo, filtering, findTodoByID, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, router, setModeTo, store, storeTitle, storeTitleForID, storeTitleForIndex, toggleAllTodos, toggleTodo, toggleTodoByID, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
@@ -39,9 +39,7 @@ router = Router({
 router.init('/');
 
 activateAll = function(appState) {
-  var todos;
-  todos = appState.todos;
-  todos.forEach(function(todo) {
+  appState.todos.forEach(function(todo) {
     return todo.completed = false;
   });
   return appState.activeCount = todos.length;
@@ -68,15 +66,6 @@ completeAll = function(appState) {
 
 continueEditingTodo = function(todo, text) {
   return todo.title = text;
-};
-
-continueEditingAppState = function(props) {
-  var index, value;
-  index = props.index, value = props.value;
-  return function(appState) {
-    continueEditingTodo(appState.todos[index], value);
-    return cacheAppData(appState);
-  };
 };
 
 createTodo = function(title) {
@@ -106,6 +95,27 @@ editAppState = function(index) {
   };
 };
 
+editAppStateByID = function(id) {
+  return function(appState) {
+    var index, todo, todos, _ref2;
+    todos = appState.todos;
+    appState.focus = false;
+    _ref2 = findTodoByID(todos, id), todo = _ref2[0], index = _ref2[1];
+    todos[index] = editTodo(todo);
+    return appState;
+  };
+};
+
+findTodoByID = function(todos, id) {
+  var index, todo, _i, _len;
+  for (index = _i = 0, _len = todos.length; _i < _len; index = ++_i) {
+    todo = todos[index];
+    if (todo.id === id) {
+      return [todo, index];
+    }
+  }
+};
+
 endEditing = function(capsule) {
   var index;
   index = capsule.index;
@@ -123,12 +133,33 @@ endEditing = function(capsule) {
   };
 };
 
+endEditingByID = function(capsule) {
+  var id, index;
+  id = capsule.id, index = capsule.index;
+  return function(appState) {
+    var result, title, todo, _ref2;
+    appState.focus = true;
+    _ref2 = findTodoByID(appState.todos, id), todo = _ref2[0], index = _ref2[1];
+    todo.editing = false;
+    todo.focus = false;
+    title = getTitle().trim();
+    todo.title = title;
+    todo.editText = title;
+    result = todo.title ? appState : removeTodo(index)(appState);
+    return cacheAppData(result);
+  };
+};
+
 enterKey_question_ = function(capsule) {
   return capsule.event.keyCode === 13;
 };
 
 extractIndex = function(capsule) {
   return capsule.index;
+};
+
+extractID = function(capsule) {
+  return capsule.id;
 };
 
 extractIndexAndValue = function(capsule) {
@@ -180,8 +211,28 @@ removeTodo = function(index) {
   };
 };
 
+removeTodoByID = function(id) {
+  return function(appState) {
+    var index, todo, todos, _ref3;
+    todos = appState.todos;
+    _ref3 = findTodoByID(todos, id), todo = _ref3[0], index = _ref3[1];
+    todos.splice(index, 1);
+    if (!todo.completed) {
+      appState.activeCount -= 1;
+    }
+    appState.count -= 1;
+    return cacheAppData(appState);
+  };
+};
+
 storeTitleForIndex = function(appState, capsule) {
   return storeTitle(appState.todos[capsule.index].title);
+};
+
+storeTitleForID = function(appState, capsule) {
+  var todo;
+  todo = findTodoByID(appState.todos, capsule.id)[0];
+  return storeTitle(todo.title);
 };
 
 toggleAllTodos = function(appState) {
@@ -196,6 +247,18 @@ toggleTodo = function(index) {
     var activeCount, completed, mode, todo, todos;
     activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
     todo = getTodos(mode, todos)[index];
+    completed = todo.completed;
+    appState.activeCount = updateCount(activeCount, completed);
+    todo.completed = !completed;
+    return cacheAppData(appState);
+  };
+};
+
+toggleTodoByID = function(id) {
+  return function(appState) {
+    var activeCount, completed, index, mode, todo, todos, _ref3;
+    activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
+    _ref3 = findTodoByID(todos, id), todo = _ref3[0], index = _ref3[1];
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -244,7 +307,7 @@ getTodos = function(mode, todos) {
 
 plugIntoTerminus('$toggle-clicks', function() {
   return mapping(function(capsule) {
-    return toggleTodo(extractIndex(capsule));
+    return toggleTodoByID(extractID(capsule));
   });
 });
 
@@ -272,13 +335,14 @@ plugIntoTerminus('$new-todo-keydowns', function() {
 
 plugIntoTerminus('$destroy-clicks', function() {
   return mapping(function(capsule) {
-    return removeTodo(extractIndex(capsule));
+    return removeTodoByID(extractID(capsule));
   });
 });
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
   return mapping(function(capsule) {
-    return editAppState(extractIndex(capsule));
+    console.log('uuid:', capsule.id);
+    return editAppStateByID(extractID(capsule));
   });
 });
 
@@ -292,12 +356,12 @@ getDispatcher('todo-in-edit').subscribe(function(capsule) {
 
 plugIntoTerminus('$edit-keydowns', function() {
   return function(__i) {
-    return filtering(enterKey_question_)(mapping(endEditing)(__i));
+    return filtering(enterKey_question_)(mapping(endEditingByID)(__i));
   };
 });
 
 plugIntoTerminus('$edit-blurs', function() {
-  return mapping(endEditing);
+  return mapping(endEditingByID);
 });
 
 module.exports = null;
@@ -725,7 +789,7 @@ module.exports = AppHeader;
 
 
 },{"../vendor/DOM":10,"../vendor/adapters":13}],19:[function(require,module,exports){
-var $button, $checkbox, $label, TodoItem, applyIndex, classSet, createFactory, div, factories, includeIndex, indexifyAdapter, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
+var $button, $checkbox, $label, TodoItem, applyIdAndIndex, applyIndex, classSet, createFactory, div, factories, includeIdAndIndex, includeIndex, indexifyAdapter, indexifyAdapterW_slash_Id, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
 
@@ -743,8 +807,22 @@ applyIndex = function(index) {
   };
 };
 
+applyIdAndIndex = function(id, index) {
+  return function(adapter) {
+    return adapter(id, index);
+  };
+};
+
 includeIndex = function(label, index) {
   return {
+    index: index,
+    label: label
+  };
+};
+
+includeIdAndIndex = function(label, id, index) {
+  return {
+    id: id,
     index: index,
     label: label
   };
@@ -758,6 +836,14 @@ indexifyAdapter = function(_arg) {
   };
 };
 
+indexifyAdapterW_slash_Id = function(_arg) {
+  var adapter, label;
+  adapter = _arg[0], label = _arg[1];
+  return function(id, index) {
+    return adapter(includeIdAndIndex(label, id, index));
+  };
+};
+
 TodoItem = function(todoProps, index) {
   var className, completed, editText, editing, focus, id, title, _completionToggle, _destroyButton, _ref2, _todoItemLabel;
   completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, id = todoProps.id, title = todoProps.title;
@@ -765,7 +851,7 @@ TodoItem = function(todoProps, index) {
     completed: completed,
     editing: editing
   });
-  _ref2 = factories.map(applyIndex(index)), _completionToggle = _ref2[0], _destroyButton = _ref2[1], _todoItemLabel = _ref2[2];
+  _ref2 = factories.map(applyIdAndIndex(id, index)), _completionToggle = _ref2[0], _destroyButton = _ref2[1], _todoItemLabel = _ref2[2];
   return li({
     key: id,
     className: className
@@ -783,11 +869,12 @@ TodoItem = function(todoProps, index) {
   })), todoItemInputFactory({
     editText: editText,
     autoPostFocus: focus,
-    index: index
+    index: index,
+    uuid: id
   }));
 };
 
-factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(indexifyAdapter);
+factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(indexifyAdapterW_slash_Id);
 
 todoItemInputFactory = createFactory(todoItemInputClass);
 
@@ -804,8 +891,9 @@ $text = require('../vendor/adapters').$text;
 
 UpdatePostFocusMixin = require('../mixins/UpdatePostFocusMixin');
 
-_todoItemInput = function(index) {
+_todoItemInput = function(id, index) {
   return $text({
+    id: id,
     index: index,
     label: 'todo-item-input'
   });
@@ -814,9 +902,9 @@ _todoItemInput = function(index) {
 todoItemInputClass = createClass({
   mixins: [UpdatePostFocusMixin],
   render: function() {
-    var editText, index, _ref;
-    _ref = this.props, editText = _ref.editText, index = _ref.index;
-    return _todoItemInput(index)({
+    var editText, index, uuid, _ref;
+    _ref = this.props, editText = _ref.editText, index = _ref.index, uuid = _ref.uuid;
+    return _todoItemInput(uuid, index)({
       className: 'edit',
       defaultValue: editText,
       key: 'todo-item-input' + index,
