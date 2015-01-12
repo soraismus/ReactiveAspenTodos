@@ -10,8 +10,6 @@ noProps = null
 AppFooter = \props ->
   { activeCount, count, mode } = props
 
-  filterOption = getFilterOption mode
-
   footer
     id : 'footer'
     countSpan activeCount
