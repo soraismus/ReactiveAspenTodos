@@ -606,9 +606,8 @@ _ref1 = Bridge.adapters, $button = _ref1.$button, $link = _ref1.$link;
 noProps = null;
 
 AppFooter = function(props) {
-  var activeCount, count, filterOption, mode;
+  var activeCount, count, mode;
   activeCount = props.activeCount, count = props.count, mode = props.mode;
-  filterOption = getFilterOption(mode);
   return footer({
     id: 'footer'
   }, countSpan(activeCount), ul({
