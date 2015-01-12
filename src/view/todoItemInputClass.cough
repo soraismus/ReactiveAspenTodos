@@ -8,9 +8,8 @@ _todoItemInput = \index ->
 todoItemInputClass = createClass
   mixins: [UpdatePostFocusMixin]
   render: ->
-    { editText, focus, index } = this.props
+    { editText, index } = this.props
     _todoItemInput (index)
-      autoPostFocus : focus
       className     : 'edit'
       defaultValue  : editText
       key           : 'todo-item-input' + index
