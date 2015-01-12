@@ -809,10 +809,9 @@ _todoItemInput = function(index) {
 todoItemInputClass = createClass({
   mixins: [UpdatePostFocusMixin],
   render: function() {
-    var editText, focus, index, _ref;
-    _ref = this.props, editText = _ref.editText, focus = _ref.focus, index = _ref.index;
+    var editText, index, _ref;
+    _ref = this.props, editText = _ref.editText, index = _ref.index;
     return _todoItemInput(index)({
-      autoPostFocus: focus,
       className: 'edit',
       defaultValue: editText,
       key: 'todo-item-input' + index,
