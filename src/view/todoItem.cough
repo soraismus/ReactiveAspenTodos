@@ -14,14 +14,14 @@ indexifyAdapter = ([adapter, label]) -> (index) ->
   adapter (includeIndex (label, index))
 
 TodoItem = (todoProps, index) ->
-  { completed, editing, editText, focus, title } = todoProps
+  { completed, editing, editText, focus, id, title } = todoProps
   className = classSet { completed, editing }
 
   [_completionToggle, _destroyButton, _todoItemLabel] =
     factories.map (applyIndex index)
 
   li
-    key       : "todo-item-#{title}"
+    key       : id
     className : className
     div
       className : 'view'
