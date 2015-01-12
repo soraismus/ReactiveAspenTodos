@@ -1,6 +1,6 @@
 { Controller, Pando }      = require '../../vendor/reactive-aspen'
 { store }                  = require '../utilities'
-{ connect, getDispatcher } = Controller
+{ connect, getDispatcher, plugIntoTerminus } = Controller
 { transforms, utilities }  = Pando
 { doAsync }                = utilities
 { filtering, mapping }     = transforms
@@ -157,26 +157,26 @@ getTodos = (mode, todos) ->
     when 'completed' then todos.filter completed
 # -------------------------------------------------------------------------
 
-connect '$toggle-clicks' TERMINUS ->
+plugIntoTerminus '$toggle-clicks', ->
   mapping (\capsule -> toggleTodo (extractIndex capsule))
 
-connect '$router-events' TERMINUS ->
+plugIntoTerminus '$router-events', ->
   mapping updateMode
 
-connect '$toggle-all-clicks' TERMINUS ->
+plugIntoTerminus '$toggle-all-clicks', ->
   mapping (-> toggleAllTodos)
 
-connect '$clear-clicks' TERMINUS ->
+plugIntoTerminus '$clear-clicks', ->
   mapping (-> removeCompleted)
 
-connect '$new-todo-keydowns' TERMINUS ->
+plugIntoTerminus '$new-todo-keydowns', ->
   ; filtering (enterKey?) mapping (extractNewTodo) ;
 
-connect '$destroy-clicks' TERMINUS ->
+plugIntoTerminus '$destroy-clicks', ->
   mapping (\capsule -> removeTodo (extractIndex capsule))
 
 # -------------------------------------------------------------------------
-connect '$todo-label-doubleclicks' TERMINUS ->
+plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping (\capsule -> editAppState (extractIndex capsule))
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
@@ -186,10 +186,10 @@ getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
 # -------------------------------------------------------------------------
 
-connect '$edit-keydowns' TERMINUS ->
+plugIntoTerminus '$edit-keydowns', ->
   ; filtering (enterKey?) mapping (endEditing) ;
 
-connect '$edit-blurs' TERMINUS ->
+plugIntoTerminus '$edit-blurs', ->
   mapping endEditing
 
 module.exports = null
