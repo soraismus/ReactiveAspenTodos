@@ -1,0 +1,22 @@
+AutoPostFocusMixin = require 'react-auto-post-focus-mixin'
+{ Bridge, React }  = require '../../vendor/reactive-aspen'
+{ createClass }    = React
+{ $text }          = Bridge.adapters
+
+_todoItemInput = \index ->
+  $text { index, label: 'todo-item-input' }
+
+todoItemInputClass = createClass
+  mixins: [AutoPostFocusMixin]
+  render: ->
+    { editText, focus, index } = this.props
+    _todoItemInput(index)
+      autoPostFocus : focus
+      className     : 'edit'
+      defaultValue  : editText
+      key           : 'todo-item-input' + index
+      onBlur        : true
+      onChange      : true
+      onKeyDown     : true
+
+module.exports = todoItemInputClass

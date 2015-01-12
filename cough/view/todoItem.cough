@@ -1,14 +1,10 @@
-{ Bridge, Mixins, React }             = require '../../vendor/reactive-aspen'
-{ adapters, sensitize }               = Bridge
-AutoPostFocusMixin                    = require 'react-auto-post-focus-mixin'
-{ $button, $checkbox, $label, $text } = adapters 
-{ addons, DOM }                       = React
-{ classSet }                          = addons
-{ div, li }                           = DOM
-
-# ----------
-# Functions
-# ----------
+{ Bridge, Mixins, React }      = require '../../vendor/reactive-aspen'
+todoItemInputClass             = require './todoItemInputClass'
+{ adapters, sensitize }        = Bridge
+{ $button, $checkbox, $label } = adapters 
+{ addons, createFactory, DOM } = React
+{ classSet }                   = addons
+{ div, li }                    = DOM
 
 applyIndex = \index \adapter ->
   adapter index
@@ -23,7 +19,7 @@ TodoItem = (todoProps, index) ->
   { completed, editing, editText, focus, title } = todoProps
   className = classSet { completed, editing }
 
-  [_completionToggle, _destroyButton, _TodoItemInput, _todoItemLabel] =
+  [_completionToggle, _destroyButton, _todoItemLabel] =
     factories.map (applyIndex index)
 
   li
@@ -41,34 +37,14 @@ TodoItem = (todoProps, index) ->
       _destroyButton
         className : 'destroy'
         onClick   : true
-    _TodoItemInput
-      className      : 'edit'
-      defaultValue   : editText
-      onBlur         : true
-      onChange       : true
-      onKeyDown      : true
-      sensitiveProps :
-        autoPostFocus  : focus
-        key            : 'todo-item-input' + index
+    todoItemInputFactory({ editText, focus, index })
 
-TodoItemInput = \index ->
-  sensitize { index, label: 'TodoItemInput' } (
-    (todoItemInput index), AutoPostFocusMixin)
-
-# -----------------------
-# Non-Function Constants
-# -----------------------
-
-fields = [
+factories = [
   [$checkbox, 'completion-toggle']
   [$button,   'destroy-button'   ]
-  [$text,     'todo-item-input'  ]
   [$label,    'todo-item-label'  ]
-]
+].map indexifyAdapter
 
-[completionToggle, destroyButton, todoItemInput, todoItemLabel] =
-  fields.map indexifyAdapter
-
-factories = [completionToggle, destroyButton, TodoItemInput, todoItemLabel]
+todoItemInputFactory = createFactory todoItemInputClass
 
 module.exports = TodoItem
