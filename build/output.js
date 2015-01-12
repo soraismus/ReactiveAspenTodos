@@ -1,5 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1, _ref2;
+var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1, _ref2;
+
+appStateProperty = require('../vendor/Aspen').appStateProperty;
 
 _ref = require('../vendor/Controller'), connect = _ref.connect, getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
 
@@ -278,7 +280,7 @@ plugIntoTerminus('$todo-label-doubleclicks', function() {
 });
 
 getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
-  return doAsync(storeTitleForIndex)(getDispatcher('_appState_'), capsule);
+  return doAsync(storeTitleForIndex)(appStateProperty, capsule);
 });
 
 getDispatcher('todo-in-edit').subscribe(function(capsule) {
@@ -299,7 +301,7 @@ module.exports = null;
 
 
 
-},{"../utilities":6,"../vendor/Controller":9,"../vendor/Pando":11}],2:[function(require,module,exports){
+},{"../utilities":6,"../vendor/Aspen":7,"../vendor/Controller":9,"../vendor/Pando":11}],2:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
