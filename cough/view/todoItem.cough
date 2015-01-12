@@ -37,7 +37,7 @@ TodoItem = (todoProps, index) ->
       _destroyButton
         className : 'destroy'
         onClick   : true
-    todoItemInputFactory({ editText, focus, index })
+    todoItemInputFactory({ editText, autoPostFocus: focus, index })
 
 factories = [
   [$checkbox, 'completion-toggle']
