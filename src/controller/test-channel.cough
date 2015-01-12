@@ -1,3 +1,4 @@
+{ appStateProperty }                         = require '../vendor/Aspen'
 { connect, getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
 { transforms, utilities }                    = require '../vendor/Pando'
 { store }                                    = require '../utilities'
@@ -178,7 +179,7 @@ plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping (\capsule -> editAppState (extractIndex capsule))
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
-  doAsync (storeTitleForIndex) ((getDispatcher '_appState_'), capsule)
+  doAsync (storeTitleForIndex) (appStateProperty, capsule)
 
 getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
