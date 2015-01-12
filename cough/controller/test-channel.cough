@@ -49,7 +49,7 @@ continueEditingAppState = \props ->
     cacheAppData appState
 
 createTodo = \title ->
-  { completed: false, editing: false, editText: null, title }
+  { completed: false, editing: false, editText: title, title }
 
 editTodo = \todo ->
   todo.editing  = true
@@ -67,10 +67,13 @@ endEditing = \capsule ->
   { index } = capsule
   \appState ->
     appState.focus = true
-    todo = appState.todos[index]
-    todo.editing = false
-    todo.focus   = false
-    todo.title   = getTitle().trim()
+    todo           = appState.todos[index]
+    todo.editing   = false
+    todo.focus     = false
+    title          = getTitle().trim()
+    todo.title     = title
+    todo.editText  = title
+
     result = if todo.title then appState else removeTodo (index) (appState)
     cacheAppData result
 
@@ -177,7 +180,7 @@ connect '$todo-label-doubleclicks' TERMINUS ->
   mapping (\capsule -> editAppState (extractIndex capsule))
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
-  doAsync (storeTitleForIndex) ((getDispatcher 'app-state'), capsule)
+  doAsync (storeTitleForIndex) ((getDispatcher '_appState_'), capsule)
 
 getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
