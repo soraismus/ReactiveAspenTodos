@@ -33,13 +33,13 @@ var UpdatePostFocusMixin = {
 module.exports = UpdatePostFocusMixin;
 
 },{}],2:[function(require,module,exports){
-var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1;
+var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Controller = _ref.Controller, Pando = _ref.Pando;
 
 store = require('../utilities').store;
 
-connect = Controller.connect, getDispatcher = Controller.getDispatcher;
+connect = Controller.connect, getDispatcher = Controller.getDispatcher, plugIntoTerminus = Controller.plugIntoTerminus;
 
 transforms = Pando.transforms, utilities = Pando.utilities;
 
@@ -275,41 +275,41 @@ getTodos = function(mode, todos) {
   }
 };
 
-connect('$toggle-clicks')(TERMINUS)(function() {
+plugIntoTerminus('$toggle-clicks', function() {
   return mapping(function(capsule) {
     return toggleTodo(extractIndex(capsule));
   });
 });
 
-connect('$router-events')(TERMINUS)(function() {
+plugIntoTerminus('$router-events', function() {
   return mapping(updateMode);
 });
 
-connect('$toggle-all-clicks')(TERMINUS)(function() {
+plugIntoTerminus('$toggle-all-clicks', function() {
   return mapping(function() {
     return toggleAllTodos;
   });
 });
 
-connect('$clear-clicks')(TERMINUS)(function() {
+plugIntoTerminus('$clear-clicks', function() {
   return mapping(function() {
     return removeCompleted;
   });
 });
 
-connect('$new-todo-keydowns')(TERMINUS)(function() {
+plugIntoTerminus('$new-todo-keydowns', function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(extractNewTodo)(__i));
   };
 });
 
-connect('$destroy-clicks')(TERMINUS)(function() {
+plugIntoTerminus('$destroy-clicks', function() {
   return mapping(function(capsule) {
     return removeTodo(extractIndex(capsule));
   });
 });
 
-connect('$todo-label-doubleclicks')(TERMINUS)(function() {
+plugIntoTerminus('$todo-label-doubleclicks', function() {
   return mapping(function(capsule) {
     return editAppState(extractIndex(capsule));
   });
@@ -323,13 +323,13 @@ getDispatcher('todo-in-edit').subscribe(function(capsule) {
   return storeTitle(capsule.event.target.value);
 });
 
-connect('$edit-keydowns')(TERMINUS)(function() {
+plugIntoTerminus('$edit-keydowns', function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(endEditing)(__i));
   };
 });
 
-connect('$edit-blurs')(TERMINUS)(function() {
+plugIntoTerminus('$edit-blurs', function() {
   return mapping(endEditing);
 });
 
