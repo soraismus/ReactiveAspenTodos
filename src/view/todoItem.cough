@@ -7,18 +7,29 @@ todoItemInputClass             = require './todoItemInputClass'
 applyIndex = \index \adapter ->
   adapter index
 
+applyIdAndIndex = (id, index) -> (adapter) ->
+  adapter (id, index)
+
 includeIndex = (label, index) ->
   { index, label }
 
+includeIdAndIndex = (label, id, index) ->
+  { id, index, label }
+
 indexifyAdapter = ([adapter, label]) -> (index) ->
   adapter (includeIndex (label, index))
+
+indexifyAdapterW/Id = ([adapter, label]) -> (id, index) ->
+  adapter (includeIdAndIndex (label, id, index))
+
+# -------------------------------------------------------------------------
 
 TodoItem = (todoProps, index) ->
   { completed, editing, editText, focus, id, title } = todoProps
   className = classSet { completed, editing }
 
   [_completionToggle, _destroyButton, _todoItemLabel] =
-    factories.map (applyIndex index)
+    factories.map (applyIdAndIndex (id, index))
 
   li
     key       : id
@@ -35,13 +46,13 @@ TodoItem = (todoProps, index) ->
       _destroyButton
         className : 'destroy'
         onClick   : true
-    todoItemInputFactory ({ editText, autoPostFocus: focus, index })
+    todoItemInputFactory ({ editText, autoPostFocus: focus, index, uuid: id })
 
 factories = [
   [$checkbox, 'completion-toggle']
   [$button,   'destroy-button'   ]
   [$label,    'todo-item-label'  ]
-].map indexifyAdapter
+].map indexifyAdapterW/Id
 
 todoItemInputFactory = createFactory todoItemInputClass
 
