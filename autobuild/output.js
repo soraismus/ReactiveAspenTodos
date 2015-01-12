@@ -117,7 +117,7 @@ createTodo = function(title) {
   return {
     completed: false,
     editing: false,
-    editText: null,
+    editText: title,
     title: title
   };
 };
@@ -143,12 +143,14 @@ endEditing = function(capsule) {
   var index;
   index = capsule.index;
   return function(appState) {
-    var result, todo;
+    var result, title, todo;
     appState.focus = true;
     todo = appState.todos[index];
     todo.editing = false;
     todo.focus = false;
-    todo.title = getTitle().trim();
+    title = getTitle().trim();
+    todo.title = title;
+    todo.editText = title;
     result = todo.title ? appState : removeTodo(index)(appState);
     return cacheAppData(result);
   };
@@ -314,7 +316,7 @@ connect('$todo-label-doubleclicks')(TERMINUS)(function() {
 });
 
 getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
-  return doAsync(storeTitleForIndex)(getDispatcher('app-state'), capsule);
+  return doAsync(storeTitleForIndex)(getDispatcher('_appState_'), capsule);
 });
 
 getDispatcher('todo-in-edit').subscribe(function(capsule) {
@@ -335,7 +337,7 @@ module.exports = null;
 
 
 
-},{"../../vendor/reactive-aspen":12,"../utilities":6}],3:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"../utilities":6}],3:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -434,7 +436,7 @@ require('./controller/test-channel');
 
 
 
-},{"../vendor/reactive-aspen":12,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./view/app":7}],6:[function(require,module,exports){
+},{"../vendor/reactive-aspen":13,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./view/app":7}],6:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -532,7 +534,7 @@ module.exports = TodoApp;
 
 
 
-},{"../../vendor/reactive-aspen":12,"./body":8,"./footer":9,"./header":10}],8:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"./body":8,"./footer":9,"./header":10}],8:[function(require,module,exports){
 var $checkbox, AppBody, Bridge, React, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -586,7 +588,7 @@ module.exports = AppBody;
 
 
 
-},{"../../vendor/reactive-aspen":12,"./todoItem":11}],9:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"./todoItem":11}],9:[function(require,module,exports){
 var $button, $link, AppFooter, Bridge, DOM, React, activeFilter, addons, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -660,7 +662,7 @@ module.exports = AppFooter;
 
 
 
-},{"../../vendor/reactive-aspen":12,"../utilities":6}],10:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"../utilities":6}],10:[function(require,module,exports){
 var $text, AppHeader, Bridge, React, h1, header, todoInput, todosCaption, _ref, _ref1;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
@@ -690,18 +692,18 @@ module.exports = AppHeader;
 
 
 
-},{"../../vendor/reactive-aspen":12}],11:[function(require,module,exports){
-var $button, $checkbox, $label, $text, AutoPostFocusMixin, Bridge, DOM, Mixins, React, TodoItem, TodoItemInput, adapters, addons, applyIndex, classSet, completionToggle, destroyButton, div, factories, fields, includeIndex, indexifyAdapter, li, sensitize, todoItemInput, todoItemLabel, _ref, _ref1;
+},{"../../vendor/reactive-aspen":13}],11:[function(require,module,exports){
+var $button, $checkbox, $label, Bridge, DOM, Mixins, React, TodoItem, adapters, addons, applyIndex, classSet, createFactory, div, factories, includeIndex, indexifyAdapter, li, sensitize, todoItemInputClass, todoItemInputFactory, _ref;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, Mixins = _ref.Mixins, React = _ref.React;
 
+todoItemInputClass = require('./todoItemInputClass');
+
 adapters = Bridge.adapters, sensitize = Bridge.sensitize;
 
-AutoPostFocusMixin = require('react-auto-post-focus-mixin');
+$button = adapters.$button, $checkbox = adapters.$checkbox, $label = adapters.$label;
 
-$button = adapters.$button, $checkbox = adapters.$checkbox, $label = adapters.$label, $text = adapters.$text;
-
-addons = React.addons, DOM = React.DOM;
+addons = React.addons, createFactory = React.createFactory, DOM = React.DOM;
 
 classSet = addons.classSet;
 
@@ -729,13 +731,13 @@ indexifyAdapter = function(_arg) {
 };
 
 TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, focus, title, _TodoItemInput, _completionToggle, _destroyButton, _ref1, _todoItemLabel;
+  var className, completed, editText, editing, focus, title, _completionToggle, _destroyButton, _ref1, _todoItemLabel;
   completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
   });
-  _ref1 = factories.map(applyIndex(index)), _completionToggle = _ref1[0], _destroyButton = _ref1[1], _TodoItemInput = _ref1[2], _todoItemLabel = _ref1[3];
+  _ref1 = factories.map(applyIndex(index)), _completionToggle = _ref1[0], _destroyButton = _ref1[1], _todoItemLabel = _ref1[2];
   return li({
     key: "todo-item-" + title,
     className: className
@@ -750,37 +752,61 @@ TodoItem = function(todoProps, index) {
   }, title), _destroyButton({
     className: 'destroy',
     onClick: true
-  })), _TodoItemInput({
-    className: 'edit',
-    defaultValue: editText,
-    onBlur: true,
-    onChange: true,
-    onKeyDown: true,
-    sensitiveProps: {
-      autoPostFocus: focus,
-      key: 'todo-item-input' + index
-    }
+  })), todoItemInputFactory({
+    editText: editText,
+    focus: focus,
+    index: index
   }));
 };
 
-TodoItemInput = function(index) {
-  return sensitize({
-    index: index,
-    label: 'TodoItemInput'
-  })(todoItemInput(index), AutoPostFocusMixin);
-};
+factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(indexifyAdapter);
 
-fields = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$text, 'todo-item-input'], [$label, 'todo-item-label']];
-
-_ref1 = fields.map(indexifyAdapter), completionToggle = _ref1[0], destroyButton = _ref1[1], todoItemInput = _ref1[2], todoItemLabel = _ref1[3];
-
-factories = [completionToggle, destroyButton, TodoItemInput, todoItemLabel];
+todoItemInputFactory = createFactory(todoItemInputClass);
 
 module.exports = TodoItem;
 
 
 
-},{"../../vendor/reactive-aspen":12,"react-auto-post-focus-mixin":1}],12:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"./todoItemInputClass":12}],12:[function(require,module,exports){
+var $text, AutoPostFocusMixin, Bridge, React, createClass, todoItemInputClass, _ref, _todoItemInput;
+
+AutoPostFocusMixin = require('react-auto-post-focus-mixin');
+
+_ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
+
+createClass = React.createClass;
+
+$text = Bridge.adapters.$text;
+
+_todoItemInput = function(index) {
+  return $text({
+    index: index,
+    label: 'todo-item-input'
+  });
+};
+
+todoItemInputClass = createClass({
+  mixins: [AutoPostFocusMixin],
+  render: function() {
+    var editText, focus, index, _ref1;
+    _ref1 = this.props, editText = _ref1.editText, focus = _ref1.focus, index = _ref1.index;
+    return _todoItemInput(index)({
+      autoPostFocus: focus,
+      className: 'edit',
+      defaultValue: editText,
+      key: 'todo-item-input' + index,
+      onBlur: true,
+      onChange: true,
+      onKeyDown: true
+    });
+  }
+});
+
+module.exports = todoItemInputClass;
+
+
+
+},{"../../vendor/reactive-aspen":13,"react-auto-post-focus-mixin":1}],13:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
@@ -2396,7 +2422,7 @@ _ref1 = _dereq_('../utilities'), isArray = _ref1.isArray, isObject = _ref1.isObj
 
 portUtilities = _dereq_('./port-utilities');
 
-reactIntake = _dereq_('../aspen-state').reactIntake;
+reactIntake = _dereq_('../aspen-constants').reactIntake;
 
 _blur = portUtilities.blur;
 
@@ -2503,7 +2529,7 @@ module.exports = connectPortsToBuses;
 
 
 
-},{"../aspen-state":7,"../controller/exports":11,"../utilities":22,"./port-registrar":5,"./port-utilities":6}],3:[function(_dereq_,module,exports){
+},{"../aspen-constants":7,"../controller/exports":11,"../utilities":20,"./port-registrar":5,"./port-utilities":6}],3:[function(_dereq_,module,exports){
 var connectPortsToBuses, connectViewToController;
 
 connectPortsToBuses = _dereq_('./connectPortsToBuses');
@@ -2524,7 +2550,7 @@ connectTo = _dereq_('../bridge').connectTo;
 
 connectPort = _dereq_('./port-registrar').connectPort;
 
-reactIntake = _dereq_('../aspen-state').reactIntake;
+reactIntake = _dereq_('../aspen-constants').reactIntake;
 
 connectViewToController = function() {
   return connectTo(reactIntakePort);
@@ -2536,7 +2562,7 @@ module.exports = connectViewToController;
 
 
 
-},{"../aspen-state":7,"../bridge":8,"./port-registrar":5}],5:[function(_dereq_,module,exports){
+},{"../aspen-constants":7,"../bridge":8,"./port-registrar":5}],5:[function(_dereq_,module,exports){
 var addComponent, busExt, connectBus, connectPort, connectPortComponent, createEventStreamBus, getComponent, getPortComponent, keypaths, portExt, ports, register, _ref, _ref1;
 
 _ref = _dereq_('../utilities'), addComponent = _ref.addComponent, getComponent = _ref.getComponent;
@@ -2587,7 +2613,7 @@ module.exports = {
 
 
 
-},{"../pando/factories":17,"../utilities":22}],6:[function(_dereq_,module,exports){
+},{"../pando/factories":15,"../utilities":20}],6:[function(_dereq_,module,exports){
 var blur, preventDefault;
 
 blur = function(capsule) {
@@ -2610,36 +2636,19 @@ module.exports = {
 
 
 },{}],7:[function(_dereq_,module,exports){
-var appState, appStateProperty, getAppNodeID, getEventStream, getProperty, getTopViewFactory, reactIntake, setAppState, terminusEventStream, _ref;
+var appStateProperty, getEventStream, getProperty, reactIntake, terminusEventStream, _ref;
 
 _ref = _dereq_('./controller/channel-registrar'), getEventStream = _ref.getEventStream, getProperty = _ref.getProperty;
 
-appState = null;
-
 appStateProperty = getProperty('_appState_');
 
-getAppNodeID = function() {
-  return appState.appNodeID;
-};
-
-getTopViewFactory = function() {
-  return appState.topViewFactory;
-};
-
 reactIntake = '.reactIntake';
-
-setAppState = function(config) {
-  return appState = config;
-};
 
 terminusEventStream = getEventStream('_terminus_');
 
 module.exports = {
   appStateProperty: appStateProperty,
-  getAppNodeID: getAppNodeID,
-  getTopViewFactory: getTopViewFactory,
   reactIntake: reactIntake,
-  setAppState: setAppState,
   terminusEventStream: terminusEventStream
 };
 
@@ -2650,7 +2659,7 @@ module.exports = _dereq_('../vendor/bridge');
 
 
 
-},{"../vendor/bridge":23}],9:[function(_dereq_,module,exports){
+},{"../vendor/bridge":21}],9:[function(_dereq_,module,exports){
 var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, pandoConnect, plug, plugIntoTerminus, push, setAlias, terminusEventStream, _connect, _ref;
 
 getDispatcher = _dereq_('./channel-registrar').getDispatcher;
@@ -2659,7 +2668,7 @@ _ref = _dereq_('../utilities'), isArray = _ref.isArray, isString = _ref.isString
 
 pandoConnect = _dereq_('../pando/connect');
 
-terminusEventStream = _dereq_('../aspen-state').terminusEventStream;
+terminusEventStream = _dereq_('../aspen-constants').terminusEventStream;
 
 _connect = function(src, tgt, transform) {
   var _ref1, _src, _tgt;
@@ -2772,7 +2781,7 @@ module.exports = {
 
 
 
-},{"../aspen-state":7,"../pando/connect":16,"../utilities":22,"./channel-registrar":10}],10:[function(_dereq_,module,exports){
+},{"../aspen-constants":7,"../pando/connect":14,"../utilities":20,"./channel-registrar":10}],10:[function(_dereq_,module,exports){
 var connect, createEventStreamBus, createNonInitPropertyBus, deleteDispatcher, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, isArray, matchesExistingDispatcher_question_, plugs, register, _ref, _ref1, _register,
   __hasProp = {}.hasOwnProperty;
 
@@ -2864,7 +2873,7 @@ module.exports = {
 
 
 
-},{"../pando/connect":16,"../pando/factories":17,"../utilities":22}],11:[function(_dereq_,module,exports){
+},{"../pando/connect":14,"../pando/factories":15,"../utilities":20}],11:[function(_dereq_,module,exports){
 var connectors, extend, registrationUtilities;
 
 connectors = _dereq_('./channel-connectors');
@@ -2877,60 +2886,44 @@ module.exports = extend({}, connectors, registrationUtilities);
 
 
 
-},{"../utilities":22,"./channel-connectors":9,"./channel-registrar":10}],12:[function(_dereq_,module,exports){
+},{"../utilities":20,"./channel-connectors":9,"./channel-registrar":10}],12:[function(_dereq_,module,exports){
 module.exports = {
   Adapter: _dereq_('./adapter/exports'),
-  appStateProperty: _dereq_('./aspen-state').appStateProperty,
+  appStateProperty: _dereq_('./aspen-constants').appStateProperty,
   Bridge: _dereq_('./bridge'),
   Controller: _dereq_('./controller/exports'),
-  initialize: _dereq_('./initializer/exports'),
+  initialize: _dereq_('./initialize'),
   Pando: _dereq_('./pando/pando'),
   React: _dereq_('./react/react')
 };
 
 
 
-},{"./adapter/exports":3,"./aspen-state":7,"./bridge":8,"./controller/exports":11,"./initializer/exports":13,"./pando/pando":18,"./react/react":20}],13:[function(_dereq_,module,exports){
-module.exports = _dereq_('./initialize');
+},{"./adapter/exports":3,"./aspen-constants":7,"./bridge":8,"./controller/exports":11,"./initialize":13,"./pando/pando":16,"./react/react":18}],13:[function(_dereq_,module,exports){
+var appStateProperty, blockTillReady, connect, connectPortsToBuses, connectViewToController, doAsync, getEventStream, getProperty, initialize, linkTogetherMVC, node, onValue, push, render, resetAppState, terminusEventStream, _linkTogetherMVC, _ref, _ref1, _ref2, _ref3, _render, _topViewFactory;
 
+_ref = _dereq_('./aspen-constants'), appStateProperty = _ref.appStateProperty, terminusEventStream = _ref.terminusEventStream;
 
+_ref1 = _dereq_('./pando/utilities'), blockTillReady = _ref1.blockTillReady, doAsync = _ref1.doAsync, onValue = _ref1.onValue;
 
-},{"./initialize":14}],14:[function(_dereq_,module,exports){
-var connectPortsToBuses, initialize, linkTogetherMVC, push, render, setAppState;
+_ref2 = _dereq_('./controller/exports'), connect = _ref2.connect, getEventStream = _ref2.getEventStream, getProperty = _ref2.getProperty, push = _ref2.push;
 
-connectPortsToBuses = _dereq_('../adapter/exports').connectPortsToBuses;
+_ref3 = _dereq_('./adapter/exports'), connectPortsToBuses = _ref3.connectPortsToBuses, connectViewToController = _ref3.connectViewToController;
 
-linkTogetherMVC = _dereq_('./linkTogetherMVC');
+render = _dereq_('./react/render');
 
-push = _dereq_('../controller/exports').push;
+node = null;
 
-render = _dereq_('../react/render');
-
-setAppState = _dereq_('../aspen-state').setAppState;
+_topViewFactory = null;
 
 initialize = function(appNodeID, topViewFactory, initialAppState, viewImports) {
-  var topReactDescriptor;
-  setAppState({
-    appNodeID: appNodeID,
-    topViewFactory: topViewFactory
-  });
-  topReactDescriptor = linkTogetherMVC(topViewFactory, initialAppState);
-  render(topReactDescriptor, document.getElementById(appNodeID));
+  var reactElement;
+  node = document.getElementById(appNodeID);
+  _topViewFactory = topViewFactory;
+  reactElement = linkTogetherMVC(topViewFactory, initialAppState);
+  render(reactElement, node);
   return connectPortsToBuses(viewImports);
 };
-
-module.exports = initialize;
-
-
-
-},{"../adapter/exports":3,"../aspen-state":7,"../controller/exports":11,"../react/render":21,"./linkTogetherMVC":15}],15:[function(_dereq_,module,exports){
-var appStateProperty, connectViewToController, linkTogetherMVC, push;
-
-appStateProperty = _dereq_('../aspen-state').appStateProperty;
-
-connectViewToController = _dereq_('../adapter/exports').connectViewToController;
-
-push = _dereq_('../controller/exports').push;
 
 linkTogetherMVC = function(topViewFactory, appState) {
   var reactElement;
@@ -2940,41 +2933,54 @@ linkTogetherMVC = function(topViewFactory, appState) {
   return reactElement;
 };
 
-module.exports = linkTogetherMVC;
+resetAppState = function(transform) {
+  var newAppState, reactElement;
+  newAppState = doAsync(transform)(appStateProperty);
+  reactElement = _linkTogetherMVC(_topViewFactory, newAppState);
+  return _render(reactElement, node);
+};
+
+_linkTogetherMVC = doAsync(linkTogetherMVC);
+
+_render = blockTillReady(render);
+
+onValue(terminusEventStream)(blockTillReady(resetAppState));
+
+module.exports = initialize;
 
 
 
-},{"../adapter/exports":3,"../aspen-state":7,"../controller/exports":11}],16:[function(_dereq_,module,exports){
+},{"./adapter/exports":3,"./aspen-constants":7,"./controller/exports":11,"./pando/utilities":17,"./react/render":19}],14:[function(_dereq_,module,exports){
 module.exports = _dereq_('./utilities').connect;
 
 
 
-},{"./utilities":19}],17:[function(_dereq_,module,exports){
+},{"./utilities":17}],15:[function(_dereq_,module,exports){
 module.exports = _dereq_('./pando').factories;
 
 
 
-},{"./pando":18}],18:[function(_dereq_,module,exports){
+},{"./pando":16}],16:[function(_dereq_,module,exports){
 module.exports = _dereq_('pando');
 
 
 
-},{"pando":1}],19:[function(_dereq_,module,exports){
+},{"pando":1}],17:[function(_dereq_,module,exports){
 module.exports = _dereq_('./pando').utilities;
 
 
 
-},{"./pando":18}],20:[function(_dereq_,module,exports){
+},{"./pando":16}],18:[function(_dereq_,module,exports){
 module.exports = _dereq_('../bridge').React;
 
 
 
-},{"../bridge":8}],21:[function(_dereq_,module,exports){
+},{"../bridge":8}],19:[function(_dereq_,module,exports){
 module.exports = _dereq_('./react').render;
 
 
 
-},{"./react":20}],22:[function(_dereq_,module,exports){
+},{"./react":18}],20:[function(_dereq_,module,exports){
 var ObjProto, addComponent, compositeRegex, dot, extend, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -3094,7 +3100,7 @@ module.exports = {
 
 
 
-},{}],23:[function(_dereq_,module,exports){
+},{}],21:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactBridge=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 // shim for using process in browser
 
