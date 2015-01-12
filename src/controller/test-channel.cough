@@ -1,12 +1,10 @@
-{ Controller, Pando }      = require '../../vendor/reactive-aspen'
-{ store }                  = require '../utilities'
-{ connect, getDispatcher, plugIntoTerminus } = Controller
-{ transforms, utilities }  = Pando
-{ doAsync }                = utilities
-{ filtering, mapping }     = transforms
+{ connect, getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
+{ transforms, utilities }                    = require '../vendor/Pando'
+{ store }                                    = require '../utilities'
+{ doAsync }                                  = utilities
+{ filtering, mapping }                       = transforms
 
 NAMESPACE = 'reactive-aspen-todos'
-TERMINUS  = '_terminus_'
 
 cacheAppData = \appState ->
   store (NAMESPACE, appState)

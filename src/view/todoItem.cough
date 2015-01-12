@@ -1,10 +1,8 @@
-{ Bridge, Mixins, React }      = require '../../vendor/reactive-aspen'
+{ $button, $checkbox, $label } = require '../vendor/adapters'
+classSet                       = require '../vendor/classSet'
+{ createFactory }              = require '../vendor/React'
+{ div, li }                    = require '../vendor/DOM'
 todoItemInputClass             = require './todoItemInputClass'
-{ adapters, sensitize }        = Bridge
-{ $button, $checkbox, $label } = adapters 
-{ addons, createFactory, DOM } = React
-{ classSet }                   = addons
-{ div, li }                    = DOM
 
 applyIndex = \index \adapter ->
   adapter index

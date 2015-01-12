@@ -1,9 +1,7 @@
-{ Bridge, React }                = require '../../vendor/reactive-aspen'
+{ $button, $link }               = require '../vendor/adapters'
+classSet                         = require '../vendor/classSet'
+{ footer, li, span, strong, ul } = require '../vendor/DOM'
 { pluralize }                    = require '../utilities'
-{ addons, DOM }                  = React
-{ classSet }                     = addons
-{ footer, li, span, strong, ul } = DOM
-{ $button, $link }               = Bridge.adapters
 
 noProps = null
 

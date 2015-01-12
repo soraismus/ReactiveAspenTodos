@@ -1,7 +1,6 @@
-{ Bridge, React }    = require '../../vendor/reactive-aspen'
-{ createClass }      = React
-{ $text }            = Bridge.adapters
-UpdatePostFocusMixin = require '../UpdatePostFocusMixin'
+{ createClass }      = require '../vendor/React'
+{ $text }            = require '../vendor/adapters'
+UpdatePostFocusMixin = require '../mixins/UpdatePostFocusMixin'
 
 _todoItemInput = \index ->
   $text { index, label: 'todo-item-input' }

@@ -1,6 +1,5 @@
-{ Bridge, React } = require '../../vendor/reactive-aspen'
-{ h1, header }    = React.DOM
-{ $text }         = Bridge.adapters 
+{ h1, header } = require '../vendor/DOM'
+{ $text }      = require '../vendor/adapters'
 
 todosCaption = ->
   h1 (null, 'todos')

@@ -1,4 +1,4 @@
-{ div } = require('../../vendor/reactive-aspen').React.DOM
+{ div } = require '../vendor/DOM'
 
 AppBody   = require './body'
 AppFooter = require './footer'
