@@ -3,7 +3,7 @@
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
  *
- * @providesModule AutoPostFocusMixin
+ * @providesModule UpdatePostFocusMixin
  */
 
 "use strict";
@@ -22,15 +22,15 @@ function focusPostNode(node) {
   }
 }
 
-var AutoPostFocusMixin = {
-  componentDidMount: function() {
+var UpdatePostFocusMixin = {
+  componentDidUpdate: function() {
     if (this.props.autoPostFocus) {
       focusPostNode(this.getDOMNode());
     }
   }
 };
 
-module.exports = AutoPostFocusMixin;
+module.exports = UpdatePostFocusMixin;
 
 },{}],2:[function(require,module,exports){
 var $router_hyphen_events, Controller, NAMESPACE, Pando, TERMINUS, activateAll, active, addTodo, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1;
@@ -754,7 +754,7 @@ TodoItem = function(todoProps, index) {
     onClick: true
   })), todoItemInputFactory({
     editText: editText,
-    focus: focus,
+    autoPostFocus: focus,
     index: index
   }));
 };
@@ -768,15 +768,15 @@ module.exports = TodoItem;
 
 
 },{"../../vendor/reactive-aspen":13,"./todoItemInputClass":12}],12:[function(require,module,exports){
-var $text, AutoPostFocusMixin, Bridge, React, createClass, todoItemInputClass, _ref, _todoItemInput;
-
-AutoPostFocusMixin = require('react-auto-post-focus-mixin');
+var $text, Bridge, React, UpdatePostFocusMixin, createClass, todoItemInputClass, _ref, _todoItemInput;
 
 _ref = require('../../vendor/reactive-aspen'), Bridge = _ref.Bridge, React = _ref.React;
 
 createClass = React.createClass;
 
 $text = Bridge.adapters.$text;
+
+UpdatePostFocusMixin = require('../UpdatePostFocusMixin');
 
 _todoItemInput = function(index) {
   return $text({
@@ -786,7 +786,7 @@ _todoItemInput = function(index) {
 };
 
 todoItemInputClass = createClass({
-  mixins: [AutoPostFocusMixin],
+  mixins: [UpdatePostFocusMixin],
   render: function() {
     var editText, focus, index, _ref1;
     _ref1 = this.props, editText = _ref1.editText, focus = _ref1.focus, index = _ref1.index;
@@ -806,7 +806,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../../vendor/reactive-aspen":13,"react-auto-post-focus-mixin":1}],13:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":13,"../UpdatePostFocusMixin":1}],13:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
