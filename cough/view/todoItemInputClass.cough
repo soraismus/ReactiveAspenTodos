@@ -1,16 +1,16 @@
-AutoPostFocusMixin = require 'react-auto-post-focus-mixin'
-{ Bridge, React }  = require '../../vendor/reactive-aspen'
-{ createClass }    = React
-{ $text }          = Bridge.adapters
+{ Bridge, React }    = require '../../vendor/reactive-aspen'
+{ createClass }      = React
+{ $text }            = Bridge.adapters
+UpdatePostFocusMixin = require '../UpdatePostFocusMixin'
 
 _todoItemInput = \index ->
   $text { index, label: 'todo-item-input' }
 
 todoItemInputClass = createClass
-  mixins: [AutoPostFocusMixin]
+  mixins: [UpdatePostFocusMixin]
   render: ->
     { editText, focus, index } = this.props
-    _todoItemInput(index)
+    _todoItemInput (index)
       autoPostFocus : focus
       className     : 'edit'
       defaultValue  : editText
