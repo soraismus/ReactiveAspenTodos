@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, _ref, _ref1, _ref2;
+var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingAppState, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractIndex, extractIndexAndValue, extractNewTodo, filtering, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, router, setModeTo, store, storeTitle, storeTitleForIndex, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
@@ -12,6 +12,8 @@ store = require('../utilities').store;
 doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
+
+uuid = require('../utilities').uuid;
 
 NAMESPACE = 'reactive-aspen-todos';
 
@@ -82,6 +84,7 @@ createTodo = function(title) {
     completed: false,
     editing: false,
     editText: title,
+    id: uuid(),
     title: title
   };
 };
@@ -492,16 +495,16 @@ _uuid = function(i, j) {
 };
 
 uuid = function() {
-  var i, random, _i;
-  uuid = '';
+  var i, id, random, _i;
+  id = '';
   for (i = _i = 0; _i < 32; i = ++_i) {
     random = Math.random() * 16 | 0;
     if (__indexOf.call(signposts, i) >= 0) {
-      uuid += '-';
+      id += '-';
     }
-    uuid += _uuid(i, random);
+    id += _uuid(i, random);
   }
-  return uuid;
+  return id;
 };
 
 module.exports = {
@@ -756,15 +759,15 @@ indexifyAdapter = function(_arg) {
 };
 
 TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, focus, title, _completionToggle, _destroyButton, _ref2, _todoItemLabel;
-  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, title = todoProps.title;
+  var className, completed, editText, editing, focus, id, title, _completionToggle, _destroyButton, _ref2, _todoItemLabel;
+  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, id = todoProps.id, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
   });
   _ref2 = factories.map(applyIndex(index)), _completionToggle = _ref2[0], _destroyButton = _ref2[1], _todoItemLabel = _ref2[2];
   return li({
-    key: "todo-item-" + title,
+    key: id,
     className: className
   }, div({
     className: 'view'
