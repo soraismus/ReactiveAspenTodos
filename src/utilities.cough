@@ -25,13 +25,13 @@ _uuid = (i, j) ->
   nbr.toString 16
 
 uuid = ->
-  uuid = ''
+  id = ''
 
   for i in [0...32]
     random = Math.random () * 16 | 0
-    uuid += '-' if i in signposts
-    uuid += _uuid (i, random)
+    id += '-' if i in signposts
+    id += _uuid (i, random)
 
-  uuid
+  id
 
 module.exports = { extend, pluralize, store, uuid }
