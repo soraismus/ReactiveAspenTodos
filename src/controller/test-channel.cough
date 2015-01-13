@@ -54,22 +54,22 @@ editTodo = \todo ->
   todo.focus    = true
   todo
 
-editAppStateByID = \id \appState ->
+editAppState = \id \appState ->
   { todos }      = appState
   appState.focus = false
-  [todo, index]  = findTodoByID (todos, id)
+  [todo, index]  = findTodo (todos, id)
   todos[index]   = editTodo todo
   appState
 
-findTodoByID = (todos, id) ->
+findTodo = (todos, id) ->
   for todo, index in todos
     return [todo, index] if todo.id == id
 
-endEditingByID = \capsule ->
+endEditing = \capsule ->
   { id, index } = capsule
   \appState ->
     appState.focus = true
-    [todo, index]  = findTodoByID (appState.todos, id)
+    [todo, index]  = findTodo (appState.todos, id)
     todo.editing   = false
     todo.focus     = false
     title          = getTitle().trim()
@@ -105,12 +105,13 @@ removeCompleted = \appState ->
 
 removeTodoByID = \id \appState ->
   { todos } = appState
-  [todo, index] = findTodoByID (todos, id)
+  [todo, index] = findTodo (todos, id)
   todos.splice (index, 1)
   appState.activeCount -= 1 unless todo.completed
   appState.count -= 1
   cacheAppData appState
 
+# WET.
 removeTodo = (index, appState) ->
   { todos } = appState
   { completed } = todos[index]
@@ -120,7 +121,7 @@ removeTodo = (index, appState) ->
   cacheAppData appState
 
 storeTitleForID = (appState, capsule) ->
-  [todo] = findTodoByID (appState.todos, capsule.id)
+  [todo] = findTodo (appState.todos, capsule.id)
   storeTitle todo.title
 
 toggleAllTodos = \appState ->
@@ -128,9 +129,9 @@ toggleAllTodos = \appState ->
   manage appState
   cacheAppData appState
 
-toggleTodoByID = \id \appState ->
+toggleTodo = \id \appState ->
   { activeCount, mode, todos } = appState
-  [todo, index] = findTodoByID (todos, id)
+  [todo, index] = findTodo (todos, id)
   { completed } = todo
   appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
@@ -164,7 +165,7 @@ getTodos = (mode, todos) ->
 # -------------------------------------------------------------------------
 
 plugIntoTerminus '$toggle-clicks', ->
-  mapping \capsule -> toggleTodoByID (extractID capsule)
+  mapping \capsule -> toggleTodo (extractID capsule)
 
 plugIntoTerminus '$router-events', ->
   mapping updateMode
@@ -184,7 +185,7 @@ plugIntoTerminus '$destroy-clicks', ->
 # -------------------------------------------------------------------------
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping \capsule ->
-    editAppStateByID (extractID capsule)
+    editAppState (extractID capsule)
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
   doAsync (storeTitleForID) (appStateProperty, capsule)
@@ -194,9 +195,9 @@ getDispatcher('todo-in-edit').subscribe \capsule ->
 # -------------------------------------------------------------------------
 
 plugIntoTerminus '$edit-keydowns', ->
-  ; filtering (enterKey?) mapping (endEditingByID) ;
+  ; filtering (enterKey?) mapping (endEditing) ;
 
 plugIntoTerminus '$edit-blurs', ->
-  mapping endEditingByID
+  mapping endEditing
 
 module.exports = null
