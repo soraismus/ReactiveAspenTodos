@@ -1,18 +1,16 @@
 { $checkbox }   = require '../vendor/adapters'
+{ getTodos }    = require '../todo-utilities'
 { section, ul } = require '../vendor/DOM'
 TodoItem        = require './todoItem'
 
 mainToggle = $checkbox 'toggle-all-checkbox'
-
-active = \todo ->
-  !todo.completed
 
 AppBody = \props ->
   { activeCount, count, mode, todos } = props
 
   return null unless count > 0
 
-  todoItems = getTodos(todos, mode).map(TodoItem)
+  todoItems = getTodos(mode, todos).map(TodoItem)
 
   section
     id : 'main'
@@ -23,14 +21,5 @@ AppBody = \props ->
     ul
       id : 'todo-list'
       todoItems
-
-completed = \todo ->
-  todo.completed
-
-getTodos = (todos, mode) ->
-  switch mode
-    when 'all'       then todos
-    when 'active'    then todos.filter active
-    when 'completed' then todos.filter completed
 
 module.exports = AppBody

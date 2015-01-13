@@ -1,3 +1,4 @@
+{ active, getTodos }                         = require '../todo-utilities'
 { appStateProperty }                         = require '../vendor/Aspen'
 { connect, getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
 { transforms, utilities }                    = require '../vendor/Pando'
@@ -102,6 +103,7 @@ removeTodoByID = \id \appState ->
   cacheAppData appState
 
 # WET.
+# Possibly clobber `completed`
 removeTodo = (index, appState) ->
   { todos } = appState
   { completed } = todos[index]
@@ -138,21 +140,6 @@ updateCount = (nbr, completed) ->
 updateMode = \newMode \appState ->
   appState.mode = newMode
   cacheAppData appState
-
-# -------------------------------------------------------------------------
-# WET.
-active = \todo ->
-  !todo.completed
-
-completed = \todo ->
-  todo.completed
-
-getTodos = (mode, todos) ->
-  switch mode
-    when 'active'    then todos.filter active
-    when 'all'       then todos
-    when 'completed' then todos.filter completed
-# -------------------------------------------------------------------------
 
 plugIntoTerminus '$toggle-clicks', ->
   mapping \capsule -> toggleTodo (extractID capsule)
