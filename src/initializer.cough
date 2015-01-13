@@ -8,3 +8,4 @@ appNodeId = 'todoapp'
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
 
 require './controller/test-channel'
+require './controller/router'
