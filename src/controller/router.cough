@@ -1,0 +1,14 @@
+{ getDispatcher } = require '../vendor/Controller'
+
+$router-events = getDispatcher ('$router-events', true)
+
+setModeTo = (mode) -> () ->
+  $router-events.dispatch mode
+
+# `Router` has been set on the global `window` object by another file.
+router = Router
+  '/'          : setModeTo 'all' 
+  '/active'    : setModeTo 'active'
+  '/completed' : setModeTo 'completed'
+
+router.init '/'
