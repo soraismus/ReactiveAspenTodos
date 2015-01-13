@@ -1,0 +1,13 @@
+active = \todo ->
+  !todo.completed
+
+completed = \todo ->
+  todo.completed
+
+getTodos = (mode, todos) ->
+  switch mode
+    when 'active'    then todos.filter active
+    when 'all'       then todos
+    when 'completed' then todos.filter completed
+
+module.exports = { active, getTodos }
