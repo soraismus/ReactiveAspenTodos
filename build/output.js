@@ -1,5 +1,28 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, router, setModeTo, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
+var $router_hyphen_events, getDispatcher, router, setModeTo;
+
+getDispatcher = require('../vendor/Controller').getDispatcher;
+
+$router_hyphen_events = getDispatcher('$router-events', true);
+
+setModeTo = function(mode) {
+  return function() {
+    return $router_hyphen_events.dispatch(mode);
+  };
+};
+
+router = Router({
+  '/': setModeTo('all'),
+  '/active': setModeTo('active'),
+  '/completed': setModeTo('completed')
+});
+
+router.init('/');
+
+
+
+},{"../vendor/Controller":10}],2:[function(require,module,exports){
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
@@ -22,24 +45,10 @@ cacheAppData = function(appState) {
   return appState;
 };
 
-$router_hyphen_events = getDispatcher('$router-events', true);
-
-setModeTo = function(mode) {
-  return function() {
-    return $router_hyphen_events.dispatch(mode);
-  };
-};
-
-router = Router({
-  '/': setModeTo('all'),
-  '/active': setModeTo('active'),
-  '/completed': setModeTo('completed')
-});
-
-router.init('/');
-
 activateAll = function(appState) {
-  appState.todos.forEach(function(todo) {
+  var todos;
+  todos = appState.todos;
+  todos.forEach(function(todo) {
     return todo.completed = false;
   });
   return appState.activeCount = todos.length;
@@ -308,7 +317,7 @@ module.exports = null;
 
 
 
-},{"../utilities":6,"../vendor/Aspen":7,"../vendor/Controller":9,"../vendor/Pando":11}],2:[function(require,module,exports){
+},{"../utilities":7,"../vendor/Aspen":8,"../vendor/Controller":10,"../vendor/Pando":12}],3:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -333,7 +342,7 @@ module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-cl
 
 
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 var activeCount, cachedState, count, defaultState, empty_question_, focus, initialAppState, mode, store, todos;
 
 store = require('./utilities').store;
@@ -388,7 +397,7 @@ module.exports = initialAppState;
 
 
 
-},{"./utilities":6}],4:[function(require,module,exports){
+},{"./utilities":7}],5:[function(require,module,exports){
 var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
@@ -405,9 +414,11 @@ initialize(appNodeId, topViewFactory, initialAppState, viewImports);
 
 require('./controller/test-channel');
 
+require('./controller/router');
 
 
-},{"./controller/test-channel":1,"./controller/view-imports":2,"./initialAppState":3,"./vendor/Aspen":7,"./view/app":15}],5:[function(require,module,exports){
+
+},{"./controller/router":1,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./vendor/Aspen":8,"./view/app":16}],6:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -441,7 +452,7 @@ var UpdatePostFocusMixin = {
 
 module.exports = UpdatePostFocusMixin;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -520,47 +531,47 @@ module.exports = {
 
 
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 module.exports = require('../../vendor/reactive-aspen');
 
 
 
-},{"../../vendor/reactive-aspen":21}],8:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":22}],9:[function(require,module,exports){
 module.exports = require('./Aspen').Bridge;
 
 
 
-},{"./Aspen":7}],9:[function(require,module,exports){
+},{"./Aspen":8}],10:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":7}],10:[function(require,module,exports){
+},{"./Aspen":8}],11:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":12}],11:[function(require,module,exports){
+},{"./React":13}],12:[function(require,module,exports){
 module.exports = require('./Aspen').Pando;
 
 
 
-},{"./Aspen":7}],12:[function(require,module,exports){
+},{"./Aspen":8}],13:[function(require,module,exports){
 module.exports = require('./Aspen').React;
 
 
 
-},{"./Aspen":7}],13:[function(require,module,exports){
+},{"./Aspen":8}],14:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":8}],14:[function(require,module,exports){
+},{"./Bridge":9}],15:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":12}],15:[function(require,module,exports){
+},{"./React":13}],16:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div;
 
 div = require('../vendor/DOM').div;
@@ -579,7 +590,7 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":10,"./body":16,"./footer":17,"./header":18}],16:[function(require,module,exports){
+},{"../vendor/DOM":11,"./body":17,"./footer":18,"./header":19}],17:[function(require,module,exports){
 var $checkbox, AppBody, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
@@ -631,7 +642,7 @@ module.exports = AppBody;
 
 
 
-},{"../vendor/DOM":10,"../vendor/adapters":13,"./todoItem":19}],17:[function(require,module,exports){
+},{"../vendor/DOM":11,"../vendor/adapters":14,"./todoItem":20}],18:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -700,7 +711,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":6,"../vendor/DOM":10,"../vendor/adapters":13,"../vendor/classSet":14}],18:[function(require,module,exports){
+},{"../utilities":7,"../vendor/DOM":11,"../vendor/adapters":14,"../vendor/classSet":15}],19:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -728,7 +739,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":10,"../vendor/adapters":13}],19:[function(require,module,exports){
+},{"../vendor/DOM":11,"../vendor/adapters":14}],20:[function(require,module,exports){
 var $button, $checkbox, $label, TodoItem, applyIdAndIndex, applyIndex, classSet, createFactory, div, factories, includeIdAndIndex, includeIndex, indexifyAdapter, indexifyAdapterW_slash_Id, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -822,7 +833,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":10,"../vendor/React":12,"../vendor/adapters":13,"../vendor/classSet":14,"./todoItemInputClass":20}],20:[function(require,module,exports){
+},{"../vendor/DOM":11,"../vendor/React":13,"../vendor/adapters":14,"../vendor/classSet":15,"./todoItemInputClass":21}],21:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -859,7 +870,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":12,"../vendor/adapters":13}],21:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":6,"../vendor/React":13,"../vendor/adapters":14}],22:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
@@ -23436,4 +23447,4 @@ module.exports = {
 },{}]},{},[12])
 (12)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[4])
+},{}]},{},[5])
