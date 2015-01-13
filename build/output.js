@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppStateByID, editTodo, endEditingByID, enterKey_question_, extractID, extractNewTodo, filtering, findTodoByID, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, router, setModeTo, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodoByID, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
+var $router_hyphen_events, NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, router, setModeTo, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
@@ -85,18 +85,18 @@ editTodo = function(todo) {
   return todo;
 };
 
-editAppStateByID = function(id) {
+editAppState = function(id) {
   return function(appState) {
     var index, todo, todos, _ref2;
     todos = appState.todos;
     appState.focus = false;
-    _ref2 = findTodoByID(todos, id), todo = _ref2[0], index = _ref2[1];
+    _ref2 = findTodo(todos, id), todo = _ref2[0], index = _ref2[1];
     todos[index] = editTodo(todo);
     return appState;
   };
 };
 
-findTodoByID = function(todos, id) {
+findTodo = function(todos, id) {
   var index, todo, _i, _len;
   for (index = _i = 0, _len = todos.length; _i < _len; index = ++_i) {
     todo = todos[index];
@@ -106,13 +106,13 @@ findTodoByID = function(todos, id) {
   }
 };
 
-endEditingByID = function(capsule) {
+endEditing = function(capsule) {
   var id, index;
   id = capsule.id, index = capsule.index;
   return function(appState) {
     var result, title, todo, _ref2;
     appState.focus = true;
-    _ref2 = findTodoByID(appState.todos, id), todo = _ref2[0], index = _ref2[1];
+    _ref2 = findTodo(appState.todos, id), todo = _ref2[0], index = _ref2[1];
     todo.editing = false;
     todo.focus = false;
     title = getTitle().trim();
@@ -160,7 +160,7 @@ removeTodoByID = function(id) {
   return function(appState) {
     var index, todo, todos, _ref3;
     todos = appState.todos;
-    _ref3 = findTodoByID(todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
     todos.splice(index, 1);
     if (!todo.completed) {
       appState.activeCount -= 1;
@@ -184,7 +184,7 @@ removeTodo = function(index, appState) {
 
 storeTitleForID = function(appState, capsule) {
   var todo;
-  todo = findTodoByID(appState.todos, capsule.id)[0];
+  todo = findTodo(appState.todos, capsule.id)[0];
   return storeTitle(todo.title);
 };
 
@@ -195,11 +195,11 @@ toggleAllTodos = function(appState) {
   return cacheAppData(appState);
 };
 
-toggleTodoByID = function(id) {
+toggleTodo = function(id) {
   return function(appState) {
     var activeCount, completed, index, mode, todo, todos, _ref3;
     activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
-    _ref3 = findTodoByID(todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -248,7 +248,7 @@ getTodos = function(mode, todos) {
 
 plugIntoTerminus('$toggle-clicks', function() {
   return mapping(function(capsule) {
-    return toggleTodoByID(extractID(capsule));
+    return toggleTodo(extractID(capsule));
   });
 });
 
@@ -282,7 +282,7 @@ plugIntoTerminus('$destroy-clicks', function() {
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
   return mapping(function(capsule) {
-    return editAppStateByID(extractID(capsule));
+    return editAppState(extractID(capsule));
   });
 });
 
@@ -296,12 +296,12 @@ getDispatcher('todo-in-edit').subscribe(function(capsule) {
 
 plugIntoTerminus('$edit-keydowns', function() {
   return function(__i) {
-    return filtering(enterKey_question_)(mapping(endEditingByID)(__i));
+    return filtering(enterKey_question_)(mapping(endEditing)(__i));
   };
 });
 
 plugIntoTerminus('$edit-blurs', function() {
-  return mapping(endEditingByID);
+  return mapping(endEditing);
 });
 
 module.exports = null;
