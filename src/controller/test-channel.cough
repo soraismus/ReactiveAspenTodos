@@ -54,12 +54,6 @@ editTodo = \todo ->
   todo.focus    = true
   todo
 
-editAppState = \index \appState ->
-  { todos }    = appState
-  appState.focus = false
-  todos[index]   = editTodo todos[index]
-  appState
-
 editAppStateByID = \id \appState ->
   { todos }      = appState
   appState.focus = false
@@ -70,20 +64,6 @@ editAppStateByID = \id \appState ->
 findTodoByID = (todos, id) ->
   for todo, index in todos
     return [todo, index] if todo.id == id
-
-endEditing = \capsule ->
-  { index } = capsule
-  \appState ->
-    appState.focus = true
-    todo           = appState.todos[index]
-    todo.editing   = false
-    todo.focus     = false
-    title          = getTitle().trim()
-    todo.title     = title
-    todo.editText  = title
-
-    result = if todo.title then appState else removeTodo (index) (appState)
-    cacheAppData result
 
 endEditingByID = \capsule ->
   { id, index } = capsule
@@ -96,22 +76,14 @@ endEditingByID = \capsule ->
     todo.title     = title
     todo.editText  = title
 
-    result = if todo.title then appState else removeTodo (index) (appState)
+    result = if todo.title then appState else removeTodo (index, appState)
     cacheAppData result
 
 enterKey? = \capsule ->
   capsule.event.keyCode == 13
 
-extractIndex = \capsule ->
-  capsule.index
-
 extractID = \capsule ->
   capsule.id
-
-extractIndexAndValue = \capsule ->
-  { index } = capsule
-  { value } = capsule.event.target
-  { index, value }
 
 extractNewTodo = \capsule ->
   value = capsule.event.target.value.trim ()
@@ -131,14 +103,6 @@ removeCompleted = \appState ->
   appState.activeCount = appState.count = appState.todos.length
   cacheAppData appState
 
-removeTodo = \index \appState ->
-  { todos } = appState
-  { completed } = todos[index]
-  todos.splice (index, 1)
-  appState.activeCount -= 1 unless completed
-  appState.count -= 1
-  cacheAppData appState
-
 removeTodoByID = \id \appState ->
   { todos } = appState
   [todo, index] = findTodoByID (todos, id)
@@ -147,8 +111,13 @@ removeTodoByID = \id \appState ->
   appState.count -= 1
   cacheAppData appState
 
-storeTitleForIndex = (appState, capsule) ->
-  storeTitle (appState.todos[capsule.index].title)
+removeTodo = (index, appState) ->
+  { todos } = appState
+  { completed } = todos[index]
+  todos.splice (index, 1)
+  appState.activeCount -= 1 unless completed
+  appState.count -= 1
+  cacheAppData appState
 
 storeTitleForID = (appState, capsule) ->
   [todo] = findTodoByID (appState.todos, capsule.id)
@@ -157,14 +126,6 @@ storeTitleForID = (appState, capsule) ->
 toggleAllTodos = \appState ->
   manage = if appState.activeCount == 0 then activateAll else completeAll
   manage appState
-  cacheAppData appState
-
-toggleTodo = \index \appState ->
-  { activeCount, mode, todos } = appState
-  todo = getTodos(mode, todos)[index]
-  { completed } = todo
-  appState.activeCount = updateCount (activeCount, completed)
-  todo.completed = !completed
   cacheAppData appState
 
 toggleTodoByID = \id \appState ->
@@ -223,11 +184,10 @@ plugIntoTerminus '$destroy-clicks', ->
 # -------------------------------------------------------------------------
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping \capsule ->
-    console.log ('uuid:', capsule.id)
     editAppStateByID (extractID capsule)
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
-  doAsync (storeTitleForIndex) (appStateProperty, capsule)
+  doAsync (storeTitleForID) (appStateProperty, capsule)
 
 getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
