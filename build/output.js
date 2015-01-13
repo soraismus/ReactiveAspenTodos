@@ -21,14 +21,16 @@ router.init('/');
 
 
 
-},{"../vendor/Controller":10}],2:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, completed, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2;
+},{"../vendor/Controller":11}],2:[function(require,module,exports){
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+
+_ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
-_ref = require('../vendor/Controller'), connect = _ref.connect, getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
+_ref1 = require('../vendor/Controller'), connect = _ref1.connect, getDispatcher = _ref1.getDispatcher, plugIntoTerminus = _ref1.plugIntoTerminus;
 
-_ref1 = require('../vendor/Pando'), transforms = _ref1.transforms, utilities = _ref1.utilities;
+_ref2 = require('../vendor/Pando'), transforms = _ref2.transforms, utilities = _ref2.utilities;
 
 store = require('../utilities').store;
 
@@ -96,10 +98,10 @@ editTodo = function(todo) {
 
 editAppState = function(id) {
   return function(appState) {
-    var index, todo, todos, _ref2;
+    var index, todo, todos, _ref3;
     todos = appState.todos;
     appState.focus = false;
-    _ref2 = findTodo(todos, id), todo = _ref2[0], index = _ref2[1];
+    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
     todos[index] = editTodo(todo);
     return appState;
   };
@@ -119,9 +121,9 @@ endEditing = function(capsule) {
   var id, index;
   id = capsule.id, index = capsule.index;
   return function(appState) {
-    var result, title, todo, _ref2;
+    var result, title, todo, _ref3;
     appState.focus = true;
-    _ref2 = findTodo(appState.todos, id), todo = _ref2[0], index = _ref2[1];
+    _ref3 = findTodo(appState.todos, id), todo = _ref3[0], index = _ref3[1];
     todo.editing = false;
     todo.focus = false;
     title = getTitle().trim();
@@ -147,7 +149,7 @@ extractNewTodo = function(capsule) {
   return addTodo(value);
 };
 
-_ref2 = (function() {
+_ref3 = (function() {
   var getTitle, storeTitle, _title;
   _title = null;
   getTitle = function() {
@@ -157,7 +159,7 @@ _ref2 = (function() {
     return _title = title;
   };
   return [getTitle, storeTitle];
-})(), getTitle = _ref2[0], storeTitle = _ref2[1];
+})(), getTitle = _ref3[0], storeTitle = _ref3[1];
 
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
@@ -167,9 +169,9 @@ removeCompleted = function(appState) {
 
 removeTodoByID = function(id) {
   return function(appState) {
-    var index, todo, todos, _ref3;
+    var index, todo, todos, _ref4;
     todos = appState.todos;
-    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref4 = findTodo(todos, id), todo = _ref4[0], index = _ref4[1];
     todos.splice(index, 1);
     if (!todo.completed) {
       appState.activeCount -= 1;
@@ -206,9 +208,9 @@ toggleAllTodos = function(appState) {
 
 toggleTodo = function(id) {
   return function(appState) {
-    var activeCount, completed, index, mode, todo, todos, _ref3;
+    var activeCount, completed, index, mode, todo, todos, _ref4;
     activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
-    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref4 = findTodo(todos, id), todo = _ref4[0], index = _ref4[1];
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -234,25 +236,6 @@ updateMode = function(newMode) {
     appState.mode = newMode;
     return cacheAppData(appState);
   };
-};
-
-active = function(todo) {
-  return !todo.completed;
-};
-
-completed = function(todo) {
-  return todo.completed;
-};
-
-getTodos = function(mode, todos) {
-  switch (mode) {
-    case 'active':
-      return todos.filter(active);
-    case 'all':
-      return todos;
-    case 'completed':
-      return todos.filter(completed);
-  }
 };
 
 plugIntoTerminus('$toggle-clicks', function() {
@@ -317,7 +300,7 @@ module.exports = null;
 
 
 
-},{"../utilities":7,"../vendor/Aspen":8,"../vendor/Controller":10,"../vendor/Pando":12}],3:[function(require,module,exports){
+},{"../todo-utilities":7,"../utilities":8,"../vendor/Aspen":9,"../vendor/Controller":11,"../vendor/Pando":13}],3:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -397,7 +380,7 @@ module.exports = initialAppState;
 
 
 
-},{"./utilities":7}],5:[function(require,module,exports){
+},{"./utilities":8}],5:[function(require,module,exports){
 var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
@@ -418,7 +401,7 @@ require('./controller/router');
 
 
 
-},{"./controller/router":1,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./vendor/Aspen":8,"./view/app":16}],6:[function(require,module,exports){
+},{"./controller/router":1,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./vendor/Aspen":9,"./view/app":17}],6:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -453,6 +436,35 @@ var UpdatePostFocusMixin = {
 module.exports = UpdatePostFocusMixin;
 
 },{}],7:[function(require,module,exports){
+var active, completed, getTodos;
+
+active = function(todo) {
+  return !todo.completed;
+};
+
+completed = function(todo) {
+  return todo.completed;
+};
+
+getTodos = function(mode, todos) {
+  switch (mode) {
+    case 'active':
+      return todos.filter(active);
+    case 'all':
+      return todos;
+    case 'completed':
+      return todos.filter(completed);
+  }
+};
+
+module.exports = {
+  active: active,
+  getTodos: getTodos
+};
+
+
+
+},{}],8:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -531,47 +543,47 @@ module.exports = {
 
 
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = require('../../vendor/reactive-aspen');
 
 
 
-},{"../../vendor/reactive-aspen":22}],9:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":23}],10:[function(require,module,exports){
 module.exports = require('./Aspen').Bridge;
 
 
 
-},{"./Aspen":8}],10:[function(require,module,exports){
+},{"./Aspen":9}],11:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":8}],11:[function(require,module,exports){
+},{"./Aspen":9}],12:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":13}],12:[function(require,module,exports){
+},{"./React":14}],13:[function(require,module,exports){
 module.exports = require('./Aspen').Pando;
 
 
 
-},{"./Aspen":8}],13:[function(require,module,exports){
+},{"./Aspen":9}],14:[function(require,module,exports){
 module.exports = require('./Aspen').React;
 
 
 
-},{"./Aspen":8}],14:[function(require,module,exports){
+},{"./Aspen":9}],15:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":9}],15:[function(require,module,exports){
+},{"./Bridge":10}],16:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":13}],16:[function(require,module,exports){
+},{"./React":14}],17:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div;
 
 div = require('../vendor/DOM').div;
@@ -590,10 +602,12 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":11,"./body":17,"./footer":18,"./header":19}],17:[function(require,module,exports){
-var $checkbox, AppBody, TodoItem, active, completed, getTodos, mainToggle, section, ul, _ref;
+},{"../vendor/DOM":12,"./body":18,"./footer":19,"./header":20}],18:[function(require,module,exports){
+var $checkbox, AppBody, TodoItem, getTodos, mainToggle, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
+
+getTodos = require('../todo-utilities').getTodos;
 
 _ref = require('../vendor/DOM'), section = _ref.section, ul = _ref.ul;
 
@@ -601,17 +615,13 @@ TodoItem = require('./todoItem');
 
 mainToggle = $checkbox('toggle-all-checkbox');
 
-active = function(todo) {
-  return !todo.completed;
-};
-
 AppBody = function(props) {
   var activeCount, count, mode, todoItems, todos;
   activeCount = props.activeCount, count = props.count, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
-  todoItems = getTodos(todos, mode).map(TodoItem);
+  todoItems = getTodos(mode, todos).map(TodoItem);
   return section({
     id: 'main'
   }, mainToggle({
@@ -623,26 +633,11 @@ AppBody = function(props) {
   }, todoItems));
 };
 
-completed = function(todo) {
-  return todo.completed;
-};
-
-getTodos = function(todos, mode) {
-  switch (mode) {
-    case 'all':
-      return todos;
-    case 'active':
-      return todos.filter(active);
-    case 'completed':
-      return todos.filter(completed);
-  }
-};
-
 module.exports = AppBody;
 
 
 
-},{"../vendor/DOM":11,"../vendor/adapters":14,"./todoItem":20}],18:[function(require,module,exports){
+},{"../todo-utilities":7,"../vendor/DOM":12,"../vendor/adapters":15,"./todoItem":21}],19:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -711,7 +706,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":7,"../vendor/DOM":11,"../vendor/adapters":14,"../vendor/classSet":15}],19:[function(require,module,exports){
+},{"../utilities":8,"../vendor/DOM":12,"../vendor/adapters":15,"../vendor/classSet":16}],20:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -739,7 +734,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":11,"../vendor/adapters":14}],20:[function(require,module,exports){
+},{"../vendor/DOM":12,"../vendor/adapters":15}],21:[function(require,module,exports){
 var $button, $checkbox, $label, TodoItem, applyIdAndIndex, applyIndex, classSet, createFactory, div, factories, includeIdAndIndex, includeIndex, indexifyAdapter, indexifyAdapterW_slash_Id, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -833,7 +828,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":11,"../vendor/React":13,"../vendor/adapters":14,"../vendor/classSet":15,"./todoItemInputClass":21}],21:[function(require,module,exports){
+},{"../vendor/DOM":12,"../vendor/React":14,"../vendor/adapters":15,"../vendor/classSet":16,"./todoItemInputClass":22}],22:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -870,7 +865,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":6,"../vendor/React":13,"../vendor/adapters":14}],22:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":6,"../vendor/React":14,"../vendor/adapters":15}],23:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
