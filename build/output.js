@@ -155,7 +155,7 @@ editAppState = function(id) {
     var index, todo, todos, _ref3;
     todos = appState.todos;
     appState.focus = false;
-    _ref3 = findTodo(todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref3 = findTodo(todos, id), todo = _ref3.todo, index = _ref3.index;
     todos[index] = editTodo(todo);
     return appState;
   };
@@ -166,25 +166,30 @@ findTodo = function(todos, id) {
   for (index = _i = 0, _len = todos.length; _i < _len; index = ++_i) {
     todo = todos[index];
     if (todo.id === id) {
-      return [todo, index];
+      return {
+        todo: todo,
+        index: index
+      };
     }
   }
 };
 
 endEditing = function(capsule) {
-  var id, index;
-  id = capsule.id, index = capsule.index;
   return function(appState) {
-    var result, title, todo, _ref3;
+    var id, index, title, todo, _ref3;
+    id = capsule.id;
     appState.focus = true;
-    _ref3 = findTodo(appState.todos, id), todo = _ref3[0], index = _ref3[1];
+    _ref3 = findTodo(appState.todos, id), todo = _ref3.todo, index = _ref3.index;
     todo.editing = false;
     todo.focus = false;
     title = getTitle().trim();
     todo.title = title;
     todo.editText = title;
-    result = todo.title ? appState : removeTodo(index, appState);
-    return result;
+    if (todo.title) {
+      return appState;
+    } else {
+      return removeTodo(index, appState);
+    }
   };
 };
 
@@ -223,15 +228,9 @@ removeCompleted = function(appState) {
 
 removeTodoByID = function(id) {
   return function(appState) {
-    var index, todo, todos, _ref4;
-    todos = appState.todos;
-    _ref4 = findTodo(todos, id), todo = _ref4[0], index = _ref4[1];
-    todos.splice(index, 1);
-    if (!todo.completed) {
-      appState.activeCount -= 1;
-    }
-    appState.count -= 1;
-    return appState;
+    var index;
+    index = findTodo(appState.todos, id).index;
+    return removeTodo(index, appState);
   };
 };
 
@@ -249,7 +248,7 @@ removeTodo = function(index, appState) {
 
 storeTitleForID = function(appState, capsule) {
   var todo;
-  todo = findTodo(appState.todos, capsule.id)[0];
+  todo = findTodo(appState.todos, capsule.id).todo;
   return storeTitle(todo.title);
 };
 
@@ -264,7 +263,7 @@ toggleTodo = function(id) {
   return function(appState) {
     var activeCount, completed, index, mode, todo, todos, _ref4;
     activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
-    _ref4 = findTodo(todos, id), todo = _ref4[0], index = _ref4[1];
+    _ref4 = findTodo(todos, id), todo = _ref4.todo, index = _ref4.index;
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -1129,7 +1128,7 @@ module.exports = _dereq_('../vendor/bridge');
 
 
 },{"../vendor/bridge":20}],8:[function(_dereq_,module,exports){
-var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, onValue, pandoConnect, pandoOnValue, plug, plugIntoTerminus, push, setAlias, terminusEventStream, _connect, _ref;
+var connect, connectMultiple, connectSingle, getDispatcher, interpret, isArray, isString, onEvent, onValue, pandoConnect, pandoOnValue, plug, plugIntoTerminus, push, setAlias, terminusEventStream, _connect, _ref;
 
 getDispatcher = _dereq_('./channel-registrar').getDispatcher;
 
@@ -1212,8 +1211,12 @@ interpret = function(value) {
   }
 };
 
-onValue = function(source, transform) {
-  return pandoOnValue(interpret(source), transform);
+onEvent = function(source, sink) {
+  return interpret(source).subscribe(sink);
+};
+
+onValue = function(source, sink) {
+  return pandoOnValue(interpret(source), sink);
 };
 
 plug = function(targets) {
@@ -1245,6 +1248,7 @@ setAlias = function(bus, val) {
 module.exports = {
   connect: connect,
   interpret: interpret,
+  onEvent: onEvent,
   onValue: onValue,
   plug: plug,
   plugIntoTerminus: plugIntoTerminus,
