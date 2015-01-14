@@ -26,7 +26,7 @@ addTodo = \title \appState ->
   appState.todos.push (createTodo title)
   appState.activeCount += 1
   appState.count += 1
-  cacheAppData appState
+  appState
 
 completeAll = \appState ->
   appState.todos.forEach \todo -> todo.completed = true
@@ -72,7 +72,7 @@ endEditing = \capsule ->
     todo.editText  = title
 
     result = if todo.title then appState else removeTodo (index, appState)
-    cacheAppData result
+    result
 
 enterKey? = \capsule ->
   capsule.event.keyCode == 13
@@ -96,7 +96,7 @@ extractNewTodo = \capsule ->
 removeCompleted = \appState ->
   appState.todos = appState.todos.filter active
   appState.activeCount = appState.count = appState.todos.length
-  cacheAppData appState
+  appState
 
 removeTodoByID = \id \appState ->
   { todos } = appState
@@ -104,7 +104,7 @@ removeTodoByID = \id \appState ->
   todos.splice (index, 1)
   appState.activeCount -= 1 unless todo.completed
   appState.count -= 1
-  cacheAppData appState
+  appState
 
 # WET.
 # Possibly clobber `completed`
@@ -114,7 +114,7 @@ removeTodo = (index, appState) ->
   todos.splice (index, 1)
   appState.activeCount -= 1 unless completed
   appState.count -= 1
-  cacheAppData appState
+  appState
 
 storeTitleForID = (appState, capsule) ->
   [todo] = findTodo (appState.todos, capsule.id)
@@ -123,7 +123,7 @@ storeTitleForID = (appState, capsule) ->
 toggleAllTodos = \appState ->
   manage = if appState.activeCount == 0 then activateAll else completeAll
   manage appState
-  cacheAppData appState
+  appState
 
 toggleTodo = \id \appState ->
   { activeCount, mode, todos } = appState
@@ -131,11 +131,7 @@ toggleTodo = \id \appState ->
   { completed } = todo
   appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
-  cacheAppData appState
-
-transformAppState = \transform \appState ->
-  transform appState
-  cacheAppData appState
+  appState
 
 updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
