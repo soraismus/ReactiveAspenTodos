@@ -1,15 +1,43 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var $router_hyphen_events, getDispatcher, router, setModeTo;
+var $router_hyphen_events, NAMESPACE, cacheAppData, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
 
-getDispatcher = require('../vendor/Controller').getDispatcher;
+_ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
 
-$router_hyphen_events = getDispatcher('$router-events', true);
+mapping = require('../vendor/Pando').transforms.mapping;
+
+store = require('../utilities').store;
+
+cacheAppData = function(appState) {
+  return store(NAMESPACE, appState);
+};
 
 setModeTo = function(mode) {
   return function() {
     return $router_hyphen_events.dispatch(mode);
   };
 };
+
+transformThenCache = function(transform) {
+  return function(appState) {
+    transform(appState);
+    cacheAppData(appState);
+    return appState;
+  };
+};
+
+updateMode = function(newMode) {
+  return transformThenCache(function(appState) {
+    return appState.mode = newMode;
+  });
+};
+
+NAMESPACE = 'reactive-aspen-todos';
+
+$router_hyphen_events = getDispatcher('$router-events', true);
+
+plugIntoTerminus($router_hyphen_events, function() {
+  return mapping(updateMode);
+});
 
 router = Router({
   '/': setModeTo('all'),
@@ -21,8 +49,8 @@ router.init('/');
 
 
 
-},{"../vendor/Controller":11}],2:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, updateMode, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+},{"../utilities":8,"../vendor/Controller":11,"../vendor/Pando":13}],2:[function(require,module,exports){
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -39,6 +67,14 @@ doAsync = utilities.doAsync;
 filtering = transforms.filtering, mapping = transforms.mapping;
 
 uuid = require('../utilities').uuid;
+
+plugIntoTerminus('cacher', function() {
+  return mapping(function(transform) {
+    return function(__i) {
+      return cacheAppData(transform(__i));
+    };
+  });
+});
 
 NAMESPACE = 'reactive-aspen-todos';
 
@@ -231,42 +267,31 @@ updateCount = function(nbr, completed) {
   return nbr + addend;
 };
 
-updateMode = function(newMode) {
-  return function(appState) {
-    appState.mode = newMode;
-    return cacheAppData(appState);
-  };
-};
-
-plugIntoTerminus('$toggle-clicks', function() {
+connect('$toggle-clicks')('cacher')(function() {
   return mapping(function(capsule) {
     return toggleTodo(extractID(capsule));
   });
 });
 
-plugIntoTerminus('$router-events', function() {
-  return mapping(updateMode);
-});
-
-plugIntoTerminus('$toggle-all-clicks', function() {
+connect('$toggle-all-clicks')('cacher')(function() {
   return mapping(function() {
     return toggleAllTodos;
   });
 });
 
-plugIntoTerminus('$clear-clicks', function() {
+connect('$clear-clicks')('cacher')(function() {
   return mapping(function() {
     return removeCompleted;
   });
 });
 
-plugIntoTerminus('$new-todo-keydowns', function() {
+connect('$new-todo-keydowns')('cacher')(function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(extractNewTodo)(__i));
   };
 });
 
-plugIntoTerminus('$destroy-clicks', function() {
+connect('$destroy-clicks')('cacher')(function() {
   return mapping(function(capsule) {
     return removeTodoByID(extractID(capsule));
   });
@@ -286,17 +311,15 @@ getDispatcher('todo-in-edit').subscribe(function(capsule) {
   return storeTitle(capsule.event.target.value);
 });
 
-plugIntoTerminus('$edit-keydowns', function() {
+connect('$edit-keydowns')('cacher')(function() {
   return function(__i) {
     return filtering(enterKey_question_)(mapping(endEditing)(__i));
   };
 });
 
-plugIntoTerminus('$edit-blurs', function() {
+connect('$edit-blurs')('cacher')(function() {
   return mapping(endEditing);
 });
-
-module.exports = null;
 
 
 
