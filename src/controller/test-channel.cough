@@ -5,7 +5,7 @@
 { transforms, utilities }                    = require '../vendor/Pando'
 { doAsync }                                  = utilities
 { filtering, mapping }                       = transforms
-{ uuid }                                     = require '../utilities'
+{ compose, uuid }                            = require '../utilities'
 
 activateAll = \appState ->
   { todos } = appState
@@ -81,13 +81,13 @@ extractNewTodo = \capsule ->
     _title = title
   [getTitle, storeTitle]
 
-removeCompleted = \appState ->
+removeCompleted = \capsule \appState ->
   appState.todos = appState.todos.filter active
   appState.activeCount = appState.count = appState.todos.length
   appState
 
-removeTodoByID = \id \appState ->
-  { index } = findTodo (appState.todos, id)
+removeTodoByID = \capsule \appState ->
+  { index } = findTodo (appState.todos, capsule.id)
   removeTodo (index, appState)
 
 removeTodo = (index, appState) ->
@@ -102,14 +102,14 @@ storeTitleForID = (appState, capsule) ->
   { todo } = findTodo (appState.todos, capsule.id)
   storeTitle todo.title
 
-toggleAllTodos = \appState ->
+toggleAllTodos = \capsule \appState ->
   manage = if appState.activeCount == 0 then activateAll else completeAll
   manage appState
   appState
 
-toggleTodo = \id \appState ->
+toggleTodo = \capsule \appState ->
   { activeCount, mode, todos } = appState
-  { todo, index } = findTodo (todos, id)
+  { todo, index } = findTodo (todos, capsule.id)
   { completed } = todo
   appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
@@ -118,6 +118,8 @@ toggleTodo = \id \appState ->
 updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
   nbr + addend
+
+filteringEnterKey = filtering enterKey?
 
 nodes = [
   '$toggle-clicks'
@@ -130,12 +132,12 @@ nodes = [
 ]
 
 transforms = [
-  mapping \capsule -> toggleTodo (extractID capsule)
-  mapping -> toggleAllTodos
-  mapping -> removeCompleted
-  (; filtering (enterKey?) mapping (extractNewTodo) ;)
-  mapping \capsule -> removeTodoByID (extractID capsule)
-  (; filtering (enterKey?) mapping (endEditing) ;)
+  mapping toggleTodo
+  mapping toggleAllTodos
+  mapping removeCompleted
+  compose [filteringEnterKey, (mapping extractNewTodo)]
+  mapping removeTodoByID
+  compose [filteringEnterKey, (mapping endEditing)]
   mapping endEditing
 ]
 
