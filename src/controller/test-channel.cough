@@ -7,6 +7,9 @@
 { filtering, mapping }                       = transforms
 { uuid }                                     = require '../utilities'
 
+plugIntoTerminus 'cacher', ->
+  mapping \transform -> ; cacheAppData transform ;
+
 NAMESPACE = 'reactive-aspen-todos'
 
 cacheAppData = \appState ->
@@ -45,6 +48,7 @@ editTodo = \todo ->
   todo.focus    = true
   todo
 
+# No appState caching.
 editAppState = \id \appState ->
   { todos }      = appState
   appState.focus = false
@@ -137,29 +141,23 @@ updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
   nbr + addend
 
-updateMode = \newMode \appState ->
-  appState.mode = newMode
-  cacheAppData appState
-
-plugIntoTerminus '$toggle-clicks', ->
+connect '$toggle-clicks' 'cacher' ->
   mapping \capsule -> toggleTodo (extractID capsule)
 
-plugIntoTerminus '$router-events', ->
-  mapping updateMode
-
-plugIntoTerminus '$toggle-all-clicks', ->
+connect '$toggle-all-clicks' 'cacher' ->
   mapping -> toggleAllTodos
 
-plugIntoTerminus '$clear-clicks', ->
+connect '$clear-clicks' 'cacher' ->
   mapping -> removeCompleted
 
-plugIntoTerminus '$new-todo-keydowns', ->
+connect '$new-todo-keydowns' 'cacher' ->
   ; filtering (enterKey?) mapping (extractNewTodo) ;
 
-plugIntoTerminus '$destroy-clicks', ->
+connect '$destroy-clicks' 'cacher' ->
   mapping \capsule -> removeTodoByID (extractID capsule)
 
 # -------------------------------------------------------------------------
+# No appState caching.
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping \capsule ->
     editAppState (extractID capsule)
@@ -171,10 +169,8 @@ getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
 # -------------------------------------------------------------------------
 
-plugIntoTerminus '$edit-keydowns', ->
+connect '$edit-keydowns' 'cacher' ->
   ; filtering (enterKey?) mapping (endEditing) ;
 
-plugIntoTerminus '$edit-blurs', ->
+connect '$edit-blurs' 'cacher' ->
   mapping endEditing
-
-module.exports = null
