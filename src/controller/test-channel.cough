@@ -1,6 +1,7 @@
 { active, getTodos }                         = require '../todo-utilities'
 { appStateProperty }                         = require '../vendor/Aspen'
-{ connect, getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
+{ connect,
+  getDispatcher, onValue, plugIntoTerminus } = require '../vendor/Controller'
 { transforms, utilities }                    = require '../vendor/Pando'
 { doAsync }                                  = utilities
 { filtering, mapping }                       = transforms
@@ -147,13 +148,11 @@ transforms = [
 
 connect nodes 'cacher' -> transforms
 
-# -------------------------------------------------------------------------
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping \capsule -> editAppState (extractID capsule)
 
-getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
+onValue '$todo-label-doubleclicks', \capsule ->
   doAsync (storeTitleForID) (appStateProperty, capsule)
 
-getDispatcher('todo-in-edit').subscribe \capsule ->
+onValue 'todo-in-edit', \capsule ->
   storeTitle (capsule.event.target.value)
-# -------------------------------------------------------------------------
