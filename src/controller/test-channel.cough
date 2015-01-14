@@ -48,7 +48,6 @@ editTodo = \todo ->
   todo.focus    = true
   todo
 
-# No appState caching.
 editAppState = \id \appState ->
   { todos }      = appState
   appState.focus = false
@@ -107,7 +106,6 @@ removeTodoByID = \id \appState ->
   appState
 
 # WET.
-# Possibly clobber `completed`
 removeTodo = (index, appState) ->
   { todos } = appState
   { completed } = todos[index]
@@ -137,23 +135,29 @@ updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
   nbr + addend
 
-connect '$toggle-clicks' 'cacher' ->
+nodes = [
+  '$toggle-clicks'
+  '$toggle-all-clicks'
+  '$clear-clicks'
+  '$new-todo-keydowns'
+  '$destroy-clicks'
+  '$edit-keydowns'
+  '$edit-blurs'
+]
+
+transforms = [
   mapping \capsule -> toggleTodo (extractID capsule)
-
-connect '$toggle-all-clicks' 'cacher' ->
   mapping -> toggleAllTodos
-
-connect '$clear-clicks' 'cacher' ->
   mapping -> removeCompleted
-
-connect '$new-todo-keydowns' 'cacher' ->
-  ; filtering (enterKey?) mapping (extractNewTodo) ;
-
-connect '$destroy-clicks' 'cacher' ->
+  (; filtering (enterKey?) mapping (extractNewTodo) ;)
   mapping \capsule -> removeTodoByID (extractID capsule)
+  (; filtering (enterKey?) mapping (endEditing) ;)
+  mapping endEditing
+]
+
+connect nodes 'cacher' -> transforms
 
 # -------------------------------------------------------------------------
-# No appState caching.
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping \capsule ->
     editAppState (extractID capsule)
@@ -164,9 +168,3 @@ getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
 getDispatcher('todo-in-edit').subscribe \capsule ->
   storeTitle (capsule.event.target.value)
 # -------------------------------------------------------------------------
-
-connect '$edit-keydowns' 'cacher' ->
-  ; filtering (enterKey?) mapping (endEditing) ;
-
-connect '$edit-blurs' 'cacher' ->
-  mapping endEditing
