@@ -40,29 +40,27 @@ editTodo = \todo ->
   todo
 
 editAppState = \id \appState ->
-  { todos }      = appState
-  appState.focus = false
-  [todo, index]  = findTodo (todos, id)
-  todos[index]   = editTodo todo
+  { todos }       = appState
+  appState.focus  = false
+  { todo, index } = findTodo (todos, id)
+  todos[index]    = editTodo todo
   appState
 
 findTodo = (todos, id) ->
   for todo, index in todos
-    return [todo, index] if todo.id == id
+    return { todo, index } if todo.id == id
 
-endEditing = \capsule ->
-  { id, index } = capsule
-  \appState ->
-    appState.focus = true
-    [todo, index]  = findTodo (appState.todos, id)
-    todo.editing   = false
-    todo.focus     = false
-    title          = getTitle().trim()
-    todo.title     = title
-    todo.editText  = title
+endEditing = \capsule \appState ->
+  { id }          = capsule
+  appState.focus  = true
+  { todo, index } = findTodo (appState.todos, id)
+  todo.editing    = false
+  todo.focus      = false
+  title           = getTitle().trim()
+  todo.title      = title
+  todo.editText   = title
 
-    result = if todo.title then appState else removeTodo (index, appState)
-    result
+  if todo.title then appState else removeTodo (index, appState)
 
 enterKey? = \capsule ->
   capsule.event.keyCode == 13
@@ -89,14 +87,9 @@ removeCompleted = \appState ->
   appState
 
 removeTodoByID = \id \appState ->
-  { todos } = appState
-  [todo, index] = findTodo (todos, id)
-  todos.splice (index, 1)
-  appState.activeCount -= 1 unless todo.completed
-  appState.count -= 1
-  appState
+  { index } = findTodo (appState.todos, id)
+  removeTodo (index, appState)
 
-# WET.
 removeTodo = (index, appState) ->
   { todos } = appState
   { completed } = todos[index]
@@ -106,7 +99,7 @@ removeTodo = (index, appState) ->
   appState
 
 storeTitleForID = (appState, capsule) ->
-  [todo] = findTodo (appState.todos, capsule.id)
+  { todo } = findTodo (appState.todos, capsule.id)
   storeTitle todo.title
 
 toggleAllTodos = \appState ->
@@ -116,7 +109,7 @@ toggleAllTodos = \appState ->
 
 toggleTodo = \id \appState ->
   { activeCount, mode, todos } = appState
-  [todo, index] = findTodo (todos, id)
+  { todo, index } = findTodo (todos, id)
   { completed } = todo
   appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
