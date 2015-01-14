@@ -2,19 +2,9 @@
 { appStateProperty }                         = require '../vendor/Aspen'
 { connect, getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
 { transforms, utilities }                    = require '../vendor/Pando'
-{ store }                                    = require '../utilities'
 { doAsync }                                  = utilities
 { filtering, mapping }                       = transforms
 { uuid }                                     = require '../utilities'
-
-plugIntoTerminus 'cacher', ->
-  mapping \transform -> ; cacheAppData transform ;
-
-NAMESPACE = 'reactive-aspen-todos'
-
-cacheAppData = \appState ->
-  store (NAMESPACE, appState)
-  appState
 
 activateAll = \appState ->
   { todos } = appState
@@ -159,8 +149,7 @@ connect nodes 'cacher' -> transforms
 
 # -------------------------------------------------------------------------
 plugIntoTerminus '$todo-label-doubleclicks', ->
-  mapping \capsule ->
-    editAppState (extractID capsule)
+  mapping \capsule -> editAppState (extractID capsule)
 
 getDispatcher('$todo-label-doubleclicks').subscribe \capsule ->
   doAsync (storeTitleForID) (appStateProperty, capsule)
