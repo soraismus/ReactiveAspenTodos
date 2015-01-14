@@ -1,9 +1,30 @@
-{ getDispatcher } = require '../vendor/Controller'
+{ getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
+{ mapping }                         = require('../vendor/Pando').transforms
+{ store }                           = require '../utilities'
 
-$router-events = getDispatcher ('$router-events', true)
+# WET.
+cacheAppData = \appState ->
+  store (NAMESPACE, appState)
 
 setModeTo = (mode) -> () ->
   $router-events.dispatch mode
+
+# WET.
+transformThenCache = \transform \appState ->
+  transform appState
+  cacheAppData appState
+  appState
+
+updateMode = \newMode ->
+  transformThenCache \appState ->
+    appState.mode = newMode
+
+# WET.
+NAMESPACE = 'reactive-aspen-todos'
+
+$router-events = getDispatcher ('$router-events', true)
+
+plugIntoTerminus $router-events, -> mapping updateMode
 
 # `Router` has been set on the global `window` object by another file.
 router = Router
