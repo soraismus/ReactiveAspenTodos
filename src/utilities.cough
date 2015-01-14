@@ -1,5 +1,10 @@
 signposts = [8, 12, 16, 20]
 
+compose = \fns ->
+  reducer = (composedFn, fn) -> (args...) ->
+    fn (composedFn args...)
+  fns.reduceRight reducer
+
 extend = (objects...) ->
   result = {}
 
@@ -34,4 +39,4 @@ uuid = ->
 
   id
 
-module.exports = { extend, pluralize, store, uuid }
+module.exports = { compose, extend, pluralize, store, uuid }
