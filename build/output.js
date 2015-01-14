@@ -50,7 +50,7 @@ router.init('/');
 
 
 },{"../utilities":8,"../vendor/Controller":11,"../vendor/Pando":13}],2:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, nodes, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -260,34 +260,26 @@ updateCount = function(nbr, completed) {
   return nbr + addend;
 };
 
-connect('$toggle-clicks')('cacher')(function() {
-  return mapping(function(capsule) {
+nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-keydowns', '$edit-blurs'];
+
+transforms = [
+  mapping(function(capsule) {
     return toggleTodo(extractID(capsule));
-  });
-});
-
-connect('$toggle-all-clicks')('cacher')(function() {
-  return mapping(function() {
+  }), mapping(function() {
     return toggleAllTodos;
-  });
-});
-
-connect('$clear-clicks')('cacher')(function() {
-  return mapping(function() {
+  }), mapping(function() {
     return removeCompleted;
-  });
-});
-
-connect('$new-todo-keydowns')('cacher')(function() {
-  return function(__i) {
+  }), (function(__i) {
     return filtering(enterKey_question_)(mapping(extractNewTodo)(__i));
-  };
-});
-
-connect('$destroy-clicks')('cacher')(function() {
-  return mapping(function(capsule) {
+  }), mapping(function(capsule) {
     return removeTodoByID(extractID(capsule));
-  });
+  }), (function(__i) {
+    return filtering(enterKey_question_)(mapping(endEditing)(__i));
+  }), mapping(endEditing)
+];
+
+connect(nodes)('cacher')(function() {
+  return transforms;
 });
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
@@ -302,16 +294,6 @@ getDispatcher('$todo-label-doubleclicks').subscribe(function(capsule) {
 
 getDispatcher('todo-in-edit').subscribe(function(capsule) {
   return storeTitle(capsule.event.target.value);
-});
-
-connect('$edit-keydowns')('cacher')(function() {
-  return function(__i) {
-    return filtering(enterKey_question_)(mapping(endEditing)(__i));
-  };
-});
-
-connect('$edit-blurs')('cacher')(function() {
-  return mapping(endEditing);
 });
 
 
@@ -2776,9 +2758,7 @@ connectMultiple = function(sources, targets, transforms) {
         _results1 = [];
         for (j = _j = 0, _len1 = sources.length; _j < _len1; j = ++_j) {
           src = sources[j];
-          _results1.push(connect(src)(tgt)(function() {
-            return transforms[i][j];
-          }));
+          _results1.push(_connect(src, tgt, transforms[i][j]));
         }
         return _results1;
       })());
@@ -2788,9 +2768,7 @@ connectMultiple = function(sources, targets, transforms) {
     _results1 = [];
     for (i = _j = 0, _len1 = sources.length; _j < _len1; i = ++_j) {
       src = sources[i];
-      _results1.push(connect(src)(targets)(function() {
-        return transforms[i];
-      }));
+      _results1.push(_connect(src, targets, transforms[i]));
     }
     return _results1;
   }
@@ -2802,9 +2780,7 @@ connectSingle = function(source, targets, transforms) {
     _results = [];
     for (i = _i = 0, _len = targets.length; _i < _len; i = ++_i) {
       tgt = targets[i];
-      _results.push(connect(source)(tgt)(function() {
-        return transforms[i];
-      }));
+      _results.push(_connect(source, tgt, transforms[i]));
     }
     return _results;
   } else {
