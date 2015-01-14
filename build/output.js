@@ -50,7 +50,7 @@ router.init('/');
 
 
 },{"../utilities":8,"../vendor/Controller":11,"../vendor/Pando":13}],2:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transformAppState, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -100,7 +100,7 @@ addTodo = function(title) {
     appState.todos.push(createTodo(title));
     appState.activeCount += 1;
     appState.count += 1;
-    return cacheAppData(appState);
+    return appState;
   };
 };
 
@@ -166,7 +166,7 @@ endEditing = function(capsule) {
     todo.title = title;
     todo.editText = title;
     result = todo.title ? appState : removeTodo(index, appState);
-    return cacheAppData(result);
+    return result;
   };
 };
 
@@ -200,7 +200,7 @@ _ref3 = (function() {
 removeCompleted = function(appState) {
   appState.todos = appState.todos.filter(active);
   appState.activeCount = appState.count = appState.todos.length;
-  return cacheAppData(appState);
+  return appState;
 };
 
 removeTodoByID = function(id) {
@@ -213,7 +213,7 @@ removeTodoByID = function(id) {
       appState.activeCount -= 1;
     }
     appState.count -= 1;
-    return cacheAppData(appState);
+    return appState;
   };
 };
 
@@ -226,7 +226,7 @@ removeTodo = function(index, appState) {
     appState.activeCount -= 1;
   }
   appState.count -= 1;
-  return cacheAppData(appState);
+  return appState;
 };
 
 storeTitleForID = function(appState, capsule) {
@@ -239,7 +239,7 @@ toggleAllTodos = function(appState) {
   var manage;
   manage = appState.activeCount === 0 ? activateAll : completeAll;
   manage(appState);
-  return cacheAppData(appState);
+  return appState;
 };
 
 toggleTodo = function(id) {
@@ -250,14 +250,7 @@ toggleTodo = function(id) {
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
-    return cacheAppData(appState);
-  };
-};
-
-transformAppState = function(transform) {
-  return function(appState) {
-    transform(appState);
-    return cacheAppData(appState);
+    return appState;
   };
 };
 
