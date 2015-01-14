@@ -1,4 +1,39 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var NAMESPACE, cacheAppData, mapping, plugIntoTerminus, store;
+
+mapping = require('../vendor/Pando').transforms.mapping;
+
+plugIntoTerminus = require('../vendor/Controller').plugIntoTerminus;
+
+store = require('../utilities').store;
+
+cacheAppData = function(appState) {
+  store(NAMESPACE, appState);
+  return appState;
+};
+
+NAMESPACE = 'reactive-aspen-todos';
+
+plugIntoTerminus('cacher', function() {
+  return mapping(function(transform) {
+    return function(__i) {
+      return cacheAppData(transform(__i));
+    };
+  });
+});
+
+
+
+},{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],2:[function(require,module,exports){
+require('./test-channel');
+
+require('./router');
+
+require('./cacher');
+
+
+
+},{"./cacher":1,"./router":3,"./test-channel":4}],3:[function(require,module,exports){
 var $router_hyphen_events, NAMESPACE, cacheAppData, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
 
 _ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
@@ -49,8 +84,8 @@ router.init('/');
 
 
 
-},{"../utilities":8,"../vendor/Controller":11,"../vendor/Pando":13}],2:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, nodes, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, store, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+},{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],4:[function(require,module,exports){
+var activateAll, active, addTodo, appStateProperty, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, nodes, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -60,28 +95,11 @@ _ref1 = require('../vendor/Controller'), connect = _ref1.connect, getDispatcher 
 
 _ref2 = require('../vendor/Pando'), transforms = _ref2.transforms, utilities = _ref2.utilities;
 
-store = require('../utilities').store;
-
 doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
 uuid = require('../utilities').uuid;
-
-plugIntoTerminus('cacher', function() {
-  return mapping(function(transform) {
-    return function(__i) {
-      return cacheAppData(transform(__i));
-    };
-  });
-});
-
-NAMESPACE = 'reactive-aspen-todos';
-
-cacheAppData = function(appState) {
-  store(NAMESPACE, appState);
-  return appState;
-};
 
 activateAll = function(appState) {
   var todos;
@@ -298,7 +316,7 @@ getDispatcher('todo-in-edit').subscribe(function(capsule) {
 
 
 
-},{"../todo-utilities":7,"../utilities":8,"../vendor/Aspen":9,"../vendor/Controller":11,"../vendor/Pando":13}],3:[function(require,module,exports){
+},{"../todo-utilities":9,"../utilities":10,"../vendor/Aspen":11,"../vendor/Controller":13,"../vendor/Pando":15}],5:[function(require,module,exports){
 var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
 
 onBlur = {
@@ -323,7 +341,7 @@ module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-cl
 
 
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var activeCount, cachedState, count, defaultState, empty_question_, focus, initialAppState, mode, store, todos;
 
 store = require('./utilities').store;
@@ -378,7 +396,7 @@ module.exports = initialAppState;
 
 
 
-},{"./utilities":8}],5:[function(require,module,exports){
+},{"./utilities":10}],7:[function(require,module,exports){
 var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
@@ -393,13 +411,11 @@ appNodeId = 'todoapp';
 
 initialize(appNodeId, topViewFactory, initialAppState, viewImports);
 
-require('./controller/test-channel');
-
-require('./controller/router');
+require('./controller/initialize');
 
 
 
-},{"./controller/router":1,"./controller/test-channel":2,"./controller/view-imports":3,"./initialAppState":4,"./vendor/Aspen":9,"./view/app":17}],6:[function(require,module,exports){
+},{"./controller/initialize":2,"./controller/view-imports":5,"./initialAppState":6,"./vendor/Aspen":11,"./view/app":19}],8:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -433,7 +449,7 @@ var UpdatePostFocusMixin = {
 
 module.exports = UpdatePostFocusMixin;
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 var active, completed, getTodos;
 
 active = function(todo) {
@@ -462,7 +478,7 @@ module.exports = {
 
 
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -541,47 +557,47 @@ module.exports = {
 
 
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = require('../../vendor/reactive-aspen');
 
 
 
-},{"../../vendor/reactive-aspen":23}],10:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":25}],12:[function(require,module,exports){
 module.exports = require('./Aspen').Bridge;
 
 
 
-},{"./Aspen":9}],11:[function(require,module,exports){
+},{"./Aspen":11}],13:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":9}],12:[function(require,module,exports){
+},{"./Aspen":11}],14:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":14}],13:[function(require,module,exports){
+},{"./React":16}],15:[function(require,module,exports){
 module.exports = require('./Aspen').Pando;
 
 
 
-},{"./Aspen":9}],14:[function(require,module,exports){
+},{"./Aspen":11}],16:[function(require,module,exports){
 module.exports = require('./Aspen').React;
 
 
 
-},{"./Aspen":9}],15:[function(require,module,exports){
+},{"./Aspen":11}],17:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":10}],16:[function(require,module,exports){
+},{"./Bridge":12}],18:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":14}],17:[function(require,module,exports){
+},{"./React":16}],19:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div;
 
 div = require('../vendor/DOM').div;
@@ -600,7 +616,7 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":12,"./body":18,"./footer":19,"./header":20}],18:[function(require,module,exports){
+},{"../vendor/DOM":14,"./body":20,"./footer":21,"./header":22}],20:[function(require,module,exports){
 var $checkbox, AppBody, TodoItem, getTodos, mainToggle, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
@@ -635,7 +651,7 @@ module.exports = AppBody;
 
 
 
-},{"../todo-utilities":7,"../vendor/DOM":12,"../vendor/adapters":15,"./todoItem":21}],19:[function(require,module,exports){
+},{"../todo-utilities":9,"../vendor/DOM":14,"../vendor/adapters":17,"./todoItem":23}],21:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -704,7 +720,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":8,"../vendor/DOM":12,"../vendor/adapters":15,"../vendor/classSet":16}],20:[function(require,module,exports){
+},{"../utilities":10,"../vendor/DOM":14,"../vendor/adapters":17,"../vendor/classSet":18}],22:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -732,7 +748,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":12,"../vendor/adapters":15}],21:[function(require,module,exports){
+},{"../vendor/DOM":14,"../vendor/adapters":17}],23:[function(require,module,exports){
 var $button, $checkbox, $label, TodoItem, applyIdAndIndex, applyIndex, classSet, createFactory, div, factories, includeIdAndIndex, includeIndex, indexifyAdapter, indexifyAdapterW_slash_Id, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -826,7 +842,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":12,"../vendor/React":14,"../vendor/adapters":15,"../vendor/classSet":16,"./todoItemInputClass":22}],22:[function(require,module,exports){
+},{"../vendor/DOM":14,"../vendor/React":16,"../vendor/adapters":17,"../vendor/classSet":18,"./todoItemInputClass":24}],24:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -863,7 +879,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":6,"../vendor/React":14,"../vendor/adapters":15}],23:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":8,"../vendor/React":16,"../vendor/adapters":17}],25:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.Pando=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var CoreCell, createCell, cytolyse, cytolyseAll, extendProto, getType, isCell, _ref;
@@ -23434,4 +23450,4 @@ module.exports = {
 },{}]},{},[12])
 (12)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[5])
+},{}]},{},[7])
