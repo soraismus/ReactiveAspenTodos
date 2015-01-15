@@ -8,6 +8,8 @@ noProps = null
 AppFooter = \props ->
   { activeCount, count, mode } = props
 
+  return null unless count > 0
+
   footer
     id : 'footer'
     countSpan activeCount
