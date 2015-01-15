@@ -3,14 +3,12 @@
 { section, ul } = require '../vendor/DOM'
 TodoItem        = require './todoItem'
 
-mainToggle = $checkbox 'toggle-all-checkbox'
-
 AppBody = \props ->
-  { activeCount, count, mode, todos } = props
+  { activeCount, count, editing, mode, todos } = props
 
   return null unless count > 0
 
-  todoItems = getTodos(mode, todos).map(TodoItem)
+  todoItems = getTodos(mode, todos).map(getTodoView(editing))
 
   section
     id : 'main'
@@ -21,5 +19,11 @@ AppBody = \props ->
     ul
       id : 'todo-list'
       todoItems
+
+getTodoView = \editableID \todo ->
+  editing = todo.id == editableID
+  TodoItem (todo, editing)
+
+mainToggle = $checkbox 'toggle-all-checkbox'
 
 module.exports = AppBody
