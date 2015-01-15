@@ -136,7 +136,6 @@ continueEditingTodo = function(todo, text) {
 createTodo = function(title) {
   return {
     completed: false,
-    editText: title,
     id: uuid(),
     title: title
   };
@@ -177,7 +176,6 @@ endEditing = function(getText) {
       _ref4 = findTodo(appState.todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
       appState.editing = null;
       todo.title = text;
-      todo.editText = text;
       if (text) {
         return appState;
       } else {
@@ -343,17 +341,14 @@ mode = 'all';
 todos = [
   {
     completed: false,
-    editText: null,
     id: 1,
     title: 'think'
   }, {
     completed: true,
-    editText: null,
     id: 2,
     title: 'ponder'
   }, {
     completed: false,
-    editText: null,
     id: 3,
     title: 'reflect'
   }
@@ -790,8 +785,8 @@ IDifyAdapter = function(_arg) {
 };
 
 TodoItem = function(todoProps, editing) {
-  var $completionToggle, $destroyButton, $todoItemLabel, className, completed, editText, id, title, _ref2;
-  completed = todoProps.completed, editText = todoProps.editText, id = todoProps.id, title = todoProps.title;
+  var $completionToggle, $destroyButton, $todoItemLabel, className, completed, id, title, _ref2;
+  completed = todoProps.completed, id = todoProps.id, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
@@ -812,8 +807,8 @@ TodoItem = function(todoProps, editing) {
     className: 'destroy',
     onClick: true
   })), todoItemInputFactory({
-    editText: editText,
     autoPostFocus: editing,
+    title: title,
     uuid: id
   }));
 };
@@ -845,11 +840,11 @@ _todoItemInput = function(id) {
 todoItemInputClass = createClass({
   mixins: [UpdatePostFocusMixin],
   render: function() {
-    var editText, uuid, _ref;
-    _ref = this.props, editText = _ref.editText, uuid = _ref.uuid;
+    var title, uuid, _ref;
+    _ref = this.props, title = _ref.title, uuid = _ref.uuid;
     return _todoItemInput(uuid)({
       className: 'edit',
-      defaultValue: editText,
+      defaultValue: title,
       key: 'todo-item-input' + uuid,
       onBlur: true,
       onChange: true,
