@@ -4,55 +4,40 @@ classSet                       = require '../vendor/classSet'
 { div, li }                    = require '../vendor/DOM'
 todoItemInputClass             = require './todoItemInputClass'
 
-applyIndex = \index \adapter ->
-  adapter index
+applyId = \id \adapter ->
+  adapter id
 
-applyIdAndIndex = (id, index) -> (adapter) ->
-  adapter (id, index)
+IDifyAdapter = ([adapter, label]) -> (id) ->
+  adapter { id, label }
 
-includeIndex = (label, index) ->
-  { index, label }
-
-includeIdAndIndex = (label, id, index) ->
-  { id, index, label }
-
-indexifyAdapter = ([adapter, label]) -> (index) ->
-  adapter (includeIndex (label, index))
-
-indexifyAdapterW/Id = ([adapter, label]) -> (id, index) ->
-  adapter (includeIdAndIndex (label, id, index))
-
-# -------------------------------------------------------------------------
-
-TodoItem = (todoProps, index) ->
-  { completed, editing, editText, focus, id, title } = todoProps
+TodoItem = (todoProps, editing) ->
+  { completed, editText, id, title } = todoProps
   className = classSet { completed, editing }
 
-  [_completionToggle, _destroyButton, _todoItemLabel] =
-    factories.map (applyIdAndIndex (id, index))
+  [$completionToggle, $destroyButton, $todoItemLabel] =
+    factories.map (applyId id)
 
   li
     key       : id
     className : className
     div
       className : 'view'
-      _completionToggle
+      $completionToggle
         className : 'toggle'
         checked   : completed
         onChange  : true
-      _todoItemLabel
+      $todoItemLabel
         onDoubleClick : true
         title
-      _destroyButton
+      $destroyButton
         className : 'destroy'
         onClick   : true
-    todoItemInputFactory ({ editText, autoPostFocus: focus, index, uuid: id })
+    todoItemInputFactory ({ editText, autoPostFocus: editing, uuid: id })
 
 factories = [
   [$checkbox, 'completion-toggle']
   [$button,   'destroy-button'   ]
-  [$label,    'todo-item-label'  ]
-].map indexifyAdapterW/Id
+  [$label,    'todo-item-label'  ] ].map IDifyAdapter
 
 todoItemInputFactory = createFactory todoItemInputClass
 

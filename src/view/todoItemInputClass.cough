@@ -2,17 +2,17 @@
 { $text }            = require '../vendor/adapters'
 UpdatePostFocusMixin = require '../mixins/UpdatePostFocusMixin'
 
-_todoItemInput = (id, index) ->
-  $text { id, index, label: 'todo-item-input' }
+_todoItemInput = \id ->
+  $text { id, label: 'todo-item-input' }
 
 todoItemInputClass = createClass
   mixins: [UpdatePostFocusMixin]
   render: ->
-    { editText, index, uuid } = this.props
-    _todoItemInput (uuid, index)
+    { editText, uuid } = this.props
+    _todoItemInput (uuid)
       className     : 'edit'
       defaultValue  : editText
-      key           : 'todo-item-input' + index
+      key           : 'todo-item-input' + uuid
       onBlur        : true
       onChange      : true
       onKeyDown     : true
