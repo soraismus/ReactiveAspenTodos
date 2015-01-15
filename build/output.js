@@ -1,5 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, compose, connect, createTodo, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, store, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, compose, connect, createTodo, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, store, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -17,13 +17,10 @@ doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
-activateAll = function(appState) {
-  var todos;
-  todos = appState.todos;
-  todos.forEach(function(todo) {
+activateAll = function(todos) {
+  return todos.forEach(function(todo) {
     return todo.completed = false;
   });
-  return appState.activeCount = todos.length;
 };
 
 addTodo = function(title) {
@@ -32,8 +29,6 @@ addTodo = function(title) {
       return appState;
     }
     appState.todos.push(createTodo(title));
-    appState.activeCount += 1;
-    appState.count += 1;
     return appState;
   };
 };
@@ -43,11 +38,10 @@ cacheAppData = function(appState) {
   return appState;
 };
 
-completeAll = function(appState) {
-  appState.todos.forEach(function(todo) {
+completeAll = function(todos) {
+  return todos.forEach(function(todo) {
     return todo.completed = true;
   });
-  return appState.activeCount = 0;
 };
 
 createTodo = function(title) {
@@ -140,7 +134,6 @@ _ref4 = (function() {
 removeCompleted = function(capsule) {
   return function(appState) {
     appState.todos = appState.todos.filter(active);
-    appState.activeCount = appState.count = appState.todos.length;
     return appState;
   };
 };
@@ -158,38 +151,29 @@ removeTodo = function(index, appState) {
   todos = appState.todos;
   completed = todos[index].completed;
   todos.splice(index, 1);
-  if (!completed) {
-    appState.activeCount -= 1;
-  }
-  appState.count -= 1;
   return appState;
 };
 
 toggleAllTodos = function(capsule) {
   return function(appState) {
-    var manage;
-    manage = appState.activeCount === 0 ? activateAll : completeAll;
-    manage(appState);
+    var allCompleted, manage, todos;
+    todos = appState.todos;
+    allCompleted = todos.every(function(todo) {
+      return todo.completed;
+    });
+    manage = allCompleted ? activateAll : completeAll;
+    manage(todos);
     return appState;
   };
 };
 
 toggleTodo = function(capsule) {
   return function(appState) {
-    var activeCount, completed, todo, todos;
-    activeCount = appState.activeCount, todos = appState.todos;
-    todo = findTodo(todos, capsule.id).todo;
-    completed = todo.completed;
-    appState.activeCount = updateCount(activeCount, completed);
-    todo.completed = !completed;
+    var todo;
+    todo = findTodo(appState.todos, capsule.id).todo;
+    todo.completed = !todo.completed;
     return appState;
   };
-};
-
-updateCount = function(nbr, completed) {
-  var addend;
-  addend = completed ? 1 : -1;
-  return nbr + addend;
 };
 
 filteringEnter = filteringKey(13);
@@ -303,21 +287,19 @@ store = require('./utilities').store;
 
 viewImports = require('./controller/view-imports');
 
-appNodeId = 'todoapp';
-
-defaultState = {
-  activeCount: 0,
-  count: 0,
-  editing: null,
-  mode: 'all',
-  todos: []
-};
-
 isEmpty = function(array) {
   return array.length === 0;
 };
 
+appNodeId = 'todoapp';
+
 cachedState = store(NAMESPACE);
+
+defaultState = {
+  editing: null,
+  mode: 'all',
+  todos: []
+};
 
 initialState = isEmpty(cachedState) ? defaultState : cachedState;
 
@@ -530,9 +512,7 @@ module.exports = require('./React').addons.classSet;
 
 
 },{"./React":14}],17:[function(require,module,exports){
-var AppBody, AppFooter, AppHeader, TodoApp, div, headerHasFocus;
-
-div = require('../vendor/DOM').div;
+var AppBody, AppFooter, AppHeader, TodoApp, countCompleted, countReducer, div, headerHasFocus;
 
 AppBody = require('./body');
 
@@ -540,12 +520,31 @@ AppFooter = require('./footer');
 
 AppHeader = require('./header');
 
+div = require('../vendor/DOM').div;
+
+countCompleted = function(todos) {
+  return todos.reduce(countReducer, 0);
+};
+
+countReducer = function(count, todo) {
+  if (todo.completed) {
+    return count + 1;
+  } else {
+    return count;
+  }
+};
+
 headerHasFocus = function(editing) {
   return editing === null;
 };
 
 TodoApp = function(appState) {
-  return div(null, AppHeader(headerHasFocus(appState.editing)), AppBody(appState), AppFooter(appState));
+  var allCompleted, completedCount, editing, fullCount, mode, todos;
+  editing = appState.editing, mode = appState.mode, todos = appState.todos;
+  completedCount = countCompleted(todos);
+  fullCount = todos.length;
+  allCompleted = completedCount === fullCount;
+  return div(null, AppHeader(headerHasFocus(editing)), AppBody(appState, allCompleted), AppFooter(mode, fullCount, completedCount));
 };
 
 module.exports = TodoApp;
@@ -553,7 +552,7 @@ module.exports = TodoApp;
 
 
 },{"../vendor/DOM":12,"./body":18,"./footer":19,"./header":20}],18:[function(require,module,exports){
-var $checkbox, AppBody, TodoItem, getTodoView, getTodos, mainToggle, section, ul, _ref;
+var $checkbox, $mainToggle, AppBody, TodoItem, getTodoView, getTodos, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
 
@@ -563,19 +562,19 @@ _ref = require('../vendor/DOM'), section = _ref.section, ul = _ref.ul;
 
 TodoItem = require('./todoItem');
 
-AppBody = function(props) {
-  var activeCount, count, editing, mode, todoItems, todos;
-  activeCount = props.activeCount, count = props.count, editing = props.editing, mode = props.mode, todos = props.todos;
-  if (!(count > 0)) {
+AppBody = function(props, checked) {
+  var editing, mode, todoItems, todos;
+  editing = props.editing, mode = props.mode, todos = props.todos;
+  if (!(todos.length > 0)) {
     return null;
   }
   todoItems = getTodos(mode, todos).map(getTodoView(editing));
   return section({
     id: 'main'
-  }, mainToggle({
+  }, $mainToggle({
     id: 'toggle-all',
-    onChange: true,
-    checked: activeCount === 0
+    checked: checked,
+    onChange: true
   }), ul({
     id: 'todo-list'
   }, todoItems));
@@ -589,7 +588,7 @@ getTodoView = function(editableID) {
   };
 };
 
-mainToggle = $checkbox('toggle-all-checkbox');
+$mainToggle = $checkbox('toggle-all-checkbox');
 
 module.exports = AppBody;
 
@@ -608,17 +607,15 @@ pluralize = require('../utilities').pluralize;
 
 noProps = null;
 
-AppFooter = function(props) {
-  var activeCount, count, mode;
-  activeCount = props.activeCount, count = props.count, mode = props.mode;
+AppFooter = function(mode, count, completedCount) {
   if (!(count > 0)) {
     return null;
   }
   return footer({
     id: 'footer'
-  }, countSpan(activeCount), ul({
+  }, countSpan(count - completedCount), ul({
     id: 'filters'
-  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(count - activeCount));
+  }, allFilter(mode), activeFilter(mode), completedFilter(mode)), clearButton(completedCount));
 };
 
 clearButton = function(completedCount) {
