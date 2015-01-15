@@ -7,4 +7,5 @@ appNodeId = 'todoapp'
 
 initialize (appNodeId, topViewFactory, initialAppState, viewImports)
 
-require './controller/initialize'
+require './controller/event-controllers'
+require './controller/router'
