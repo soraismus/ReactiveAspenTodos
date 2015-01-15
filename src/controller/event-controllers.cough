@@ -1,11 +1,14 @@
-{ active, getTodos }                         = require '../todo-utilities'
-{ appStateProperty }                         = require '../vendor/Aspen'
-{ connect,
-  getDispatcher, onValue, plugIntoTerminus } = require '../vendor/Controller'
-{ transforms, utilities }                    = require '../vendor/Pando'
-{ doAsync }                                  = utilities
-{ filtering, mapping }                       = transforms
-{ compose, uuid }                            = require '../utilities'
+{ active, getTodos }      = require '../todo-utilities'
+{ appStateProperty }      = require '../vendor/Aspen'
+{ compose, store, uuid }  = require '../utilities'
+{ NAMESPACE }             = require '../namespace'
+{ transforms, utilities } = require '../vendor/Pando'
+
+{ connect, getDispatcher, onValue, plugIntoTerminus } =
+  require '../vendor/Controller'
+
+{ doAsync }            = utilities
+{ filtering, mapping } = transforms
 
 activateAll = \appState ->
   { todos } = appState
@@ -19,22 +22,20 @@ addTodo = \title \appState ->
   appState.count += 1
   appState
 
+cacheAppData = \appState ->
+  store (NAMESPACE, appState)
+  appState
+
 completeAll = \appState ->
   appState.todos.forEach \todo -> todo.completed = true
   appState.activeCount = 0
 
-continueEditingTodo = (todo, text) ->
-  todo.title = text
-
 createTodo = \title ->
-  completed : false
-  id        : uuid ()
-  title     : title
+  { completed: false, id: uuid (), title: title }
 
 editAppState = \capsule \appState ->
-  { id }    = capsule
-  { todos } = appState
-  { todo }  = findTodo (todos, id)
+  { id }   = capsule
+  { todo } = findTodo (appState.todos, id)
   storeOrigTitle todo.title
   appState.editing = id
   appState
@@ -53,16 +54,13 @@ endEditing = \getText \capsule ->
     todo.title       = text
     if text then appState else removeTodo (index, appState)
 
-enterKey? = \capsule ->
-  capsule.event.keyCode == 13
-
-escapeKey? = \capsule ->
-  capsule.event.keyCode == 27
-
 extractNewTodo = \capsule ->
   value = capsule.event.target.value.trim ()
   capsule.event.target.value = ''
   addTodo value
+
+filteringKey = \key ->
+  filtering \capsule -> capsule.event.keyCode == key
 
 [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle] = do ->
   editText     = null
@@ -102,8 +100,8 @@ toggleAllTodos = \capsule \appState ->
   appState
 
 toggleTodo = \capsule \appState ->
-  { activeCount, mode, todos } = appState
-  { todo, index } = findTodo (todos, capsule.id)
+  { activeCount, todos } = appState
+  { todo } = findTodo (todos, capsule.id)
   { completed } = todo
   appState.activeCount = updateCount (activeCount, completed)
   todo.completed = !completed
@@ -113,8 +111,8 @@ updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
   nbr + addend
 
-filteringEnter  = filtering enterKey?
-filteringEscape = filtering escapeKey?
+filteringEnter  = filteringKey 13
+filteringEscape = filteringKey 27
 
 nodes = [
   '$toggle-clicks'
@@ -139,6 +137,9 @@ transforms = [
 ]
 
 connect nodes 'cacher' -> transforms
+
+plugIntoTerminus 'cacher', ->
+  mapping \transform -> ; cacheAppData transform ;
 
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping editAppState
