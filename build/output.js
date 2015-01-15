@@ -85,7 +85,7 @@ router.init('/');
 
 
 },{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],4:[function(require,module,exports){
-var activateAll, active, addTodo, appStateProperty, completeAll, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, extractID, extractNewTodo, filtering, findTodo, getDispatcher, getTitle, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, storeTitle, storeTitleForID, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3;
+var activateAll, active, addTodo, appStateProperty, completeAll, compose, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, escapeKey_question_, extractNewTodo, filtering, filteringEnter, filteringEscape, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -99,7 +99,7 @@ doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
-uuid = require('../utilities').uuid;
+_ref3 = require('../utilities'), compose = _ref3.compose, uuid = _ref3.uuid;
 
 activateAll = function(appState) {
   var todos;
@@ -145,17 +145,17 @@ createTodo = function(title) {
 
 editTodo = function(todo) {
   todo.editing = true;
-  todo.editText = todo.title;
   todo.focus = true;
   return todo;
 };
 
-editAppState = function(id) {
+editAppState = function(capsule) {
   return function(appState) {
-    var index, todo, todos, _ref3;
+    var index, todo, todos, _ref4;
     todos = appState.todos;
     appState.focus = false;
-    _ref3 = findTodo(todos, id), todo = _ref3.todo, index = _ref3.index;
+    _ref4 = findTodo(todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
+    storeOrigTitle(todo.title);
     todos[index] = editTodo(todo);
     return appState;
   };
@@ -174,22 +174,25 @@ findTodo = function(todos, id) {
   }
 };
 
-endEditing = function(capsule) {
-  return function(appState) {
-    var id, index, title, todo, _ref3;
-    id = capsule.id;
-    appState.focus = true;
-    _ref3 = findTodo(appState.todos, id), todo = _ref3.todo, index = _ref3.index;
-    todo.editing = false;
-    todo.focus = false;
-    title = getTitle().trim();
-    todo.title = title;
-    todo.editText = title;
-    if (todo.title) {
-      return appState;
-    } else {
-      return removeTodo(index, appState);
-    }
+endEditing = function(getText) {
+  return function(capsule) {
+    var text;
+    text = getText();
+    capsule.event.target.value = text;
+    return function(appState) {
+      var index, todo, _ref4;
+      appState.focus = true;
+      _ref4 = findTodo(appState.todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
+      todo.editing = false;
+      todo.focus = false;
+      todo.title = text;
+      todo.editText = text;
+      if (text) {
+        return appState;
+      } else {
+        return removeTodo(index, appState);
+      }
+    };
   };
 };
 
@@ -197,8 +200,8 @@ enterKey_question_ = function(capsule) {
   return capsule.event.keyCode === 13;
 };
 
-extractID = function(capsule) {
-  return capsule.id;
+escapeKey_question_ = function(capsule) {
+  return capsule.event.keyCode === 27;
 };
 
 extractNewTodo = function(capsule) {
@@ -208,28 +211,41 @@ extractNewTodo = function(capsule) {
   return addTodo(value);
 };
 
-_ref3 = (function() {
-  var getTitle, storeTitle, _title;
-  _title = null;
-  getTitle = function() {
-    return _title;
+_ref4 = (function() {
+  var editText, originalText, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle;
+  editText = null;
+  originalText = null;
+  restoreOrigTitle = function() {
+    return editText = originalText;
+  };
+  saveCurrentTitle = function() {
+    if (editText) {
+      return editText.trim();
+    } else {
+      return editText;
+    }
+  };
+  storeOrigTitle = function(title) {
+    return editText = originalText = title;
   };
   storeTitle = function(title) {
-    return _title = title;
+    return editText = title;
   };
-  return [getTitle, storeTitle];
-})(), getTitle = _ref3[0], storeTitle = _ref3[1];
+  return [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle];
+})(), restoreOrigTitle = _ref4[0], saveCurrentTitle = _ref4[1], storeOrigTitle = _ref4[2], storeTitle = _ref4[3];
 
-removeCompleted = function(appState) {
-  appState.todos = appState.todos.filter(active);
-  appState.activeCount = appState.count = appState.todos.length;
-  return appState;
+removeCompleted = function(capsule) {
+  return function(appState) {
+    appState.todos = appState.todos.filter(active);
+    appState.activeCount = appState.count = appState.todos.length;
+    return appState;
+  };
 };
 
-removeTodoByID = function(id) {
+removeTodoByID = function(capsule) {
   return function(appState) {
     var index;
-    index = findTodo(appState.todos, id).index;
+    index = findTodo(appState.todos, capsule.id).index;
     return removeTodo(index, appState);
   };
 };
@@ -246,24 +262,20 @@ removeTodo = function(index, appState) {
   return appState;
 };
 
-storeTitleForID = function(appState, capsule) {
-  var todo;
-  todo = findTodo(appState.todos, capsule.id).todo;
-  return storeTitle(todo.title);
-};
-
-toggleAllTodos = function(appState) {
-  var manage;
-  manage = appState.activeCount === 0 ? activateAll : completeAll;
-  manage(appState);
-  return appState;
-};
-
-toggleTodo = function(id) {
+toggleAllTodos = function(capsule) {
   return function(appState) {
-    var activeCount, completed, index, mode, todo, todos, _ref4;
+    var manage;
+    manage = appState.activeCount === 0 ? activateAll : completeAll;
+    manage(appState);
+    return appState;
+  };
+};
+
+toggleTodo = function(capsule) {
+  return function(appState) {
+    var activeCount, completed, index, mode, todo, todos, _ref5;
     activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
-    _ref4 = findTodo(todos, id), todo = _ref4.todo, index = _ref4.index;
+    _ref5 = findTodo(todos, capsule.id), todo = _ref5.todo, index = _ref5.index;
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -277,36 +289,20 @@ updateCount = function(nbr, completed) {
   return nbr + addend;
 };
 
-nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-keydowns', '$edit-blurs'];
+filteringEnter = filtering(enterKey_question_);
 
-transforms = [
-  mapping(function(capsule) {
-    return toggleTodo(extractID(capsule));
-  }), mapping(function() {
-    return toggleAllTodos;
-  }), mapping(function() {
-    return removeCompleted;
-  }), (function(__i) {
-    return filtering(enterKey_question_)(mapping(extractNewTodo)(__i));
-  }), mapping(function(capsule) {
-    return removeTodoByID(extractID(capsule));
-  }), (function(__i) {
-    return filtering(enterKey_question_)(mapping(endEditing)(__i));
-  }), mapping(endEditing)
-];
+filteringEscape = filtering(escapeKey_question_);
 
-connect(nodes)('cacher')(function() {
-  return transforms;
-});
+nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
+
+transforms = function() {
+  return [mapping(toggleTodo), mapping(toggleAllTodos), mapping(removeCompleted), compose([filteringEnter, mapping(extractNewTodo)]), mapping(removeTodoByID), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
+};
+
+connect(nodes)('cacher')(transforms);
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
-  return mapping(function(capsule) {
-    return editAppState(extractID(capsule));
-  });
-});
-
-onValue('$todo-label-doubleclicks', function(capsule) {
-  return doAsync(storeTitleForID)(appStateProperty, capsule);
+  return mapping(editAppState);
 });
 
 onValue('todo-in-edit', function(capsule) {
@@ -478,12 +474,24 @@ module.exports = {
 
 
 },{}],10:[function(require,module,exports){
-var extend, pluralize, signposts, store, uuid, _uuid,
+var compose, extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 signposts = [8, 12, 16, 20];
+
+compose = function(fns) {
+  var reducer;
+  reducer = function(composedFn, fn) {
+    return function() {
+      var args;
+      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+      return fn(composedFn.apply(null, args));
+    };
+  };
+  return fns.reduceRight(reducer);
+};
 
 extend = function() {
   var key, obj, objects, result, _i, _len;
@@ -548,6 +556,7 @@ uuid = function() {
 };
 
 module.exports = {
+  compose: compose,
   extend: extend,
   pluralize: pluralize,
   store: store,
