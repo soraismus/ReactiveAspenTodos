@@ -6,9 +6,9 @@ editing     = null
 mode        = 'all'
 
 todos = [
-  { completed: false, editText: null, id: 1, title: 'think'   }
-  { completed: true,  editText: null, id: 2, title: 'ponder'  }
-  { completed: false, editText: null, id: 3, title: 'reflect' }
+  { completed: false, id: 1, title: 'think'   }
+  { completed: true,  id: 2, title: 'ponder'  }
+  { completed: false, id: 3, title: 'reflect' }
 ]
 
 empty? = \array -> array.length == 0

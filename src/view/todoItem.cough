@@ -11,7 +11,7 @@ IDifyAdapter = ([adapter, label]) -> (id) ->
   adapter { id, label }
 
 TodoItem = (todoProps, editing) ->
-  { completed, editText, id, title } = todoProps
+  { completed, id, title } = todoProps
   className = classSet { completed, editing }
 
   [$completionToggle, $destroyButton, $todoItemLabel] =
@@ -32,7 +32,7 @@ TodoItem = (todoProps, editing) ->
       $destroyButton
         className : 'destroy'
         onClick   : true
-    todoItemInputFactory ({ editText, autoPostFocus: editing, uuid: id })
+    todoItemInputFactory ({ autoPostFocus: editing, title, uuid: id })
 
 factories = [
   [$checkbox, 'completion-toggle']

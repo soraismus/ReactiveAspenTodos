@@ -8,10 +8,10 @@ _todoItemInput = \id ->
 todoItemInputClass = createClass
   mixins: [UpdatePostFocusMixin]
   render: ->
-    { editText, uuid } = this.props
+    { title, uuid } = this.props
     _todoItemInput (uuid)
       className     : 'edit'
-      defaultValue  : editText
+      defaultValue  : title
       key           : 'todo-item-input' + uuid
       onBlur        : true
       onChange      : true

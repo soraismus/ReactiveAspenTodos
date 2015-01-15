@@ -28,7 +28,6 @@ continueEditingTodo = (todo, text) ->
 
 createTodo = \title ->
   completed : false
-  editText  : title
   id        : uuid ()
   title     : title
 
@@ -52,7 +51,6 @@ endEditing = \getText \capsule ->
     { todo, index } = findTodo (appState.todos, capsule.id)
     appState.editing = null
     todo.title       = text
-    todo.editText    = text
     if text then appState else removeTodo (index, appState)
 
 enterKey? = \capsule ->
