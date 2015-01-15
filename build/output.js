@@ -845,7 +845,6 @@ todoItemInputClass = createClass({
     return _todoItemInput(uuid)({
       className: 'edit',
       defaultValue: title,
-      key: 'todo-item-input' + uuid,
       onBlur: true,
       onChange: true,
       onKeyDown: true
