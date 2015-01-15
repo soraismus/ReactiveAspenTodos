@@ -1,105 +1,21 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var NAMESPACE, cacheAppData, mapping, plugIntoTerminus, store;
-
-mapping = require('../vendor/Pando').transforms.mapping;
-
-plugIntoTerminus = require('../vendor/Controller').plugIntoTerminus;
-
-store = require('../utilities').store;
-
-cacheAppData = function(appState) {
-  store(NAMESPACE, appState);
-  return appState;
-};
-
-NAMESPACE = 'reactive-aspen-todos';
-
-plugIntoTerminus('cacher', function() {
-  return mapping(function(transform) {
-    return function(__i) {
-      return cacheAppData(transform(__i));
-    };
-  });
-});
-
-
-
-},{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],2:[function(require,module,exports){
-require('./test-channel');
-
-require('./router');
-
-require('./cacher');
-
-
-
-},{"./cacher":1,"./router":3,"./test-channel":4}],3:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, cacheAppData, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
-
-_ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
-
-mapping = require('../vendor/Pando').transforms.mapping;
-
-store = require('../utilities').store;
-
-cacheAppData = function(appState) {
-  return store(NAMESPACE, appState);
-};
-
-setModeTo = function(mode) {
-  return function() {
-    return $router_hyphen_events.dispatch(mode);
-  };
-};
-
-transformThenCache = function(transform) {
-  return function(appState) {
-    transform(appState);
-    cacheAppData(appState);
-    return appState;
-  };
-};
-
-updateMode = function(newMode) {
-  return transformThenCache(function(appState) {
-    return appState.mode = newMode;
-  });
-};
-
-NAMESPACE = 'reactive-aspen-todos';
-
-$router_hyphen_events = getDispatcher('$router-events', true);
-
-plugIntoTerminus($router_hyphen_events, function() {
-  return mapping(updateMode);
-});
-
-router = Router({
-  '/': setModeTo('all'),
-  '/active': setModeTo('active'),
-  '/completed': setModeTo('completed')
-});
-
-router.init('/');
-
-
-
-},{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],4:[function(require,module,exports){
-var activateAll, active, addTodo, appStateProperty, completeAll, compose, connect, continueEditingTodo, createTodo, doAsync, editAppState, endEditing, enterKey_question_, escapeKey_question_, extractNewTodo, filtering, filteringEnter, filteringEscape, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, compose, connect, createTodo, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, store, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
-_ref1 = require('../vendor/Controller'), connect = _ref1.connect, getDispatcher = _ref1.getDispatcher, onValue = _ref1.onValue, plugIntoTerminus = _ref1.plugIntoTerminus;
+_ref1 = require('../utilities'), compose = _ref1.compose, store = _ref1.store, uuid = _ref1.uuid;
+
+NAMESPACE = require('../namespace').NAMESPACE;
 
 _ref2 = require('../vendor/Pando'), transforms = _ref2.transforms, utilities = _ref2.utilities;
+
+_ref3 = require('../vendor/Controller'), connect = _ref3.connect, getDispatcher = _ref3.getDispatcher, onValue = _ref3.onValue, plugIntoTerminus = _ref3.plugIntoTerminus;
 
 doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
-
-_ref3 = require('../utilities'), compose = _ref3.compose, uuid = _ref3.uuid;
 
 activateAll = function(appState) {
   var todos;
@@ -122,15 +38,16 @@ addTodo = function(title) {
   };
 };
 
+cacheAppData = function(appState) {
+  store(NAMESPACE, appState);
+  return appState;
+};
+
 completeAll = function(appState) {
   appState.todos.forEach(function(todo) {
     return todo.completed = true;
   });
   return appState.activeCount = 0;
-};
-
-continueEditingTodo = function(todo, text) {
-  return todo.title = text;
 };
 
 createTodo = function(title) {
@@ -143,10 +60,9 @@ createTodo = function(title) {
 
 editAppState = function(capsule) {
   return function(appState) {
-    var id, todo, todos;
+    var id, todo;
     id = capsule.id;
-    todos = appState.todos;
-    todo = findTodo(todos, id).todo;
+    todo = findTodo(appState.todos, id).todo;
     storeOrigTitle(todo.title);
     appState.editing = id;
     return appState;
@@ -185,19 +101,17 @@ endEditing = function(getText) {
   };
 };
 
-enterKey_question_ = function(capsule) {
-  return capsule.event.keyCode === 13;
-};
-
-escapeKey_question_ = function(capsule) {
-  return capsule.event.keyCode === 27;
-};
-
 extractNewTodo = function(capsule) {
   var value;
   value = capsule.event.target.value.trim();
   capsule.event.target.value = '';
   return addTodo(value);
+};
+
+filteringKey = function(key) {
+  return filtering(function(capsule) {
+    return capsule.event.keyCode === key;
+  });
 };
 
 _ref4 = (function() {
@@ -262,9 +176,9 @@ toggleAllTodos = function(capsule) {
 
 toggleTodo = function(capsule) {
   return function(appState) {
-    var activeCount, completed, index, mode, todo, todos, _ref5;
-    activeCount = appState.activeCount, mode = appState.mode, todos = appState.todos;
-    _ref5 = findTodo(todos, capsule.id), todo = _ref5.todo, index = _ref5.index;
+    var activeCount, completed, todo, todos;
+    activeCount = appState.activeCount, todos = appState.todos;
+    todo = findTodo(todos, capsule.id).todo;
     completed = todo.completed;
     appState.activeCount = updateCount(activeCount, completed);
     todo.completed = !completed;
@@ -278,9 +192,9 @@ updateCount = function(nbr, completed) {
   return nbr + addend;
 };
 
-filteringEnter = filtering(enterKey_question_);
+filteringEnter = filteringKey(13);
 
-filteringEscape = filtering(escapeKey_question_);
+filteringEscape = filteringKey(27);
 
 nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
 
@@ -288,6 +202,14 @@ transforms = [mapping(toggleTodo), mapping(toggleAllTodos), mapping(removeComple
 
 connect(nodes)('cacher')(function() {
   return transforms;
+});
+
+plugIntoTerminus('cacher', function() {
+  return mapping(function(transform) {
+    return function(__i) {
+      return cacheAppData(transform(__i));
+    };
+  });
 });
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
@@ -300,8 +222,55 @@ onValue('todo-in-edit', function(capsule) {
 
 
 
-},{"../todo-utilities":9,"../utilities":10,"../vendor/Aspen":11,"../vendor/Controller":13,"../vendor/Pando":15}],5:[function(require,module,exports){
-var onBlur, onChange, onKeyDown, preventDefault, todoItemInput;
+},{"../namespace":6,"../todo-utilities":7,"../utilities":8,"../vendor/Aspen":9,"../vendor/Controller":11,"../vendor/Pando":13}],2:[function(require,module,exports){
+var $router_hyphen_events, NAMESPACE, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
+
+_ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
+
+mapping = require('../vendor/Pando').transforms.mapping;
+
+NAMESPACE = require('../namespace').NAMESPACE;
+
+store = require('../utilities').store;
+
+setModeTo = function(mode) {
+  return function() {
+    return $router_hyphen_events.dispatch(mode);
+  };
+};
+
+transformThenCache = function(transform) {
+  return function(appState) {
+    transform(appState);
+    store(NAMESPACE, appState);
+    return appState;
+  };
+};
+
+updateMode = function(newMode) {
+  return transformThenCache(function(appState) {
+    return appState.mode = newMode;
+  });
+};
+
+$router_hyphen_events = getDispatcher('$router-events', true);
+
+plugIntoTerminus($router_hyphen_events, function() {
+  return mapping(updateMode);
+});
+
+router = Router({
+  '/': setModeTo('all'),
+  '/active': setModeTo('active'),
+  '/completed': setModeTo('completed')
+});
+
+router.init('/');
+
+
+
+},{"../namespace":6,"../utilities":8,"../vendor/Controller":11,"../vendor/Pando":13}],3:[function(require,module,exports){
+var onBlur, onChange, onKeyDown, todoItemInput;
 
 onBlur = {
   handler: 'onBlur'
@@ -315,85 +284,52 @@ onKeyDown = {
   handler: 'onKeyDown'
 };
 
-preventDefault = {
-  preventDefault: true
-};
-
 todoItemInput = 'todo-item-input';
 
-module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$destroy-clicks', 'destroy-button'], ['$clear-clicks', 'ClearButton'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$new-todo-keydowns', 'new-todo-input'], ['$edit-blurs', todoItemInput, onBlur], ['todo-in-edit', todoItemInput, onChange], ['$edit-keydowns', todoItemInput, onKeyDown], ['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$completed-todos-clicks', 'CompletedTodos']];
+module.exports = [['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$clear-clicks', 'ClearButton'], ['$completed-todos-clicks', 'CompletedTodos'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-item-input-events', 'TodoItemInput'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
 
 
 
-},{}],6:[function(require,module,exports){
-var activeCount, cachedState, count, defaultState, editing, empty_question_, initialAppState, mode, store, todos;
-
-store = require('./utilities').store;
-
-activeCount = 2;
-
-count = 3;
-
-editing = null;
-
-mode = 'all';
-
-todos = [
-  {
-    completed: false,
-    id: 1,
-    title: 'think'
-  }, {
-    completed: true,
-    id: 2,
-    title: 'ponder'
-  }, {
-    completed: false,
-    id: 3,
-    title: 'reflect'
-  }
-];
-
-empty_question_ = function(array) {
-  return array.length === 0;
-};
-
-cachedState = store('reactive-aspen-todos');
-
-defaultState = {
-  activeCount: activeCount,
-  count: count,
-  editing: editing,
-  mode: mode,
-  todos: todos
-};
-
-initialAppState = empty_question_(cachedState) ? defaultState : cachedState;
-
-module.exports = initialAppState;
-
-
-
-},{"./utilities":10}],7:[function(require,module,exports){
-var appNodeId, initialAppState, initialize, topViewFactory, viewImports;
+},{}],4:[function(require,module,exports){
+var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
 
-initialAppState = require('./initialAppState');
+NAMESPACE = require('./namespace').NAMESPACE;
 
 topViewFactory = require('./view/app');
+
+store = require('./utilities').store;
 
 viewImports = require('./controller/view-imports');
 
 appNodeId = 'todoapp';
 
-initialize(appNodeId, topViewFactory, initialAppState, viewImports);
+defaultState = {
+  activeCount: 0,
+  count: 0,
+  editing: null,
+  mode: 'all',
+  todos: []
+};
 
-require('./controller/initialize');
+isEmpty = function(array) {
+  return array.length === 0;
+};
+
+cachedState = store(NAMESPACE);
+
+initialState = isEmpty(cachedState) ? defaultState : cachedState;
+
+initialize(appNodeId, topViewFactory, initialState, viewImports);
+
+require('./controller/event-controllers');
+
+require('./controller/router');
 
 
 
-},{"./controller/initialize":2,"./controller/view-imports":5,"./initialAppState":6,"./vendor/Aspen":11,"./view/app":19}],8:[function(require,module,exports){
+},{"./controller/event-controllers":1,"./controller/router":2,"./controller/view-imports":3,"./namespace":6,"./utilities":8,"./vendor/Aspen":9,"./view/app":17}],5:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -427,7 +363,12 @@ var UpdatePostFocusMixin = {
 
 module.exports = UpdatePostFocusMixin;
 
-},{}],9:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
+module.exports = 'reactive-aspen-todos';
+
+
+
+},{}],7:[function(require,module,exports){
 var active, completed, getTodos;
 
 active = function(todo) {
@@ -456,24 +397,22 @@ module.exports = {
 
 
 
-},{}],10:[function(require,module,exports){
-var compose, extend, pluralize, signposts, store, uuid, _uuid,
+},{}],8:[function(require,module,exports){
+var compose, composeReducer, extend, pluralize, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-signposts = [8, 12, 16, 20];
-
 compose = function(fns) {
-  var reducer;
-  reducer = function(composedFn, fn) {
-    return function() {
-      var args;
-      args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-      return fn(composedFn.apply(null, args));
-    };
+  return fns.reduceRight(composeReducer);
+};
+
+composeReducer = function(composedFn, fn) {
+  return function() {
+    var args;
+    args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+    return fn(composedFn.apply(null, args));
   };
-  return fns.reduceRight(reducer);
 };
 
 extend = function() {
@@ -538,6 +477,8 @@ uuid = function() {
   return id;
 };
 
+signposts = [8, 12, 16, 20];
+
 module.exports = {
   compose: compose,
   extend: extend,
@@ -548,47 +489,47 @@ module.exports = {
 
 
 
-},{}],11:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 module.exports = require('../../vendor/reactive-aspen');
 
 
 
-},{"../../vendor/reactive-aspen":25}],12:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":23}],10:[function(require,module,exports){
 module.exports = require('./Aspen').Bridge;
 
 
 
-},{"./Aspen":11}],13:[function(require,module,exports){
+},{"./Aspen":9}],11:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":11}],14:[function(require,module,exports){
+},{"./Aspen":9}],12:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":16}],15:[function(require,module,exports){
+},{"./React":14}],13:[function(require,module,exports){
 module.exports = require('./Aspen').Pando;
 
 
 
-},{"./Aspen":11}],16:[function(require,module,exports){
+},{"./Aspen":9}],14:[function(require,module,exports){
 module.exports = require('./Aspen').React;
 
 
 
-},{"./Aspen":11}],17:[function(require,module,exports){
+},{"./Aspen":9}],15:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":12}],18:[function(require,module,exports){
+},{"./Bridge":10}],16:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":16}],19:[function(require,module,exports){
+},{"./React":14}],17:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, div, headerHasFocus;
 
 div = require('../vendor/DOM').div;
@@ -611,7 +552,7 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":14,"./body":20,"./footer":21,"./header":22}],20:[function(require,module,exports){
+},{"../vendor/DOM":12,"./body":18,"./footer":19,"./header":20}],18:[function(require,module,exports){
 var $checkbox, AppBody, TodoItem, getTodoView, getTodos, mainToggle, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
@@ -654,7 +595,7 @@ module.exports = AppBody;
 
 
 
-},{"../todo-utilities":9,"../vendor/DOM":14,"../vendor/adapters":17,"./todoItem":23}],21:[function(require,module,exports){
+},{"../todo-utilities":7,"../vendor/DOM":12,"../vendor/adapters":15,"./todoItem":21}],19:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -726,7 +667,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":10,"../vendor/DOM":14,"../vendor/adapters":17,"../vendor/classSet":18}],22:[function(require,module,exports){
+},{"../utilities":8,"../vendor/DOM":12,"../vendor/adapters":15,"../vendor/classSet":16}],20:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -754,7 +695,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":14,"../vendor/adapters":17}],23:[function(require,module,exports){
+},{"../vendor/DOM":12,"../vendor/adapters":15}],21:[function(require,module,exports){
 var $button, $checkbox, $label, IDifyAdapter, TodoItem, applyId, classSet, createFactory, div, factories, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -821,7 +762,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":14,"../vendor/React":16,"../vendor/adapters":17,"../vendor/classSet":18,"./todoItemInputClass":24}],24:[function(require,module,exports){
+},{"../vendor/DOM":12,"../vendor/React":14,"../vendor/adapters":15,"../vendor/classSet":16,"./todoItemInputClass":22}],22:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -856,7 +797,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":8,"../vendor/React":16,"../vendor/adapters":17}],25:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":14,"../vendor/adapters":15}],23:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var actAsSwitchboard, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, portUtilities, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1;
 
@@ -23439,4 +23380,4 @@ module.exports = {
 },{}]},{},[11])
 (11)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[7])
+},{}]},{},[4])
