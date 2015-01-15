@@ -1,21 +1,17 @@
 { NAMESPACE } = require './namespace'
 { store }     = require './utilities'
 
-activeCount = 2
-count       = 3
+activeCount = 0
+count       = 0
 editing     = null
 mode        = 'all'
 
-todos = [
-  { completed: false, id: 1, title: 'think'   }
-  { completed: true,  id: 2, title: 'ponder'  }
-  { completed: false, id: 3, title: 'reflect' }
-]
+todos = []
 
-empty? = \array -> array.length == 0
+isEmpty = \array -> array.length == 0
 
 cachedState     = store NAMESPACE
 defaultState    = { activeCount, count, editing, mode, todos }
-initialAppState = if empty? cachedState then defaultState else cachedState
+initialAppState = if isEmpty cachedState then defaultState else cachedState
 
 module.exports  = initialAppState
