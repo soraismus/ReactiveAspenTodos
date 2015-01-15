@@ -28,22 +28,16 @@ continueEditingTodo = (todo, text) ->
 
 createTodo = \title ->
   completed : false
-  editing   : false
   editText  : title
   id        : uuid ()
   title     : title
 
-editTodo = \todo ->
-  todo.editing = true
-  todo.focus   = true
-  todo
-
 editAppState = \capsule \appState ->
-  { todos }       = appState
-  appState.focus  = false
-  { todo, index } = findTodo (todos, capsule.id)
+  { id }    = capsule
+  { todos } = appState
+  { todo }  = findTodo (todos, id)
   storeOrigTitle todo.title
-  todos[index]    = editTodo todo
+  appState.editing = id
   appState
 
 findTodo = (todos, id) ->
@@ -55,12 +49,10 @@ endEditing = \getText \capsule ->
   capsule.event.target.value = text
 
   \appState ->
-    appState.focus  = true
     { todo, index } = findTodo (appState.todos, capsule.id)
-    todo.editing    = false
-    todo.focus      = false
-    todo.title      = text
-    todo.editText   = text
+    appState.editing = null
+    todo.title       = text
+    todo.editText    = text
     if text then appState else removeTodo (index, appState)
 
 enterKey? = \capsule ->
@@ -137,7 +129,7 @@ nodes = [
   '$edit-keydowns'
 ]
 
-transforms = -> [
+transforms = [
   mapping toggleTodo
   mapping toggleAllTodos
   mapping removeCompleted
@@ -148,7 +140,7 @@ transforms = -> [
   compose [filteringEscape, mapping (endEditing restoreOrigTitle)]
 ]
 
-connect nodes 'cacher' transforms
+connect nodes 'cacher' -> transforms
 
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping editAppState
