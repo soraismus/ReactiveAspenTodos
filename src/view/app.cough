@@ -4,10 +4,13 @@ AppBody   = require './body'
 AppFooter = require './footer'
 AppHeader = require './header'
 
+headerHasFocus = \editing ->
+  editing == null
+
 TodoApp = \appState ->
   div (
     null
-    AppHeader appState.focus
+    AppHeader (headerHasFocus appState.editing)
     AppBody appState
     AppFooter appState
   )
