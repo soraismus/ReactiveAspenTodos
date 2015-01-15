@@ -1,26 +1,19 @@
 { getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
 { mapping }                         = require('../vendor/Pando').transforms
+{ NAMESPACE }                       = require '../namespace'
 { store }                           = require '../utilities'
-
-# WET.
-cacheAppData = \appState ->
-  store (NAMESPACE, appState)
 
 setModeTo = (mode) -> () ->
   $router-events.dispatch mode
 
-# WET.
 transformThenCache = \transform \appState ->
   transform appState
-  cacheAppData appState
+  store (NAMESPACE, appState)
   appState
 
 updateMode = \newMode ->
   transformThenCache \appState ->
     appState.mode = newMode
-
-# WET.
-NAMESPACE = 'reactive-aspen-todos'
 
 $router-events = getDispatcher ('$router-events', true)
 
