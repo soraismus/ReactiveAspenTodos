@@ -1,9 +1,8 @@
-signposts = [8, 12, 16, 20]
-
 compose = \fns ->
-  reducer = (composedFn, fn) -> (args...) ->
-    fn (composedFn args...)
-  fns.reduceRight reducer
+  fns.reduceRight composeReducer
+
+composeReducer = (composedFn, fn) -> (args...) ->
+  fn (composedFn args...)
 
 extend = (objects...) ->
   result = {}
@@ -38,5 +37,7 @@ uuid = ->
     id += _uuid (i, random)
 
   id
+
+signposts = [8, 12, 16, 20]
 
 module.exports = { compose, extend, pluralize, store, uuid }
