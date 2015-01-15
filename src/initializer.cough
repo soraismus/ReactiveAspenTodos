@@ -1,11 +1,24 @@
 { initialize }  = require './vendor/Aspen'
-initialAppState = require './initialAppState'
+{ NAMESPACE }   = require './namespace'
 topViewFactory  = require './view/app'
+{ store }       = require './utilities'
 viewImports     = require './controller/view-imports'
 
 appNodeId = 'todoapp'
 
-initialize (appNodeId, topViewFactory, initialAppState, viewImports)
+defaultState =
+  activeCount : 0
+  count       : 0
+  editing     : null
+  mode        : 'all'
+  todos       : []
+
+isEmpty = \array -> array.length == 0
+
+cachedState  = store NAMESPACE
+initialState = if isEmpty cachedState then defaultState else cachedState
+
+initialize (appNodeId, topViewFactory, initialState, viewImports)
 
 require './controller/event-controllers'
 require './controller/router'
