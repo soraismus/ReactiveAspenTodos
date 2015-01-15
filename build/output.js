@@ -85,7 +85,7 @@ router.init('/');
 
 
 },{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],4:[function(require,module,exports){
-var activateAll, active, addTodo, appStateProperty, completeAll, compose, connect, continueEditingTodo, createTodo, doAsync, editAppState, editTodo, endEditing, enterKey_question_, escapeKey_question_, extractNewTodo, filtering, filteringEnter, filteringEscape, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var activateAll, active, addTodo, appStateProperty, completeAll, compose, connect, continueEditingTodo, createTodo, doAsync, editAppState, endEditing, enterKey_question_, escapeKey_question_, extractNewTodo, filtering, filteringEnter, filteringEscape, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, updateCount, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -136,27 +136,20 @@ continueEditingTodo = function(todo, text) {
 createTodo = function(title) {
   return {
     completed: false,
-    editing: false,
     editText: title,
     id: uuid(),
     title: title
   };
 };
 
-editTodo = function(todo) {
-  todo.editing = true;
-  todo.focus = true;
-  return todo;
-};
-
 editAppState = function(capsule) {
   return function(appState) {
-    var index, todo, todos, _ref4;
+    var id, todo, todos;
+    id = capsule.id;
     todos = appState.todos;
-    appState.focus = false;
-    _ref4 = findTodo(todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
+    todo = findTodo(todos, id).todo;
     storeOrigTitle(todo.title);
-    todos[index] = editTodo(todo);
+    appState.editing = id;
     return appState;
   };
 };
@@ -181,10 +174,8 @@ endEditing = function(getText) {
     capsule.event.target.value = text;
     return function(appState) {
       var index, todo, _ref4;
-      appState.focus = true;
       _ref4 = findTodo(appState.todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
-      todo.editing = false;
-      todo.focus = false;
+      appState.editing = null;
       todo.title = text;
       todo.editText = text;
       if (text) {
@@ -295,11 +286,11 @@ filteringEscape = filtering(escapeKey_question_);
 
 nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
 
-transforms = function() {
-  return [mapping(toggleTodo), mapping(toggleAllTodos), mapping(removeCompleted), compose([filteringEnter, mapping(extractNewTodo)]), mapping(removeTodoByID), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
-};
+transforms = [mapping(toggleTodo), mapping(toggleAllTodos), mapping(removeCompleted), compose([filteringEnter, mapping(extractNewTodo)]), mapping(removeTodoByID), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
 
-connect(nodes)('cacher')(transforms);
+connect(nodes)('cacher')(function() {
+  return transforms;
+});
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
   return mapping(editAppState);
@@ -337,7 +328,7 @@ module.exports = [['$todo-item-input-events', 'TodoItemInput'], ['$toggle-all-cl
 
 
 },{}],6:[function(require,module,exports){
-var activeCount, cachedState, count, defaultState, empty_question_, focus, initialAppState, mode, store, todos;
+var activeCount, cachedState, count, defaultState, editing, empty_question_, initialAppState, mode, store, todos;
 
 store = require('./utilities').store;
 
@@ -345,28 +336,25 @@ activeCount = 2;
 
 count = 3;
 
-focus = true;
+editing = null;
 
 mode = 'all';
 
 todos = [
   {
     completed: false,
-    editing: false,
     editText: null,
-    focus: false,
+    id: 1,
     title: 'think'
   }, {
     completed: true,
-    editing: false,
     editText: null,
-    focus: false,
+    id: 2,
     title: 'ponder'
   }, {
     completed: false,
-    editing: false,
     editText: null,
-    focus: false,
+    id: 3,
     title: 'reflect'
   }
 ];
@@ -380,7 +368,7 @@ cachedState = store('reactive-aspen-todos');
 defaultState = {
   activeCount: activeCount,
   count: count,
-  focus: focus,
+  editing: editing,
   mode: mode,
   todos: todos
 };
@@ -606,7 +594,7 @@ module.exports = require('./React').addons.classSet;
 
 
 },{"./React":16}],19:[function(require,module,exports){
-var AppBody, AppFooter, AppHeader, TodoApp, div;
+var AppBody, AppFooter, AppHeader, TodoApp, div, headerHasFocus;
 
 div = require('../vendor/DOM').div;
 
@@ -616,8 +604,12 @@ AppFooter = require('./footer');
 
 AppHeader = require('./header');
 
+headerHasFocus = function(editing) {
+  return editing === null;
+};
+
 TodoApp = function(appState) {
-  return div(null, AppHeader(appState.focus), AppBody(appState), AppFooter(appState));
+  return div(null, AppHeader(headerHasFocus(appState.editing)), AppBody(appState), AppFooter(appState));
 };
 
 module.exports = TodoApp;
@@ -625,7 +617,7 @@ module.exports = TodoApp;
 
 
 },{"../vendor/DOM":14,"./body":20,"./footer":21,"./header":22}],20:[function(require,module,exports){
-var $checkbox, AppBody, TodoItem, getTodos, mainToggle, section, ul, _ref;
+var $checkbox, AppBody, TodoItem, getTodoView, getTodos, mainToggle, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
 
@@ -635,15 +627,13 @@ _ref = require('../vendor/DOM'), section = _ref.section, ul = _ref.ul;
 
 TodoItem = require('./todoItem');
 
-mainToggle = $checkbox('toggle-all-checkbox');
-
 AppBody = function(props) {
-  var activeCount, count, mode, todoItems, todos;
-  activeCount = props.activeCount, count = props.count, mode = props.mode, todos = props.todos;
+  var activeCount, count, editing, mode, todoItems, todos;
+  activeCount = props.activeCount, count = props.count, editing = props.editing, mode = props.mode, todos = props.todos;
   if (!(count > 0)) {
     return null;
   }
-  todoItems = getTodos(mode, todos).map(TodoItem);
+  todoItems = getTodos(mode, todos).map(getTodoView(editing));
   return section({
     id: 'main'
   }, mainToggle({
@@ -654,6 +644,16 @@ AppBody = function(props) {
     id: 'todo-list'
   }, todoItems));
 };
+
+getTodoView = function(editableID) {
+  return function(todo) {
+    var editing;
+    editing = todo.id === editableID;
+    return TodoItem(todo, editing);
+  };
+};
+
+mainToggle = $checkbox('toggle-all-checkbox');
 
 module.exports = AppBody;
 
@@ -675,6 +675,9 @@ noProps = null;
 AppFooter = function(props) {
   var activeCount, count, mode;
   activeCount = props.activeCount, count = props.count, mode = props.mode;
+  if (!(count > 0)) {
+    return null;
+  }
   return footer({
     id: 'footer'
   }, countSpan(activeCount), ul({
@@ -741,14 +744,14 @@ todosCaption = function() {
 
 todoInput = $text('new-todo-input');
 
-AppHeader = function(focus) {
+AppHeader = function(hasFocus) {
   return header({
     id: 'header'
   }, todosCaption(), todoInput({
     id: 'new-todo',
     placeholder: 'What needs to be done?',
     onKeyDown: true,
-    autoFocus: focus
+    autoFocus: hasFocus
   }));
 };
 
@@ -757,7 +760,7 @@ module.exports = AppHeader;
 
 
 },{"../vendor/DOM":14,"../vendor/adapters":17}],23:[function(require,module,exports){
-var $button, $checkbox, $label, TodoItem, applyIdAndIndex, applyIndex, classSet, createFactory, div, factories, includeIdAndIndex, includeIndex, indexifyAdapter, indexifyAdapterW_slash_Id, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
+var $button, $checkbox, $label, IDifyAdapter, TodoItem, applyId, classSet, createFactory, div, factories, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
 
@@ -769,80 +772,53 @@ _ref1 = require('../vendor/DOM'), div = _ref1.div, li = _ref1.li;
 
 todoItemInputClass = require('./todoItemInputClass');
 
-applyIndex = function(index) {
+applyId = function(id) {
   return function(adapter) {
-    return adapter(index);
+    return adapter(id);
   };
 };
 
-applyIdAndIndex = function(id, index) {
-  return function(adapter) {
-    return adapter(id, index);
-  };
-};
-
-includeIndex = function(label, index) {
-  return {
-    index: index,
-    label: label
-  };
-};
-
-includeIdAndIndex = function(label, id, index) {
-  return {
-    id: id,
-    index: index,
-    label: label
-  };
-};
-
-indexifyAdapter = function(_arg) {
+IDifyAdapter = function(_arg) {
   var adapter, label;
   adapter = _arg[0], label = _arg[1];
-  return function(index) {
-    return adapter(includeIndex(label, index));
+  return function(id) {
+    return adapter({
+      id: id,
+      label: label
+    });
   };
 };
 
-indexifyAdapterW_slash_Id = function(_arg) {
-  var adapter, label;
-  adapter = _arg[0], label = _arg[1];
-  return function(id, index) {
-    return adapter(includeIdAndIndex(label, id, index));
-  };
-};
-
-TodoItem = function(todoProps, index) {
-  var className, completed, editText, editing, focus, id, title, _completionToggle, _destroyButton, _ref2, _todoItemLabel;
-  completed = todoProps.completed, editing = todoProps.editing, editText = todoProps.editText, focus = todoProps.focus, id = todoProps.id, title = todoProps.title;
+TodoItem = function(todoProps, editing) {
+  var $completionToggle, $destroyButton, $todoItemLabel, className, completed, editText, id, title, _ref2;
+  completed = todoProps.completed, editText = todoProps.editText, id = todoProps.id, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
   });
-  _ref2 = factories.map(applyIdAndIndex(id, index)), _completionToggle = _ref2[0], _destroyButton = _ref2[1], _todoItemLabel = _ref2[2];
+  _ref2 = factories.map(applyId(id)), $completionToggle = _ref2[0], $destroyButton = _ref2[1], $todoItemLabel = _ref2[2];
   return li({
     key: id,
     className: className
   }, div({
     className: 'view'
-  }, _completionToggle({
+  }, $completionToggle({
     className: 'toggle',
     checked: completed,
     onChange: true
-  }), _todoItemLabel({
+  }), $todoItemLabel({
     onDoubleClick: true
-  }, title), _destroyButton({
+  }, title), $destroyButton({
     className: 'destroy',
     onClick: true
   })), todoItemInputFactory({
     editText: editText,
-    autoPostFocus: focus,
-    index: index,
+    autoPostFocus: editing,
     uuid: id
   }));
 };
 
-factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(indexifyAdapterW_slash_Id);
+factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(IDifyAdapter);
 
 todoItemInputFactory = createFactory(todoItemInputClass);
 
@@ -859,10 +835,9 @@ $text = require('../vendor/adapters').$text;
 
 UpdatePostFocusMixin = require('../mixins/UpdatePostFocusMixin');
 
-_todoItemInput = function(id, index) {
+_todoItemInput = function(id) {
   return $text({
     id: id,
-    index: index,
     label: 'todo-item-input'
   });
 };
@@ -870,12 +845,12 @@ _todoItemInput = function(id, index) {
 todoItemInputClass = createClass({
   mixins: [UpdatePostFocusMixin],
   render: function() {
-    var editText, index, uuid, _ref;
-    _ref = this.props, editText = _ref.editText, index = _ref.index, uuid = _ref.uuid;
-    return _todoItemInput(uuid, index)({
+    var editText, uuid, _ref;
+    _ref = this.props, editText = _ref.editText, uuid = _ref.uuid;
+    return _todoItemInput(uuid)({
       className: 'edit',
       defaultValue: editText,
-      key: 'todo-item-input' + index,
+      key: 'todo-item-input' + uuid,
       onBlur: true,
       onChange: true,
       onKeyDown: true
