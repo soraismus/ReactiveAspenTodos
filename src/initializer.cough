@@ -4,18 +4,12 @@ topViewFactory  = require './view/app'
 { store }       = require './utilities'
 viewImports     = require './controller/view-imports'
 
-appNodeId = 'todoapp'
+isEmpty = \array ->
+  array.length == 0
 
-defaultState =
-  activeCount : 0
-  count       : 0
-  editing     : null
-  mode        : 'all'
-  todos       : []
-
-isEmpty = \array -> array.length == 0
-
+appNodeId    = 'todoapp'
 cachedState  = store NAMESPACE
+defaultState = { editing: null, mode: 'all', todos: [] }
 initialState = if isEmpty cachedState then defaultState else cachedState
 
 initialize (appNodeId, topViewFactory, initialState, viewImports)

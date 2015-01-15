@@ -10,25 +10,20 @@
 { doAsync }            = utilities
 { filtering, mapping } = transforms
 
-activateAll = \appState ->
-  { todos } = appState
+activateAll = \todos ->
   todos.forEach \todo -> todo.completed = false
-  appState.activeCount = todos.length
 
 addTodo = \title \appState ->
   return appState unless title
   appState.todos.push (createTodo title)
-  appState.activeCount += 1
-  appState.count += 1
   appState
 
 cacheAppData = \appState ->
   store (NAMESPACE, appState)
   appState
 
-completeAll = \appState ->
-  appState.todos.forEach \todo -> todo.completed = true
-  appState.activeCount = 0
+completeAll = \todos ->
+  todos.forEach \todo -> todo.completed = true
 
 createTodo = \title ->
   { completed: false, id: uuid (), title: title }
@@ -79,7 +74,6 @@ filteringKey = \key ->
 
 removeCompleted = \capsule \appState ->
   appState.todos = appState.todos.filter active
-  appState.activeCount = appState.count = appState.todos.length
   appState
 
 removeTodoByID = \capsule \appState ->
@@ -90,26 +84,19 @@ removeTodo = (index, appState) ->
   { todos } = appState
   { completed } = todos[index]
   todos.splice (index, 1)
-  appState.activeCount -= 1 unless completed
-  appState.count -= 1
   appState
 
 toggleAllTodos = \capsule \appState ->
-  manage = if appState.activeCount == 0 then activateAll else completeAll
-  manage appState
+  { todos } = appState
+  allCompleted = todos.every \todo -> todo.completed
+  manage = if allCompleted then activateAll else completeAll
+  manage todos
   appState
 
 toggleTodo = \capsule \appState ->
-  { activeCount, todos } = appState
-  { todo } = findTodo (todos, capsule.id)
-  { completed } = todo
-  appState.activeCount = updateCount (activeCount, completed)
-  todo.completed = !completed
+  { todo } = findTodo (appState.todos, capsule.id)
+  todo.completed = !todo.completed
   appState
-
-updateCount = (nbr, completed) ->
-  addend = if completed then 1 else -1
-  nbr + addend
 
 filteringEnter  = filteringKey 13
 filteringEscape = filteringKey 27

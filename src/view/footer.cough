@@ -5,20 +5,18 @@ classSet                         = require '../vendor/classSet'
 
 noProps = null
 
-AppFooter = \props ->
-  { activeCount, count, mode } = props
-
+AppFooter = (mode, count, completedCount) ->
   return null unless count > 0
 
   footer
     id : 'footer'
-    countSpan activeCount
+    countSpan (count - completedCount)
     ul
       id : 'filters'
       allFilter mode
       activeFilter mode
       completedFilter mode
-    clearButton (count - activeCount)
+    clearButton completedCount
 
 clearButton = \completedCount ->
   return null unless completedCount > 0
