@@ -1,24 +1,22 @@
 onBlur         = { handler: 'onBlur' }
 onChange       = { handler: 'onChange' }
 onKeyDown      = { handler: 'onKeyDown' }
-preventDefault = { preventDefault: true }
 
 todoItemInput = 'todo-item-input'
 
 module.exports = [
+  ['$active-todos-clicks',     'ActiveTodos'        ]
+  ['$all-todos-clicks',        'AllTodos'           ]
+  ['$clear-clicks',            'ClearButton'        ]
+  ['$completed-todos-clicks',  'CompletedTodos'     ]
+  ['$destroy-clicks',          'destroy-button'     ]
+  ['$new-todo-keydowns',       'new-todo-input'     ]
   ['$todo-item-input-events',  'TodoItemInput'      ]
+  ['$todo-label-doubleclicks', 'todo-item-label'    ]
   ['$toggle-all-clicks',       'toggle-all-checkbox']
   ['$toggle-clicks',           'completion-toggle'  ]
-  ['$destroy-clicks',          'destroy-button'     ]
-  ['$clear-clicks',            'ClearButton'        ]
-  ['$todo-label-doubleclicks', 'todo-item-label'    ]
-  ['$new-todo-keydowns',       'new-todo-input'     ]
 
-  ['$edit-blurs',              todoItemInput,    onBlur   ]
-  ['todo-in-edit',             todoItemInput,    onChange ]
-  ['$edit-keydowns',           todoItemInput,    onKeyDown]
-
-  ['$active-todos-clicks',     'ActiveTodos'   ]
-  ['$all-todos-clicks',        'AllTodos'      ]
-  ['$completed-todos-clicks',  'CompletedTodos']
+  ['$edit-blurs',    todoItemInput, onBlur   ]
+  ['$edit-keydowns', todoItemInput, onKeyDown]
+  ['todo-in-edit',   todoItemInput, onChange ]
 ]
