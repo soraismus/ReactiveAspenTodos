@@ -34,15 +34,15 @@ createTodo = \title ->
   title     : title
 
 editTodo = \todo ->
-  todo.editing  = true
-  todo.editText = todo.title
-  todo.focus    = true
+  todo.editing = true
+  todo.focus   = true
   todo
 
 editAppState = \capsule \appState ->
   { todos }       = appState
   appState.focus  = false
   { todo, index } = findTodo (todos, capsule.id)
+  storeOrigTitle todo.title
   todos[index]    = editTodo todo
   appState
 
@@ -50,32 +50,44 @@ findTodo = (todos, id) ->
   for todo, index in todos
     return { todo, index } if todo.id == id
 
-endEditing = \capsule \appState ->
-  appState.focus  = true
-  { todo, index } = findTodo (appState.todos, capsule.id)
-  todo.editing    = false
-  todo.focus      = false
-  title           = getTitle().trim()
-  todo.title      = title
-  todo.editText   = title
+endEditing = \getText \capsule ->
+  text = getText ()
+  capsule.event.target.value = text
 
-  if todo.title then appState else removeTodo (index, appState)
+  \appState ->
+    appState.focus  = true
+    { todo, index } = findTodo (appState.todos, capsule.id)
+    todo.editing    = false
+    todo.focus      = false
+    todo.title      = text
+    todo.editText   = text
+    if text then appState else removeTodo (index, appState)
 
 enterKey? = \capsule ->
   capsule.event.keyCode == 13
+
+escapeKey? = \capsule ->
+  capsule.event.keyCode == 27
 
 extractNewTodo = \capsule ->
   value = capsule.event.target.value.trim ()
   capsule.event.target.value = ''
   addTodo value
 
-[getTitle, storeTitle] = do ->
-  _title = null
-  getTitle = ->
-    _title
+[restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle] = do ->
+  editText     = null
+  originalText = null
+
+  restoreOrigTitle = ->
+    editText = originalText
+  saveCurrentTitle = ->
+    if editText then editText.trim () else editText
+  storeOrigTitle = \title ->
+    editText = originalText = title
   storeTitle = \title ->
-    _title = title
-  [getTitle, storeTitle]
+    editText = title
+
+  [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle]
 
 removeCompleted = \capsule \appState ->
   appState.todos = appState.todos.filter active
@@ -94,10 +106,6 @@ removeTodo = (index, appState) ->
   appState.count -= 1
   appState
 
-storeTitleForID = (appState, capsule) ->
-  { todo } = findTodo (appState.todos, capsule.id)
-  storeTitle todo.title
-
 toggleAllTodos = \capsule \appState ->
   manage = if appState.activeCount == 0 then activateAll else completeAll
   manage appState
@@ -115,7 +123,8 @@ updateCount = (nbr, completed) ->
   addend = if completed then 1 else -1
   nbr + addend
 
-filteringEnterKey = filtering enterKey?
+filteringEnter  = filtering enterKey?
+filteringEscape = filtering escapeKey?
 
 nodes = [
   '$toggle-clicks'
@@ -123,27 +132,26 @@ nodes = [
   '$clear-clicks'
   '$new-todo-keydowns'
   '$destroy-clicks'
-  '$edit-keydowns'
   '$edit-blurs'
+  '$edit-keydowns'
+  '$edit-keydowns'
 ]
 
-transforms = [
+transforms = -> [
   mapping toggleTodo
   mapping toggleAllTodos
   mapping removeCompleted
-  compose [filteringEnterKey, (mapping extractNewTodo)]
+  compose [filteringEnter, (mapping extractNewTodo)]
   mapping removeTodoByID
-  compose [filteringEnterKey, (mapping endEditing)]
-  mapping endEditing
+  mapping (endEditing saveCurrentTitle)
+  compose [filteringEnter,  mapping (endEditing saveCurrentTitle)]
+  compose [filteringEscape, mapping (endEditing restoreOrigTitle)]
 ]
 
-connect nodes 'cacher' -> transforms
+connect nodes 'cacher' transforms
 
 plugIntoTerminus '$todo-label-doubleclicks', ->
   mapping editAppState
-
-onValue '$todo-label-doubleclicks', \capsule ->
-  doAsync (storeTitleForID) (appStateProperty, capsule)
 
 onValue 'todo-in-edit', \capsule ->
   storeTitle (capsule.event.target.value)
