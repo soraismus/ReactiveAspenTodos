@@ -2,37 +2,19 @@
 
 activeCount = 2
 count       = 3
-focus       = true
+editing     = null
 mode        = 'all'
 
 todos = [
-  {
-    completed : false
-    editing   : false
-    editText  : null
-    focus     : false
-    title     : 'think'
-  }
-  {
-    completed : true
-    editing   : false
-    editText  : null
-    focus     : false
-    title     : 'ponder'
-  }
-  {
-    completed : false
-    editing   : false
-    editText  : null
-    focus     : false
-    title     : 'reflect'
-  }
+  { completed: false, editText: null, id: 1, title: 'think'   }
+  { completed: true,  editText: null, id: 2, title: 'ponder'  }
+  { completed: false, editText: null, id: 3, title: 'reflect' }
 ]
 
 empty? = \array -> array.length == 0
 
 cachedState     = store 'reactive-aspen-todos'
-defaultState    = { activeCount, count, focus, mode, todos }
+defaultState    = { activeCount, count, editing, mode, todos }
 initialAppState = if empty? cachedState then defaultState else cachedState
 
 module.exports  = initialAppState
