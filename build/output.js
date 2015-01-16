@@ -9,7 +9,7 @@ mapping = require('../vendor/Pando').transforms.mapping;
 
 _ref1 = require('./transforms'), cacheAppData = _ref1.cacheAppData, editAppState = _ref1.editAppState, endEditing = _ref1.endEditing, extractNewTodo = _ref1.extractNewTodo, filteringEnter = _ref1.filteringEnter, filteringEscape = _ref1.filteringEscape, removeCompletedTodos = _ref1.removeCompletedTodos, removeTodo = _ref1.removeTodo, toggleAllTodos = _ref1.toggleAllTodos, toggleTodo = _ref1.toggleTodo, restoreOrigTitle = _ref1.restoreOrigTitle, saveCurrentTitle = _ref1.saveCurrentTitle, storeTitle = _ref1.storeTitle;
 
-nodes = ['$clear-clicks', '$destroy-clicks', '$new-todo-keydowns', '$toggle-all-clicks', '$toggle-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
+nodes = ['$clear-clicks', '$delete-clicks', '$new-todo-keydowns', '$toggle-all-clicks', '$toggle-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
 
 transforms = [mapping(removeCompletedTodos), mapping(removeTodo), compose([filteringEnter, mapping(extractNewTodo)]), mapping(toggleAllTodos), mapping(toggleTodo), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
 
@@ -662,9 +662,9 @@ onKeyDown = {
   handler: 'onKeyDown'
 };
 
-todoItemInput = 'todo-item-input';
+todoItemInput = 'TodoItemInput';
 
-module.exports = [['$clear-clicks', 'ClearButton'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
+module.exports = [['$clear-clicks', 'ClearButton'], ['$delete-clicks', 'DeleteButton'], ['$new-todo-keydowns', 'NewTodoInput'], ['$todo-label-doubleclicks', 'TodoItemLabel'], ['$toggle-all-clicks', 'ToggleAll'], ['$toggle-clicks', 'Toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
 
 
 
@@ -745,7 +745,7 @@ getTodoView = function(editableID) {
   };
 };
 
-$mainToggle = $checkbox('toggle-all-checkbox');
+$mainToggle = $checkbox('ToggleAll');
 
 module.exports = AppBody;
 
@@ -832,7 +832,7 @@ todosCaption = function() {
   return h1(null, 'todos');
 };
 
-todoInput = $text('new-todo-input');
+todoInput = $text('NewTodoInput');
 
 AppHeader = function(hasFocus) {
   return header({
@@ -908,7 +908,7 @@ TodoItem = function(todoProps, editing) {
   }));
 };
 
-factories = [[$checkbox, 'completion-toggle'], [$button, 'destroy-button'], [$label, 'todo-item-label']].map(IDifyAdapter);
+factories = [[$checkbox, 'Toggle'], [$button, 'DeleteButton'], [$label, 'TodoItemLabel']].map(IDifyAdapter);
 
 todoItemInputFactory = createFactory(todoItemInputClass);
 
@@ -928,7 +928,7 @@ UpdatePostFocusMixin = require('../mixins/UpdatePostFocusMixin');
 _todoItemInput = function(id) {
   return $text({
     id: id,
-    label: 'todo-item-input'
+    label: 'TodoItemInput'
   });
 };
 
