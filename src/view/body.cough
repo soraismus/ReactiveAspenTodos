@@ -1,14 +1,14 @@
-{ $checkbox }   = require '../vendor/adapters'
-{ getTodos }    = require '../todo-utilities'
-{ section, ul } = require '../vendor/DOM'
-TodoItem        = require './todoItem'
+{ $checkbox }      = require '../vendor/adapters'
+{ getTodosByMode } = require '../model/todoList'
+{ section, ul }    = require '../vendor/DOM'
+TodoItem           = require './todoItem'
 
 AppBody = (props, checked) ->
   { editing, mode, todos } = props
 
   return null unless todos.length > 0
 
-  todoItems = getTodos(mode, todos).map(getTodoView(editing))
+  todoItems = getTodosByMode(todos, mode).map(getTodoView(editing))
 
   section
     id : 'main'
