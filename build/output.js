@@ -29,7 +29,7 @@ module.exports = {
 
 
 },{"../utilities":11}],2:[function(require,module,exports){
-var AppState, NAMESPACE, TodoList, active, addTodo, appStateProperty, cacheAppData, compose, connect, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompletedTodos, removeTodo, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var AppState, NAMESPACE, TodoList, active, add, addTodo, appStateProperty, cacheAppData, compose, connect, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -47,16 +47,28 @@ doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
+AppState = require('./appState');
+
 TodoList = require('./todoList');
 
-AppState = require('./appState');
+reset = AppState.reset, resetEditing = AppState.resetEditing, resetTodos = AppState.resetTodos;
+
+add = TodoList.addTodo;
+
+recaption = TodoList.recaptionTodo;
+
+remove = TodoList.removeTodo;
+
+toggle = TodoList.toggleTodo;
+
+removeCompleted = TodoList.removeCompleted, toggleAll = TodoList.toggleAll;
 
 addTodo = function(title) {
   return function(appState) {
     if (!title) {
       return appState;
     }
-    return AppState.resetTodos(appState, TodoList.addTodo(appState.todos, title));
+    return resetTodos(appState, add(appState.todos, title));
   };
 };
 
@@ -70,7 +82,7 @@ editAppState = function(capsule) {
     var todo;
     todo = findTodo(appState.todos, capsule.id);
     storeOrigTitle(todo.title);
-    return AppState.resetEditing(appState, capsule.id);
+    return resetEditing(appState, capsule.id);
   };
 };
 
@@ -80,9 +92,10 @@ endEditing = function(getText) {
     text = getText();
     setEventTgtValue(capsule, text);
     return function(appState) {
-      var newTodos;
-      newTodos = text ? TodoList.recaptionTodo(appState.todos, capsule.id, text) : TodoList.removeTodo(appState.todos, capsule.id);
-      return AppState.reset(appState, {
+      var manage, newTodos;
+      manage = text ? recaption : remove;
+      newTodos = manage(appState.todos, capsule.id, text);
+      return reset(appState, {
         editing: null,
         todos: newTodos
       });
@@ -113,6 +126,18 @@ findTodo = function(todos, id) {
   }
 };
 
+removeCompletedTodos = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, removeCompleted(appState.todos));
+  };
+};
+
+removeTodo = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, remove(appState.todos, capsule.id));
+  };
+};
+
 _ref4 = (function() {
   var editText, originalText, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle;
   editText = null;
@@ -136,31 +161,19 @@ _ref4 = (function() {
   return [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle];
 })(), restoreOrigTitle = _ref4[0], saveCurrentTitle = _ref4[1], storeOrigTitle = _ref4[2], storeTitle = _ref4[3];
 
-removeCompletedTodos = function(capsule) {
-  return function(appState) {
-    return AppState.resetTodos(appState, TodoList.removeCompleted(appState.todos));
-  };
-};
-
-removeTodo = function(capsule) {
-  return function(appState) {
-    return AppState.resetTodos(appState, TodoList.removeTodo(appState.todos, capsule.id));
-  };
-};
-
 setEventTgtValue = function(capsule, text) {
   return capsule.event.target.value = text;
 };
 
 toggleAllTodos = function(capsule) {
   return function(appState) {
-    return AppState.resetTodos(appState, TodoList.toggleAll(appState.todos));
+    return resetTodos(appState, toggleAll(appState.todos));
   };
 };
 
 toggleTodo = function(capsule) {
   return function(appState) {
-    return AppState.resetTodos(appState, TodoList.toggleTodo(appState.todos, capsule.id));
+    return resetTodos(appState, toggle(appState.todos, capsule.id));
   };
 };
 
