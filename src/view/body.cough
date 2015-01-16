@@ -24,6 +24,6 @@ getTodoView = \editableID \todo ->
   editing = todo.id == editableID
   TodoItem (todo, editing)
 
-$mainToggle = $checkbox 'toggle-all-checkbox'
+$mainToggle = $checkbox 'ToggleAll'
 
 module.exports = AppBody

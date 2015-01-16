@@ -3,7 +3,7 @@
 UpdatePostFocusMixin = require '../mixins/UpdatePostFocusMixin'
 
 _todoItemInput = \id ->
-  $text { id, label: 'todo-item-input' }
+  $text { id, label: 'TodoItemInput' }
 
 todoItemInputClass = createClass
   mixins: [UpdatePostFocusMixin]

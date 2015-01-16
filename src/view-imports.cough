@@ -2,15 +2,15 @@ onBlur    = { handler: 'onBlur' }
 onChange  = { handler: 'onChange' }
 onKeyDown = { handler: 'onKeyDown' }
 
-todoItemInput = 'todo-item-input'
+todoItemInput = 'TodoItemInput'
 
 module.exports = [
-  ['$clear-clicks',            'ClearButton'        ]
-  ['$destroy-clicks',          'destroy-button'     ]
-  ['$new-todo-keydowns',       'new-todo-input'     ]
-  ['$todo-label-doubleclicks', 'todo-item-label'    ]
-  ['$toggle-all-clicks',       'toggle-all-checkbox']
-  ['$toggle-clicks',           'completion-toggle'  ]
+  ['$clear-clicks',            'ClearButton'  ]
+  ['$delete-clicks',           'DeleteButton' ]
+  ['$new-todo-keydowns',       'NewTodoInput' ]
+  ['$todo-label-doubleclicks', 'TodoItemLabel']
+  ['$toggle-all-clicks',       'ToggleAll'    ]
+  ['$toggle-clicks',           'Toggle'       ]
 
   ['$edit-blurs',    todoItemInput, onBlur   ]
   ['$edit-keydowns', todoItemInput, onKeyDown]

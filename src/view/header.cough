@@ -4,7 +4,7 @@
 todosCaption = ->
   h1 (null, 'todos')
 
-todoInput = $text 'new-todo-input'
+todoInput = $text 'NewTodoInput'
 
 AppHeader = \hasFocus ->
   header

@@ -20,7 +20,7 @@
 
 nodes = [
   '$clear-clicks'
-  '$destroy-clicks'
+  '$delete-clicks'
   '$new-todo-keydowns'
   '$toggle-all-clicks'
   '$toggle-clicks'

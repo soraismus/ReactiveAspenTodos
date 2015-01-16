@@ -35,9 +35,9 @@ TodoItem = (todoProps, editing) ->
     todoItemInputFactory ({ autoPostFocus: editing, title, uuid: id })
 
 factories = [
-  [$checkbox, 'completion-toggle']
-  [$button,   'destroy-button'   ]
-  [$label,    'todo-item-label'  ] ].map IDifyAdapter
+  [$checkbox, 'Toggle'       ]
+  [$button,   'DeleteButton' ]
+  [$label,    'TodoItemLabel'] ].map IDifyAdapter
 
 todoItemInputFactory = createFactory todoItemInputClass
 
