@@ -1,98 +1,22 @@
-{ active, getTodos }                = require '../todo-utilities'
-{ appStateProperty }                = require '../vendor/Aspen'
-{ compose, store, uuid }            = require '../utilities'
-{ NAMESPACE }                       = require '../namespace'
-{ reset, resetEditing, resetTodos } = require '../model/appState'
-{ transforms, utilities }           = require '../vendor/Pando'
+{ compose }                            = require '../utilities'
+{ connect, onValue, plugIntoTerminus } = require '../vendor/Controller'
+{ mapping }                            = require('../vendor/Pando').transforms
 
-{ connect
-  getDispatcher
-  onValue
-  plugIntoTerminus
-} = require '../vendor/Controller'
-
-{ add
-  recaption
-  remove
-  removeCompleted
-  toggle
-  toggleAll
-} = require '../model/todoList'
-
-{ doAsync }            = utilities
-{ filtering, mapping } = transforms
-
-addTodo = \title \appState ->
-  return appState unless title
-  resetTodos (appState, add (appState.todos, title))
-
-cacheAppData = \appState ->
-  store (NAMESPACE, appState)
-  appState
-
-editAppState = \capsule \appState ->
-  # -----------------------------------------------------------------------
-  todo = findTodo (appState.todos, capsule.id)
-  storeOrigTitle todo.title
-  # -----------------------------------------------------------------------
-  resetEditing (appState, capsule.id)
-
-endEditing = \getText \capsule ->
-  # -----------------------------------------------------------------------
-  text = getText ()
-  setEventTgtValue (capsule, text)
-  # -----------------------------------------------------------------------
-  \appState ->
-    manage = if text then recaption else remove
-    newTodos = manage (appState.todos, capsule.id, text)
-    reset (appState, { editing: null, todos: newTodos })
-
-extractNewTodo = \capsule ->
-  # -----------------------------------------------------------------------
-  caption = capsule.event.target.value.trim ()
-  setEventTgtValue (capsule, '')
-  # -----------------------------------------------------------------------
-  addTodo caption
-
-filteringKey = \key ->
-  filtering \capsule -> capsule.event.keyCode == key
-
-findTodo = (todos, id) ->
-  for todo, index in todos
-    return todo if todo.id == id
-
-removeCompletedTodos = \capsule \appState ->
-  resetTodos (appState, removeCompleted appState.todos)
-
-removeTodo = \capsule \appState ->
-  resetTodos (appState, remove (appState.todos, capsule.id))
-
-[restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle] = do ->
-  editText     = null
-  originalText = null
-
-  restoreOrigTitle = ->
-    editText = originalText
-  saveCurrentTitle = ->
-    if editText then editText.trim () else editText
-  storeOrigTitle = \title ->
-    editText = originalText = title
-  storeTitle = \title ->
-    editText = title
-
-  [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle]
-
-setEventTgtValue = (capsule, text) ->
-  capsule.event.target.value = text
-
-toggleAllTodos = \capsule \appState ->
-  resetTodos (appState, (toggleAll appState.todos))
-
-toggleTodo = \capsule \appState ->
-  resetTodos (appState, toggle (appState.todos, capsule.id))
-
-filteringEnter  = filteringKey 13
-filteringEscape = filteringKey 27
+{
+  cacheAppData
+  editAppState
+  endEditing
+  extractNewTodo
+  filteringEnter
+  filteringEscape
+  removeCompletedTodos
+  removeTodo
+  toggleAllTodos
+  toggleTodo
+  restoreOrigTitle
+  saveCurrentTitle 
+  storeTitle
+} = require './transforms'
 
 nodes = [
   '$toggle-clicks'
