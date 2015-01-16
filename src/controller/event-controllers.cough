@@ -10,12 +10,19 @@
 { doAsync }            = utilities
 { filtering, mapping } = transforms
 
-TodoList = require './todoList'
 AppState = require './appState'
+TodoList = require './todoList'
+{ reset, resetEditing, resetTodos } = AppState
+
+add       = TodoList.addTodo
+recaption = TodoList.recaptionTodo
+remove    = TodoList.removeTodo
+toggle    = TodoList.toggleTodo
+{ removeCompleted, toggleAll } = TodoList
 
 addTodo = \title \appState ->
   return appState unless title
-  AppState.resetTodos (appState, TodoList.addTodo (appState.todos, title))
+  resetTodos (appState, add (appState.todos, title))
 
 cacheAppData = \appState ->
   store (NAMESPACE, appState)
@@ -26,7 +33,7 @@ editAppState = \capsule \appState ->
   todo = findTodo (appState.todos, capsule.id)
   storeOrigTitle todo.title
   # -----------------------------------------------------------------------
-  AppState.resetEditing (appState, capsule.id)
+  resetEditing (appState, capsule.id)
 
 endEditing = \getText \capsule ->
   # -----------------------------------------------------------------------
@@ -34,11 +41,9 @@ endEditing = \getText \capsule ->
   setEventTgtValue (capsule, text)
   # -----------------------------------------------------------------------
   \appState ->
-    newTodos = if text
-        TodoList.recaptionTodo (appState.todos, capsule.id, text)
-      else
-        TodoList.removeTodo (appState.todos, capsule.id)
-    AppState.reset (appState, { editing: null, todos: newTodos })
+    manage = if text then recaption else remove
+    newTodos = manage (appState.todos, capsule.id, text)
+    reset (appState, { editing: null, todos: newTodos })
 
 extractNewTodo = \capsule ->
   # -----------------------------------------------------------------------
@@ -55,11 +60,10 @@ findTodo = (todos, id) ->
     return todo if todo.id == id
 
 removeCompletedTodos = \capsule \appState ->
-  AppState.resetTodos (appState, TodoList.removeCompleted appState.todos)
+  resetTodos (appState, removeCompleted appState.todos)
 
 removeTodo = \capsule \appState ->
-  AppState.resetTodos ( 
-    appState, TodoList.removeTodo (appState.todos, capsule.id))
+  resetTodos (appState, remove (appState.todos, capsule.id))
 
 [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle] = do ->
   editText     = null
@@ -80,11 +84,10 @@ setEventTgtValue = (capsule, text) ->
   capsule.event.target.value = text
 
 toggleAllTodos = \capsule \appState ->
-  AppState.resetTodos (appState, TodoList.toggleAll appState.todos)
+  resetTodos (appState, (toggleAll appState.todos))
 
 toggleTodo = \capsule \appState ->
-  AppState.resetTodos (
-    appState, TodoList.toggleTodo (appState.todos, capsule.id))
+  resetTodos (appState, toggle (appState.todos, capsule.id))
 
 filteringEnter  = filteringKey 13
 filteringEscape = filteringKey 27
