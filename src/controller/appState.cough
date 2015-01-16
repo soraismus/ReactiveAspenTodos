@@ -1,0 +1,15 @@
+{ extend, set } = require '../utilities'
+
+reset = (appState, newProps) ->
+  extend ({}, appState, newProps)
+
+resetEditing = (appState, editableTodoID) ->
+  set ('editing', editableTodoID, appState)
+
+resetMode = (appState, newMode) ->
+  set ('mode', newMode, appState)
+
+resetTodos = (appState, newTodos) ->
+  set ('todos', newTodos, appState)
+
+module.exports = { reset, resetEditing, resetMode, resetTodos }
