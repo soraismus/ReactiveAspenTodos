@@ -4,17 +4,39 @@ compose = \fns ->
 composeReducer = (composedFn, fn) -> (args...) ->
   fn (composedFn args...)
 
-extend = (objects...) ->
-  result = {}
-
+extend = (base, objects...) ->
   for obj in objects
     for own key of obj
-      result[key] = obj[key]
+      base[key] = obj[key]
+  return base
 
-  result
+identity = \val ->
+  val
+
+isArray = \val ->
+  if Array.isArray then Array.isArray val else val instanceof Array
+
+isObject = \val ->
+  Object.prototype.toString.call val == '[object Object]'
 
 pluralize = (count, word) ->
   if count == 1 then word else word + 's'
+
+set = (key, prop, compositeValue) ->
+  copy = shallowCopy compositeValue
+  copy[key] = prop
+  copy
+
+shallowCopy = \val ->
+  switch
+    when isObject val
+      copy = {}
+      copy[key] = prop for own key, prop of val
+      copy
+    when isArray val
+      val.map identity
+    else
+      val
 
 store = (namespace, data) ->
   return localStorage.setItem (namespace, (JSON.stringify data)) if data
@@ -40,4 +62,4 @@ uuid = ->
 
 signposts = [8, 12, 16, 20]
 
-module.exports = { compose, extend, pluralize, store, uuid }
+module.exports = { compose, extend, pluralize, set, store, uuid }
