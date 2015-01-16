@@ -25,10 +25,10 @@ toggleAll = \todos ->
   todos.map manage
 
 module.exports = {
-  addTodo
-  recaptionTodo
-  removeCompleted
-  removeTodo
-  toggleTodo
-  toggleAll
+  add             : addTodo
+  recaption       : recaptionTodo
+  removeCompleted : removeCompleted
+  remove          : removeTodo
+  toggle          : toggleTodo
+  toggleAll       : toggleAll
 }
