@@ -1,8 +1,8 @@
-{ active, getTodos }      = require '../todo-utilities'
-{ appStateProperty }      = require '../vendor/Aspen'
-{ compose, store, uuid }  = require '../utilities'
-{ NAMESPACE }             = require '../namespace'
-{ transforms, utilities } = require '../vendor/Pando'
+{ active, getTodos }                   = require '../todo-utilities'
+{ appStateProperty }                   = require '../vendor/Aspen'
+{ compose, extend, set, store, uuid }  = require '../utilities'
+{ NAMESPACE }                          = require '../namespace'
+{ transforms, utilities }              = require '../vendor/Pando'
 
 { connect, getDispatcher, onValue, plugIntoTerminus } =
   require '../vendor/Controller'
@@ -10,20 +10,28 @@
 { doAsync }            = utilities
 { filtering, mapping } = transforms
 
+activate = \todo ->
+  set ('completed', false, todo)
+
 activateAll = \todos ->
-  todos.forEach \todo -> todo.completed = false
+  todos.map activate
 
 addTodo = \title \appState ->
   return appState unless title
-  appState.todos.push (createTodo title)
-  appState
+  newTodos = appState.todos.concat (createTodo title)
+  set ('todos', newTodos, appState)
 
 cacheAppData = \appState ->
   store (NAMESPACE, appState)
   appState
 
+# WET; c.f. `activate`.
+complete = \todo ->
+  set ('completed', true, todo)
+
+# WET; c.f. `activateAll`.
 completeAll = \todos ->
-  todos.forEach \todo -> todo.completed = true
+  todos.map complete
 
 createTodo = \title ->
   { completed: false, id: uuid (), title: title }
@@ -31,28 +39,33 @@ createTodo = \title ->
 editAppState = \capsule \appState ->
   { id }   = capsule
   { todo } = findTodo (appState.todos, id)
+
   storeOrigTitle todo.title
-  appState.editing = id
-  appState
+  set ('editing', id, appState)
 
 findTodo = (todos, id) ->
   for todo, index in todos
-    return { todo, index } if todo.id == id
+    return { index, todo } if todo.id == id
 
 endEditing = \getText \capsule ->
-  text = getText ()
-  capsule.event.target.value = text
+  text               = getText ()
+  { event, id }      = capsule
+  event.target.value = text
 
   \appState ->
-    { todo, index } = findTodo (appState.todos, capsule.id)
-    appState.editing = null
-    todo.title       = text
-    if text then appState else removeTodo (index, appState)
+    { todos }       = appState
+    { index, todo } = findTodo (todos, id)
+    if text
+      newTodo  = set ('title', text, todo)
+      newTodos = set (index, newTodo, todos)
+    else
+      newTodos = removeTodo (todos, id)
+    extend ({}, appState, { editing: null, todos: newTodos })
 
 extractNewTodo = \capsule ->
-  value = capsule.event.target.value.trim ()
+  caption = capsule.event.target.value.trim ()
   capsule.event.target.value = ''
-  addTodo value
+  addTodo caption
 
 filteringKey = \key ->
   filtering \capsule -> capsule.event.keyCode == key
@@ -73,30 +86,32 @@ filteringKey = \key ->
   [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle]
 
 removeCompleted = \capsule \appState ->
-  appState.todos = appState.todos.filter active
-  appState
+  newTodos = appState.todos.filter active
+  set ('todos', newTodos, appState)
 
 removeTodoByID = \capsule \appState ->
-  { index } = findTodo (appState.todos, capsule.id)
-  removeTodo (index, appState)
+  newTodos = removeTodo (appState.todos, capsule.id)
+  set ('todos', newTodos, appState)
 
-removeTodo = (index, appState) ->
-  { todos } = appState
-  { completed } = todos[index]
-  todos.splice (index, 1)
-  appState
+removeTodo = (todos, id) ->
+  todos.filter \todo -> todo.id != id
+
+# WET; c.f. `activate`.
+toggle = \todo ->
+  set ('completed', !todo.completed, todo)
 
 toggleAllTodos = \capsule \appState ->
-  { todos } = appState
+  { todos }    = appState
   allCompleted = todos.every \todo -> todo.completed
-  manage = if allCompleted then activateAll else completeAll
-  manage todos
-  appState
+  manage       = if allCompleted then activateAll else completeAll
+  newTodos     = manage todos
+  set ('todos', newTodos, appState)
 
 toggleTodo = \capsule \appState ->
-  { todo } = findTodo (appState.todos, capsule.id)
-  todo.completed = !todo.completed
-  appState
+  { index, todo } = findTodo (appState.todos, capsule.id)
+  newTodo  = toggle todo
+  newTodos = set (index, newTodo, appState.todos)
+  set ('todos', newTodos, appState)
 
 filteringEnter  = filteringKey 13
 filteringEscape = filteringKey 27
