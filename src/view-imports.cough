@@ -1,6 +1,6 @@
-onBlur         = { handler: 'onBlur' }
-onChange       = { handler: 'onChange' }
-onKeyDown      = { handler: 'onKeyDown' }
+onBlur    = { handler: 'onBlur' }
+onChange  = { handler: 'onChange' }
+onKeyDown = { handler: 'onKeyDown' }
 
 todoItemInput = 'todo-item-input'
 
