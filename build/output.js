@@ -880,13 +880,13 @@ IDifyAdapter = function(_arg) {
 };
 
 TodoItem = function(todoProps, editing) {
-  var $completionToggle, $destroyButton, $todoItemLabel, className, completed, id, title, _ref2;
+  var $completionToggle, $deleteButton, $todoItemLabel, className, completed, id, title, _ref2;
   completed = todoProps.completed, id = todoProps.id, title = todoProps.title;
   className = classSet({
     completed: completed,
     editing: editing
   });
-  _ref2 = factories.map(applyId(id)), $completionToggle = _ref2[0], $destroyButton = _ref2[1], $todoItemLabel = _ref2[2];
+  _ref2 = factories.map(applyId(id)), $completionToggle = _ref2[0], $deleteButton = _ref2[1], $todoItemLabel = _ref2[2];
   return li({
     key: id,
     className: className
@@ -898,7 +898,7 @@ TodoItem = function(todoProps, editing) {
     onChange: true
   }), $todoItemLabel({
     onDoubleClick: true
-  }, title), $destroyButton({
+  }, title), $deleteButton({
     className: 'destroy',
     onClick: true
   })), todoItemInputFactory({
