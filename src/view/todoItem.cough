@@ -14,7 +14,7 @@ TodoItem = (todoProps, editing) ->
   { completed, id, title } = todoProps
   className = classSet { completed, editing }
 
-  [$completionToggle, $destroyButton, $todoItemLabel] =
+  [$completionToggle, $deleteButton, $todoItemLabel] =
     factories.map (applyId id)
 
   li
@@ -29,7 +29,7 @@ TodoItem = (todoProps, editing) ->
       $todoItemLabel
         onDoubleClick : true
         title
-      $destroyButton
+      $deleteButton
         className : 'destroy'
         onClick   : true
     todoItemInputFactory ({ autoPostFocus: editing, title, uuid: id })
