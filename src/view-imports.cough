@@ -5,13 +5,9 @@ onKeyDown      = { handler: 'onKeyDown' }
 todoItemInput = 'todo-item-input'
 
 module.exports = [
-  ['$active-todos-clicks',     'ActiveTodos'        ]
-  ['$all-todos-clicks',        'AllTodos'           ]
   ['$clear-clicks',            'ClearButton'        ]
-  ['$completed-todos-clicks',  'CompletedTodos'     ]
   ['$destroy-clicks',          'destroy-button'     ]
   ['$new-todo-keydowns',       'new-todo-input'     ]
-  ['$todo-item-input-events',  'TodoItemInput'      ]
   ['$todo-label-doubleclicks', 'todo-item-label'    ]
   ['$toggle-all-clicks',       'toggle-all-checkbox']
   ['$toggle-clicks',           'completion-toggle'  ]
