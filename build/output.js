@@ -1,143 +1,13 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var NAMESPACE, active, add, addTodo, appStateProperty, cacheAppData, compose, connect, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+var cacheAppData, compose, connect, editAppState, endEditing, extractNewTodo, filteringEnter, filteringEscape, mapping, nodes, onValue, plugIntoTerminus, removeCompletedTodos, removeTodo, restoreOrigTitle, saveCurrentTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, _ref, _ref1;
 
-_ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
+compose = require('../utilities').compose;
 
-appStateProperty = require('../vendor/Aspen').appStateProperty;
+_ref = require('../vendor/Controller'), connect = _ref.connect, onValue = _ref.onValue, plugIntoTerminus = _ref.plugIntoTerminus;
 
-_ref1 = require('../utilities'), compose = _ref1.compose, store = _ref1.store, uuid = _ref1.uuid;
+mapping = require('../vendor/Pando').transforms.mapping;
 
-NAMESPACE = require('../namespace').NAMESPACE;
-
-_ref2 = require('../model/appState'), reset = _ref2.reset, resetEditing = _ref2.resetEditing, resetTodos = _ref2.resetTodos;
-
-_ref3 = require('../vendor/Pando'), transforms = _ref3.transforms, utilities = _ref3.utilities;
-
-_ref4 = require('../vendor/Controller'), connect = _ref4.connect, getDispatcher = _ref4.getDispatcher, onValue = _ref4.onValue, plugIntoTerminus = _ref4.plugIntoTerminus;
-
-_ref5 = require('../model/todoList'), add = _ref5.add, recaption = _ref5.recaption, remove = _ref5.remove, removeCompleted = _ref5.removeCompleted, toggle = _ref5.toggle, toggleAll = _ref5.toggleAll;
-
-doAsync = utilities.doAsync;
-
-filtering = transforms.filtering, mapping = transforms.mapping;
-
-addTodo = function(title) {
-  return function(appState) {
-    if (!title) {
-      return appState;
-    }
-    return resetTodos(appState, add(appState.todos, title));
-  };
-};
-
-cacheAppData = function(appState) {
-  store(NAMESPACE, appState);
-  return appState;
-};
-
-editAppState = function(capsule) {
-  return function(appState) {
-    var todo;
-    todo = findTodo(appState.todos, capsule.id);
-    storeOrigTitle(todo.title);
-    return resetEditing(appState, capsule.id);
-  };
-};
-
-endEditing = function(getText) {
-  return function(capsule) {
-    var text;
-    text = getText();
-    setEventTgtValue(capsule, text);
-    return function(appState) {
-      var manage, newTodos;
-      manage = text ? recaption : remove;
-      newTodos = manage(appState.todos, capsule.id, text);
-      return reset(appState, {
-        editing: null,
-        todos: newTodos
-      });
-    };
-  };
-};
-
-extractNewTodo = function(capsule) {
-  var caption;
-  caption = capsule.event.target.value.trim();
-  setEventTgtValue(capsule, '');
-  return addTodo(caption);
-};
-
-filteringKey = function(key) {
-  return filtering(function(capsule) {
-    return capsule.event.keyCode === key;
-  });
-};
-
-findTodo = function(todos, id) {
-  var index, todo, _i, _len;
-  for (index = _i = 0, _len = todos.length; _i < _len; index = ++_i) {
-    todo = todos[index];
-    if (todo.id === id) {
-      return todo;
-    }
-  }
-};
-
-removeCompletedTodos = function(capsule) {
-  return function(appState) {
-    return resetTodos(appState, removeCompleted(appState.todos));
-  };
-};
-
-removeTodo = function(capsule) {
-  return function(appState) {
-    return resetTodos(appState, remove(appState.todos, capsule.id));
-  };
-};
-
-_ref6 = (function() {
-  var editText, originalText, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle;
-  editText = null;
-  originalText = null;
-  restoreOrigTitle = function() {
-    return editText = originalText;
-  };
-  saveCurrentTitle = function() {
-    if (editText) {
-      return editText.trim();
-    } else {
-      return editText;
-    }
-  };
-  storeOrigTitle = function(title) {
-    return editText = originalText = title;
-  };
-  storeTitle = function(title) {
-    return editText = title;
-  };
-  return [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle];
-})(), restoreOrigTitle = _ref6[0], saveCurrentTitle = _ref6[1], storeOrigTitle = _ref6[2], storeTitle = _ref6[3];
-
-setEventTgtValue = function(capsule, text) {
-  return capsule.event.target.value = text;
-};
-
-toggleAllTodos = function(capsule) {
-  return function(appState) {
-    return resetTodos(appState, toggleAll(appState.todos));
-  };
-};
-
-toggleTodo = function(capsule) {
-  return function(appState) {
-    return resetTodos(appState, toggle(appState.todos, capsule.id));
-  };
-};
-
-filteringEnter = filteringKey(13);
-
-filteringEscape = filteringKey(27);
+_ref1 = require('./transforms'), cacheAppData = _ref1.cacheAppData, editAppState = _ref1.editAppState, endEditing = _ref1.endEditing, extractNewTodo = _ref1.extractNewTodo, filteringEnter = _ref1.filteringEnter, filteringEscape = _ref1.filteringEscape, removeCompletedTodos = _ref1.removeCompletedTodos, removeTodo = _ref1.removeTodo, toggleAllTodos = _ref1.toggleAllTodos, toggleTodo = _ref1.toggleTodo, restoreOrigTitle = _ref1.restoreOrigTitle, saveCurrentTitle = _ref1.saveCurrentTitle, storeTitle = _ref1.storeTitle;
 
 nodes = ['$toggle-clicks', '$toggle-all-clicks', '$clear-clicks', '$new-todo-keydowns', '$destroy-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
 
@@ -165,7 +35,7 @@ onValue('todo-in-edit', function(capsule) {
 
 
 
-},{"../model/appState":6,"../model/todoList":8,"../namespace":9,"../todo-utilities":10,"../utilities":11,"../vendor/Aspen":12,"../vendor/Controller":14,"../vendor/Pando":16}],2:[function(require,module,exports){
+},{"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15,"./transforms":3}],2:[function(require,module,exports){
 var $router_hyphen_events, NAMESPACE, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
 
 _ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
@@ -212,28 +82,162 @@ router.init('/');
 
 
 
-},{"../namespace":9,"../utilities":11,"../vendor/Controller":14,"../vendor/Pando":16}],3:[function(require,module,exports){
-var onBlur, onChange, onKeyDown, todoItemInput;
+},{"../namespace":9,"../utilities":10,"../vendor/Controller":13,"../vendor/Pando":15}],3:[function(require,module,exports){
+var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
-onBlur = {
-  handler: 'onBlur'
+_ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
+
+appStateProperty = require('../vendor/Aspen').appStateProperty;
+
+_ref1 = require('../utilities'), store = _ref1.store, uuid = _ref1.uuid;
+
+filtering = require('../vendor/Pando').transforms.filtering;
+
+NAMESPACE = require('../namespace').NAMESPACE;
+
+_ref2 = require('../model/appState'), reset = _ref2.reset, resetEditing = _ref2.resetEditing, resetTodos = _ref2.resetTodos;
+
+cacheAppData = function(appState) {
+  store(NAMESPACE, appState);
+  return appState;
 };
 
-onChange = {
-  handler: 'onChange'
+editAppState = function(capsule) {
+  return function(appState) {
+    var todo;
+    todo = findTodo(appState.todos, capsule.id);
+    storeOrigTitle(todo.title);
+    return resetEditing(appState, capsule.id);
+  };
 };
 
-onKeyDown = {
-  handler: 'onKeyDown'
+_endEditing = function(text, id) {
+  return function(appState) {
+    var manage, newTodos;
+    manage = text ? recaption : remove;
+    newTodos = manage(appState.todos, id, text);
+    return reset(appState, {
+      editing: null,
+      todos: newTodos
+    });
+  };
 };
 
-todoItemInput = 'todo-item-input';
+endEditing = function(getText) {
+  return function(capsule) {
+    var text;
+    text = getText();
+    setEventTgtValue(capsule, text);
+    return _endEditing(text, capsule.id);
+  };
+};
 
-module.exports = [['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$clear-clicks', 'ClearButton'], ['$completed-todos-clicks', 'CompletedTodos'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-item-input-events', 'TodoItemInput'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
+_extractNewTodo = function(title) {
+  return function(appState) {
+    if (!title) {
+      return appState;
+    }
+    return resetTodos(appState, add(appState.todos, title));
+  };
+};
+
+extractNewTodo = function(capsule) {
+  var caption;
+  caption = capsule.event.target.value.trim();
+  setEventTgtValue(capsule, '');
+  return _extractNewTodo(caption);
+};
+
+filteringKey = function(key) {
+  return filtering(function(capsule) {
+    return capsule.event.keyCode === key;
+  });
+};
+
+findTodo = function(todos, id) {
+  var index, todo, _i, _len;
+  for (index = _i = 0, _len = todos.length; _i < _len; index = ++_i) {
+    todo = todos[index];
+    if (todo.id === id) {
+      return todo;
+    }
+  }
+};
+
+removeCompletedTodos = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, removeCompleted(appState.todos));
+  };
+};
+
+removeTodo = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, remove(appState.todos, capsule.id));
+  };
+};
+
+_ref3 = (function() {
+  var editText, originalText, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle;
+  editText = null;
+  originalText = null;
+  restoreOrigTitle = function() {
+    return editText = originalText;
+  };
+  saveCurrentTitle = function() {
+    if (editText) {
+      return editText.trim();
+    } else {
+      return editText;
+    }
+  };
+  storeOrigTitle = function(title) {
+    return editText = originalText = title;
+  };
+  storeTitle = function(title) {
+    return editText = title;
+  };
+  return [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle];
+})(), restoreOrigTitle = _ref3[0], saveCurrentTitle = _ref3[1], storeOrigTitle = _ref3[2], storeTitle = _ref3[3];
+
+setEventTgtValue = function(capsule, text) {
+  return capsule.event.target.value = text;
+};
+
+toggleAllTodos = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, toggleAll(appState.todos));
+  };
+};
+
+toggleTodo = function(capsule) {
+  return function(appState) {
+    return resetTodos(appState, toggle(appState.todos, capsule.id));
+  };
+};
+
+filteringEnter = filteringKey(13);
+
+filteringEscape = filteringKey(27);
+
+module.exports = {
+  cacheAppData: cacheAppData,
+  editAppState: editAppState,
+  endEditing: endEditing,
+  extractNewTodo: extractNewTodo,
+  filteringEnter: filteringEnter,
+  filteringEscape: filteringEscape,
+  removeCompletedTodos: removeCompletedTodos,
+  removeTodo: removeTodo,
+  toggleAllTodos: toggleAllTodos,
+  toggleTodo: toggleTodo,
+  restoreOrigTitle: restoreOrigTitle,
+  saveCurrentTitle: saveCurrentTitle,
+  storeTitle: storeTitle
+};
 
 
 
-},{}],4:[function(require,module,exports){
+},{"../model/appState":6,"../model/todoList":8,"../namespace":9,"../utilities":10,"../vendor/Aspen":11,"../vendor/Pando":15}],4:[function(require,module,exports){
 var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
@@ -244,7 +248,7 @@ topViewFactory = require('./view/app');
 
 store = require('./utilities').store;
 
-viewImports = require('./controller/view-imports');
+viewImports = require('./view-imports');
 
 isEmpty = function(array) {
   return array.length === 0;
@@ -270,7 +274,7 @@ require('./controller/router');
 
 
 
-},{"./controller/event-controllers":1,"./controller/router":2,"./controller/view-imports":3,"./namespace":9,"./utilities":11,"./vendor/Aspen":12,"./view/app":20}],5:[function(require,module,exports){
+},{"./controller/event-controllers":1,"./controller/router":2,"./namespace":9,"./utilities":10,"./vendor/Aspen":11,"./view-imports":19,"./view/app":20}],5:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -334,7 +338,7 @@ module.exports = {
 
 
 
-},{"../utilities":11}],7:[function(require,module,exports){
+},{"../utilities":10}],7:[function(require,module,exports){
 var activate, active, complete, completed, create, modifyCompletedStatus, recaption, set, toggle, uuid, _ref;
 
 _ref = require('../utilities'), set = _ref.set, uuid = _ref.uuid;
@@ -389,8 +393,8 @@ module.exports = {
 
 
 
-},{"../utilities":11}],8:[function(require,module,exports){
-var activate, active, addTodo, complete, completed, create, recaption, recaptionTodo, removeCompleted, removeTodo, set, toggle, toggleAll, toggleTodo, _ref;
+},{"../utilities":10}],8:[function(require,module,exports){
+var activate, active, addTodo, complete, completed, create, getTodosByMode, recaption, recaptionTodo, removeActive, removeCompleted, removeTodo, set, toggle, toggleAll, toggleTodo, _ref;
 
 _ref = require('./todo'), active = _ref.active, activate = _ref.activate, complete = _ref.complete, completed = _ref.completed, create = _ref.create, recaption = _ref.recaption, toggle = _ref.toggle;
 
@@ -398,6 +402,17 @@ set = require('../utilities').set;
 
 addTodo = function(todoList, caption) {
   return todoList.concat(create(caption));
+};
+
+getTodosByMode = function(todos, mode) {
+  switch (mode) {
+    case 'active':
+      return removeCompleted(todos);
+    case 'all':
+      return todos;
+    case 'completed':
+      return removeActive(todos);
+  }
 };
 
 recaptionTodo = function(todos, id, caption) {
@@ -408,6 +423,10 @@ recaptionTodo = function(todos, id, caption) {
       return todo;
     }
   });
+};
+
+removeActive = function(todos) {
+  return todos.filter(completed);
 };
 
 removeCompleted = function(todos) {
@@ -439,7 +458,9 @@ toggleAll = function(todos) {
 
 module.exports = {
   add: addTodo,
+  getTodosByMode: getTodosByMode,
   recaption: recaptionTodo,
+  removeActive: removeActive,
   removeCompleted: removeCompleted,
   remove: removeTodo,
   toggle: toggleTodo,
@@ -448,41 +469,12 @@ module.exports = {
 
 
 
-},{"../utilities":11,"./todo":7}],9:[function(require,module,exports){
+},{"../utilities":10,"./todo":7}],9:[function(require,module,exports){
 module.exports = 'reactive-aspen-todos';
 
 
 
 },{}],10:[function(require,module,exports){
-var active, completed, getTodos;
-
-active = function(todo) {
-  return !todo.completed;
-};
-
-completed = function(todo) {
-  return todo.completed;
-};
-
-getTodos = function(mode, todos) {
-  switch (mode) {
-    case 'active':
-      return todos.filter(active);
-    case 'all':
-      return todos;
-    case 'completed':
-      return todos.filter(completed);
-  }
-};
-
-module.exports = {
-  active: active,
-  getTodos: getTodos
-};
-
-
-
-},{}],11:[function(require,module,exports){
 var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -615,47 +607,68 @@ module.exports = {
 
 
 
-},{}],12:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 module.exports = require('../../vendor/reactive-aspen');
 
 
 
-},{"../../vendor/reactive-aspen":26}],13:[function(require,module,exports){
+},{"../../vendor/reactive-aspen":26}],12:[function(require,module,exports){
 module.exports = require('./Aspen').Bridge;
 
 
 
-},{"./Aspen":12}],14:[function(require,module,exports){
+},{"./Aspen":11}],13:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":12}],15:[function(require,module,exports){
+},{"./Aspen":11}],14:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":17}],16:[function(require,module,exports){
+},{"./React":16}],15:[function(require,module,exports){
 module.exports = require('./Aspen').Pando;
 
 
 
-},{"./Aspen":12}],17:[function(require,module,exports){
+},{"./Aspen":11}],16:[function(require,module,exports){
 module.exports = require('./Aspen').React;
 
 
 
-},{"./Aspen":12}],18:[function(require,module,exports){
+},{"./Aspen":11}],17:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":13}],19:[function(require,module,exports){
+},{"./Bridge":12}],18:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":17}],20:[function(require,module,exports){
+},{"./React":16}],19:[function(require,module,exports){
+var onBlur, onChange, onKeyDown, todoItemInput;
+
+onBlur = {
+  handler: 'onBlur'
+};
+
+onChange = {
+  handler: 'onChange'
+};
+
+onKeyDown = {
+  handler: 'onKeyDown'
+};
+
+todoItemInput = 'todo-item-input';
+
+module.exports = [['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$clear-clicks', 'ClearButton'], ['$completed-todos-clicks', 'CompletedTodos'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-item-input-events', 'TodoItemInput'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
+
+
+
+},{}],20:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, countCompleted, countReducer, div, headerHasFocus;
 
 AppBody = require('./body');
@@ -695,12 +708,12 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":15,"./body":21,"./footer":22,"./header":23}],21:[function(require,module,exports){
-var $checkbox, $mainToggle, AppBody, TodoItem, getTodoView, getTodos, section, ul, _ref;
+},{"../vendor/DOM":14,"./body":21,"./footer":22,"./header":23}],21:[function(require,module,exports){
+var $checkbox, $mainToggle, AppBody, TodoItem, getTodoView, getTodosByMode, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
 
-getTodos = require('../todo-utilities').getTodos;
+getTodosByMode = require('../model/todoList').getTodosByMode;
 
 _ref = require('../vendor/DOM'), section = _ref.section, ul = _ref.ul;
 
@@ -712,7 +725,7 @@ AppBody = function(props, checked) {
   if (!(todos.length > 0)) {
     return null;
   }
-  todoItems = getTodos(mode, todos).map(getTodoView(editing));
+  todoItems = getTodosByMode(todos, mode).map(getTodoView(editing));
   return section({
     id: 'main'
   }, $mainToggle({
@@ -738,7 +751,7 @@ module.exports = AppBody;
 
 
 
-},{"../todo-utilities":10,"../vendor/DOM":15,"../vendor/adapters":18,"./todoItem":24}],22:[function(require,module,exports){
+},{"../model/todoList":8,"../vendor/DOM":14,"../vendor/adapters":17,"./todoItem":24}],22:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -808,7 +821,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":11,"../vendor/DOM":15,"../vendor/adapters":18,"../vendor/classSet":19}],23:[function(require,module,exports){
+},{"../utilities":10,"../vendor/DOM":14,"../vendor/adapters":17,"../vendor/classSet":18}],23:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -836,7 +849,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":15,"../vendor/adapters":18}],24:[function(require,module,exports){
+},{"../vendor/DOM":14,"../vendor/adapters":17}],24:[function(require,module,exports){
 var $button, $checkbox, $label, IDifyAdapter, TodoItem, applyId, classSet, createFactory, div, factories, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -903,7 +916,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":15,"../vendor/React":17,"../vendor/adapters":18,"../vendor/classSet":19,"./todoItemInputClass":25}],25:[function(require,module,exports){
+},{"../vendor/DOM":14,"../vendor/React":16,"../vendor/adapters":17,"../vendor/classSet":18,"./todoItemInputClass":25}],25:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -938,7 +951,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":17,"../vendor/adapters":18}],26:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":16,"../vendor/adapters":17}],26:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var actAsSwitchboard, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, portUtilities, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1;
 
