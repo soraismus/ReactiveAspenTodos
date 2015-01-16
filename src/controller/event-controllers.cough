@@ -1,24 +1,26 @@
-{ active, getTodos }      = require '../todo-utilities'
-{ appStateProperty }      = require '../vendor/Aspen'
-{ compose, store, uuid }  = require '../utilities'
-{ NAMESPACE }             = require '../namespace'
-{ transforms, utilities } = require '../vendor/Pando'
+{ active, getTodos }                = require '../todo-utilities'
+{ appStateProperty }                = require '../vendor/Aspen'
+{ compose, store, uuid }            = require '../utilities'
+{ NAMESPACE }                       = require '../namespace'
+{ reset, resetEditing, resetTodos } = require '../model/appState'
+{ transforms, utilities }           = require '../vendor/Pando'
 
-{ connect, getDispatcher, onValue, plugIntoTerminus } =
-  require '../vendor/Controller'
+{ connect
+  getDispatcher
+  onValue
+  plugIntoTerminus
+} = require '../vendor/Controller'
+
+{ add
+  recaption
+  remove
+  removeCompleted
+  toggle
+  toggleAll
+} = require '../model/todoList'
 
 { doAsync }            = utilities
 { filtering, mapping } = transforms
-
-AppState = require './appState'
-TodoList = require './todoList'
-{ reset, resetEditing, resetTodos } = AppState
-
-add       = TodoList.addTodo
-recaption = TodoList.recaptionTodo
-remove    = TodoList.removeTodo
-toggle    = TodoList.toggleTodo
-{ removeCompleted, toggleAll } = TodoList
 
 addTodo = \title \appState ->
   return appState unless title
