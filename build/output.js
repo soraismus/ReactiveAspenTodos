@@ -1,35 +1,5 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var extend, reset, resetEditing, resetMode, resetTodos, set, _ref;
-
-_ref = require('../utilities'), extend = _ref.extend, set = _ref.set;
-
-reset = function(appState, newProps) {
-  return extend({}, appState, newProps);
-};
-
-resetEditing = function(appState, editableTodoID) {
-  return set('editing', editableTodoID, appState);
-};
-
-resetMode = function(appState, newMode) {
-  return set('mode', newMode, appState);
-};
-
-resetTodos = function(appState, newTodos) {
-  return set('todos', newTodos, appState);
-};
-
-module.exports = {
-  reset: reset,
-  resetEditing: resetEditing,
-  resetMode: resetMode,
-  resetTodos: resetTodos
-};
-
-
-
-},{"../utilities":11}],2:[function(require,module,exports){
-var AppState, NAMESPACE, TodoList, active, add, addTodo, appStateProperty, cacheAppData, compose, connect, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var NAMESPACE, active, add, addTodo, appStateProperty, cacheAppData, compose, connect, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
@@ -39,29 +9,17 @@ _ref1 = require('../utilities'), compose = _ref1.compose, store = _ref1.store, u
 
 NAMESPACE = require('../namespace').NAMESPACE;
 
-_ref2 = require('../vendor/Pando'), transforms = _ref2.transforms, utilities = _ref2.utilities;
+_ref2 = require('../model/appState'), reset = _ref2.reset, resetEditing = _ref2.resetEditing, resetTodos = _ref2.resetTodos;
 
-_ref3 = require('../vendor/Controller'), connect = _ref3.connect, getDispatcher = _ref3.getDispatcher, onValue = _ref3.onValue, plugIntoTerminus = _ref3.plugIntoTerminus;
+_ref3 = require('../vendor/Pando'), transforms = _ref3.transforms, utilities = _ref3.utilities;
+
+_ref4 = require('../vendor/Controller'), connect = _ref4.connect, getDispatcher = _ref4.getDispatcher, onValue = _ref4.onValue, plugIntoTerminus = _ref4.plugIntoTerminus;
+
+_ref5 = require('../model/todoList'), add = _ref5.add, recaption = _ref5.recaption, remove = _ref5.remove, removeCompleted = _ref5.removeCompleted, toggle = _ref5.toggle, toggleAll = _ref5.toggleAll;
 
 doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
-
-AppState = require('./appState');
-
-TodoList = require('./todoList');
-
-reset = AppState.reset, resetEditing = AppState.resetEditing, resetTodos = AppState.resetTodos;
-
-add = TodoList.addTodo;
-
-recaption = TodoList.recaptionTodo;
-
-remove = TodoList.removeTodo;
-
-toggle = TodoList.toggleTodo;
-
-removeCompleted = TodoList.removeCompleted, toggleAll = TodoList.toggleAll;
 
 addTodo = function(title) {
   return function(appState) {
@@ -138,7 +96,7 @@ removeTodo = function(capsule) {
   };
 };
 
-_ref4 = (function() {
+_ref6 = (function() {
   var editText, originalText, restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle;
   editText = null;
   originalText = null;
@@ -159,7 +117,7 @@ _ref4 = (function() {
     return editText = title;
   };
   return [restoreOrigTitle, saveCurrentTitle, storeOrigTitle, storeTitle];
-})(), restoreOrigTitle = _ref4[0], saveCurrentTitle = _ref4[1], storeOrigTitle = _ref4[2], storeTitle = _ref4[3];
+})(), restoreOrigTitle = _ref6[0], saveCurrentTitle = _ref6[1], storeOrigTitle = _ref6[2], storeTitle = _ref6[3];
 
 setEventTgtValue = function(capsule, text) {
   return capsule.event.target.value = text;
@@ -207,7 +165,7 @@ onValue('todo-in-edit', function(capsule) {
 
 
 
-},{"../namespace":9,"../todo-utilities":10,"../utilities":11,"../vendor/Aspen":12,"../vendor/Controller":14,"../vendor/Pando":16,"./appState":1,"./todoList":5}],3:[function(require,module,exports){
+},{"../model/appState":6,"../model/todoList":8,"../namespace":9,"../todo-utilities":10,"../utilities":11,"../vendor/Aspen":12,"../vendor/Controller":14,"../vendor/Pando":16}],2:[function(require,module,exports){
 var $router_hyphen_events, NAMESPACE, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
 
 _ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
@@ -254,7 +212,129 @@ router.init('/');
 
 
 
-},{"../namespace":9,"../utilities":11,"../vendor/Controller":14,"../vendor/Pando":16}],4:[function(require,module,exports){
+},{"../namespace":9,"../utilities":11,"../vendor/Controller":14,"../vendor/Pando":16}],3:[function(require,module,exports){
+var onBlur, onChange, onKeyDown, todoItemInput;
+
+onBlur = {
+  handler: 'onBlur'
+};
+
+onChange = {
+  handler: 'onChange'
+};
+
+onKeyDown = {
+  handler: 'onKeyDown'
+};
+
+todoItemInput = 'todo-item-input';
+
+module.exports = [['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$clear-clicks', 'ClearButton'], ['$completed-todos-clicks', 'CompletedTodos'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-item-input-events', 'TodoItemInput'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
+
+
+
+},{}],4:[function(require,module,exports){
+var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
+
+initialize = require('./vendor/Aspen').initialize;
+
+NAMESPACE = require('./namespace').NAMESPACE;
+
+topViewFactory = require('./view/app');
+
+store = require('./utilities').store;
+
+viewImports = require('./controller/view-imports');
+
+isEmpty = function(array) {
+  return array.length === 0;
+};
+
+appNodeId = 'todoapp';
+
+cachedState = store(NAMESPACE);
+
+defaultState = {
+  editing: null,
+  mode: 'all',
+  todos: []
+};
+
+initialState = isEmpty(cachedState) ? defaultState : cachedState;
+
+initialize(appNodeId, topViewFactory, initialState, viewImports);
+
+require('./controller/event-controllers');
+
+require('./controller/router');
+
+
+
+},{"./controller/event-controllers":1,"./controller/router":2,"./controller/view-imports":3,"./namespace":9,"./utilities":11,"./vendor/Aspen":12,"./view/app":20}],5:[function(require,module,exports){
+/**
+ * Derivative of source code copyrighted by Facebook.
+ * This source code is licensed under Facebook's  BSD-style license.
+ *
+ * @providesModule UpdatePostFocusMixin
+ */
+
+"use strict";
+
+/**
+ * @param {DOMElement} node input/textarea to focus
+ */
+function focusPostNode(node) {
+  // IE8 can throw "Can't move focus to the control because it is invisible,
+  // not enabled, or of a type that does not accept the focus." for all kinds of
+  // reasons that are too expensive and fragile to test.
+  try {
+    node.focus();
+    node.setSelectionRange(node.value.length, node.value.length);
+  } catch(e) {
+  }
+}
+
+var UpdatePostFocusMixin = {
+  componentDidUpdate: function() {
+    if (this.props.autoPostFocus) {
+      focusPostNode(this.getDOMNode());
+    }
+  }
+};
+
+module.exports = UpdatePostFocusMixin;
+
+},{}],6:[function(require,module,exports){
+var extend, reset, resetEditing, resetMode, resetTodos, set, _ref;
+
+_ref = require('../utilities'), extend = _ref.extend, set = _ref.set;
+
+reset = function(appState, newProps) {
+  return extend({}, appState, newProps);
+};
+
+resetEditing = function(appState, editableTodoID) {
+  return set('editing', editableTodoID, appState);
+};
+
+resetMode = function(appState, newMode) {
+  return set('mode', newMode, appState);
+};
+
+resetTodos = function(appState, newTodos) {
+  return set('todos', newTodos, appState);
+};
+
+module.exports = {
+  reset: reset,
+  resetEditing: resetEditing,
+  resetMode: resetMode,
+  resetTodos: resetTodos
+};
+
+
+
+},{"../utilities":11}],7:[function(require,module,exports){
 var activate, active, complete, completed, create, modifyCompletedStatus, recaption, set, toggle, uuid, _ref;
 
 _ref = require('../utilities'), set = _ref.set, uuid = _ref.uuid;
@@ -309,7 +389,7 @@ module.exports = {
 
 
 
-},{"../utilities":11}],5:[function(require,module,exports){
+},{"../utilities":11}],8:[function(require,module,exports){
 var activate, active, addTodo, complete, completed, create, recaption, recaptionTodo, removeCompleted, removeTodo, set, toggle, toggleAll, toggleTodo, _ref;
 
 _ref = require('./todo'), active = _ref.active, activate = _ref.activate, complete = _ref.complete, completed = _ref.completed, create = _ref.create, recaption = _ref.recaption, toggle = _ref.toggle;
@@ -358,109 +438,17 @@ toggleAll = function(todos) {
 };
 
 module.exports = {
-  addTodo: addTodo,
-  recaptionTodo: recaptionTodo,
+  add: addTodo,
+  recaption: recaptionTodo,
   removeCompleted: removeCompleted,
-  removeTodo: removeTodo,
-  toggleTodo: toggleTodo,
+  remove: removeTodo,
+  toggle: toggleTodo,
   toggleAll: toggleAll
 };
 
 
 
-},{"../utilities":11,"./todo":4}],6:[function(require,module,exports){
-var onBlur, onChange, onKeyDown, todoItemInput;
-
-onBlur = {
-  handler: 'onBlur'
-};
-
-onChange = {
-  handler: 'onChange'
-};
-
-onKeyDown = {
-  handler: 'onKeyDown'
-};
-
-todoItemInput = 'todo-item-input';
-
-module.exports = [['$active-todos-clicks', 'ActiveTodos'], ['$all-todos-clicks', 'AllTodos'], ['$clear-clicks', 'ClearButton'], ['$completed-todos-clicks', 'CompletedTodos'], ['$destroy-clicks', 'destroy-button'], ['$new-todo-keydowns', 'new-todo-input'], ['$todo-item-input-events', 'TodoItemInput'], ['$todo-label-doubleclicks', 'todo-item-label'], ['$toggle-all-clicks', 'toggle-all-checkbox'], ['$toggle-clicks', 'completion-toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
-
-
-
-},{}],7:[function(require,module,exports){
-var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
-
-initialize = require('./vendor/Aspen').initialize;
-
-NAMESPACE = require('./namespace').NAMESPACE;
-
-topViewFactory = require('./view/app');
-
-store = require('./utilities').store;
-
-viewImports = require('./controller/view-imports');
-
-isEmpty = function(array) {
-  return array.length === 0;
-};
-
-appNodeId = 'todoapp';
-
-cachedState = store(NAMESPACE);
-
-defaultState = {
-  editing: null,
-  mode: 'all',
-  todos: []
-};
-
-initialState = isEmpty(cachedState) ? defaultState : cachedState;
-
-initialize(appNodeId, topViewFactory, initialState, viewImports);
-
-require('./controller/event-controllers');
-
-require('./controller/router');
-
-
-
-},{"./controller/event-controllers":2,"./controller/router":3,"./controller/view-imports":6,"./namespace":9,"./utilities":11,"./vendor/Aspen":12,"./view/app":20}],8:[function(require,module,exports){
-/**
- * Derivative of source code copyrighted by Facebook.
- * This source code is licensed under Facebook's  BSD-style license.
- *
- * @providesModule UpdatePostFocusMixin
- */
-
-"use strict";
-
-/**
- * @param {DOMElement} node input/textarea to focus
- */
-function focusPostNode(node) {
-  // IE8 can throw "Can't move focus to the control because it is invisible,
-  // not enabled, or of a type that does not accept the focus." for all kinds of
-  // reasons that are too expensive and fragile to test.
-  try {
-    node.focus();
-    node.setSelectionRange(node.value.length, node.value.length);
-  } catch(e) {
-  }
-}
-
-var UpdatePostFocusMixin = {
-  componentDidUpdate: function() {
-    if (this.props.autoPostFocus) {
-      focusPostNode(this.getDOMNode());
-    }
-  }
-};
-
-module.exports = UpdatePostFocusMixin;
-
-},{}],9:[function(require,module,exports){
+},{"../utilities":11,"./todo":7}],9:[function(require,module,exports){
 module.exports = 'reactive-aspen-todos';
 
 
@@ -950,7 +938,7 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":8,"../vendor/React":17,"../vendor/adapters":18}],26:[function(require,module,exports){
+},{"../mixins/UpdatePostFocusMixin":5,"../vendor/React":17,"../vendor/adapters":18}],26:[function(require,module,exports){
 (function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 var actAsSwitchboard, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, isArray, isObject, manageDispatcher, portUtilities, reactIntake, reactIntakeBus, switches, _blur, _preventDefault, _ref, _ref1;
 
@@ -23533,4 +23521,4 @@ module.exports = {
 },{}]},{},[11])
 (11)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[7])
+},{}]},{},[4])
