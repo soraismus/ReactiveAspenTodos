@@ -2,7 +2,7 @@
 { NAMESPACE }   = require './namespace'
 topViewFactory  = require './view/app'
 { store }       = require './utilities'
-viewImports     = require './controller/view-imports'
+viewImports     = require './view-imports'
 
 isEmpty = \array ->
   array.length == 0
