@@ -19,22 +19,22 @@
 } = require './transforms'
 
 nodes = [
-  '$toggle-clicks'
-  '$toggle-all-clicks'
   '$clear-clicks'
-  '$new-todo-keydowns'
   '$destroy-clicks'
+  '$new-todo-keydowns'
+  '$toggle-all-clicks'
+  '$toggle-clicks'
   '$edit-blurs'
   '$edit-keydowns'
   '$edit-keydowns'
 ]
 
 transforms = [
-  mapping toggleTodo
-  mapping toggleAllTodos
   mapping removeCompletedTodos
-  compose [filteringEnter, (mapping extractNewTodo)]
   mapping removeTodo
+  compose [filteringEnter, (mapping extractNewTodo)]
+  mapping toggleAllTodos
+  mapping toggleTodo
   mapping (endEditing saveCurrentTitle)
   compose [filteringEnter,  mapping (endEditing saveCurrentTitle)]
   compose [filteringEscape, mapping (endEditing restoreOrigTitle)]
