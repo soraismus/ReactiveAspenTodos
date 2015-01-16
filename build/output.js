@@ -1,11 +1,11 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var NAMESPACE, activateAll, active, addTodo, appStateProperty, cacheAppData, completeAll, compose, connect, createTodo, doAsync, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, store, storeOrigTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
+var NAMESPACE, activate, activateAll, active, addTodo, appStateProperty, cacheAppData, complete, completeAll, compose, connect, createTodo, doAsync, editAppState, endEditing, extend, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, getDispatcher, getTodos, mapping, nodes, onValue, plugIntoTerminus, removeCompleted, removeTodo, removeTodoByID, restoreOrigTitle, saveCurrentTitle, set, store, storeOrigTitle, storeTitle, toggle, toggleAllTodos, toggleTodo, transforms, utilities, uuid, _ref, _ref1, _ref2, _ref3, _ref4;
 
 _ref = require('../todo-utilities'), active = _ref.active, getTodos = _ref.getTodos;
 
 appStateProperty = require('../vendor/Aspen').appStateProperty;
 
-_ref1 = require('../utilities'), compose = _ref1.compose, store = _ref1.store, uuid = _ref1.uuid;
+_ref1 = require('../utilities'), compose = _ref1.compose, extend = _ref1.extend, set = _ref1.set, store = _ref1.store, uuid = _ref1.uuid;
 
 NAMESPACE = require('../namespace').NAMESPACE;
 
@@ -17,19 +17,22 @@ doAsync = utilities.doAsync;
 
 filtering = transforms.filtering, mapping = transforms.mapping;
 
+activate = function(todo) {
+  return set('completed', false, todo);
+};
+
 activateAll = function(todos) {
-  return todos.forEach(function(todo) {
-    return todo.completed = false;
-  });
+  return todos.map(activate);
 };
 
 addTodo = function(title) {
   return function(appState) {
+    var newTodos;
     if (!title) {
       return appState;
     }
-    appState.todos.push(createTodo(title));
-    return appState;
+    newTodos = appState.todos.concat(createTodo(title));
+    return set('todos', newTodos, appState);
   };
 };
 
@@ -38,10 +41,12 @@ cacheAppData = function(appState) {
   return appState;
 };
 
+complete = function(todo) {
+  return set('completed', true, todo);
+};
+
 completeAll = function(todos) {
-  return todos.forEach(function(todo) {
-    return todo.completed = true;
-  });
+  return todos.map(complete);
 };
 
 createTodo = function(title) {
@@ -58,8 +63,7 @@ editAppState = function(capsule) {
     id = capsule.id;
     todo = findTodo(appState.todos, id).todo;
     storeOrigTitle(todo.title);
-    appState.editing = id;
-    return appState;
+    return set('editing', id, appState);
   };
 };
 
@@ -69,8 +73,8 @@ findTodo = function(todos, id) {
     todo = todos[index];
     if (todo.id === id) {
       return {
-        todo: todo,
-        index: index
+        index: index,
+        todo: todo
       };
     }
   }
@@ -78,28 +82,33 @@ findTodo = function(todos, id) {
 
 endEditing = function(getText) {
   return function(capsule) {
-    var text;
+    var event, id, text;
     text = getText();
-    capsule.event.target.value = text;
+    event = capsule.event, id = capsule.id;
+    event.target.value = text;
     return function(appState) {
-      var index, todo, _ref4;
-      _ref4 = findTodo(appState.todos, capsule.id), todo = _ref4.todo, index = _ref4.index;
-      appState.editing = null;
-      todo.title = text;
+      var index, newTodo, newTodos, todo, todos, _ref4;
+      todos = appState.todos;
+      _ref4 = findTodo(todos, id), index = _ref4.index, todo = _ref4.todo;
       if (text) {
-        return appState;
+        newTodo = set('title', text, todo);
+        newTodos = set(index, newTodo, todos);
       } else {
-        return removeTodo(index, appState);
+        newTodos = removeTodo(todos, id);
       }
+      return extend({}, appState, {
+        editing: null,
+        todos: newTodos
+      });
     };
   };
 };
 
 extractNewTodo = function(capsule) {
-  var value;
-  value = capsule.event.target.value.trim();
+  var caption;
+  caption = capsule.event.target.value.trim();
   capsule.event.target.value = '';
-  return addTodo(value);
+  return addTodo(caption);
 };
 
 filteringKey = function(key) {
@@ -133,46 +142,50 @@ _ref4 = (function() {
 
 removeCompleted = function(capsule) {
   return function(appState) {
-    appState.todos = appState.todos.filter(active);
-    return appState;
+    var newTodos;
+    newTodos = appState.todos.filter(active);
+    return set('todos', newTodos, appState);
   };
 };
 
 removeTodoByID = function(capsule) {
   return function(appState) {
-    var index;
-    index = findTodo(appState.todos, capsule.id).index;
-    return removeTodo(index, appState);
+    var newTodos;
+    newTodos = removeTodo(appState.todos, capsule.id);
+    return set('todos', newTodos, appState);
   };
 };
 
-removeTodo = function(index, appState) {
-  var completed, todos;
-  todos = appState.todos;
-  completed = todos[index].completed;
-  todos.splice(index, 1);
-  return appState;
+removeTodo = function(todos, id) {
+  return todos.filter(function(todo) {
+    return todo.id !== id;
+  });
+};
+
+toggle = function(todo) {
+  return set('completed', !todo.completed, todo);
 };
 
 toggleAllTodos = function(capsule) {
   return function(appState) {
-    var allCompleted, manage, todos;
+    var allCompleted, manage, newTodos, todos;
     todos = appState.todos;
     allCompleted = todos.every(function(todo) {
       return todo.completed;
     });
     manage = allCompleted ? activateAll : completeAll;
-    manage(todos);
-    return appState;
+    newTodos = manage(todos);
+    return set('todos', newTodos, appState);
   };
 };
 
 toggleTodo = function(capsule) {
   return function(appState) {
-    var todo;
-    todo = findTodo(appState.todos, capsule.id).todo;
-    todo.completed = !todo.completed;
-    return appState;
+    var index, newTodo, newTodos, todo, _ref5;
+    _ref5 = findTodo(appState.todos, capsule.id), index = _ref5.index, todo = _ref5.todo;
+    newTodo = toggle(todo);
+    newTodos = set(index, newTodo, appState.todos);
+    return set('todos', newTodos, appState);
   };
 };
 
@@ -380,7 +393,7 @@ module.exports = {
 
 
 },{}],8:[function(require,module,exports){
-var compose, composeReducer, extend, pluralize, signposts, store, uuid, _uuid,
+var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -398,17 +411,32 @@ composeReducer = function(composedFn, fn) {
 };
 
 extend = function() {
-  var key, obj, objects, result, _i, _len;
-  objects = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-  result = {};
+  var base, key, obj, objects, _i, _len;
+  base = arguments[0], objects = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
   for (_i = 0, _len = objects.length; _i < _len; _i++) {
     obj = objects[_i];
     for (key in obj) {
       if (!__hasProp.call(obj, key)) continue;
-      result[key] = obj[key];
+      base[key] = obj[key];
     }
   }
-  return result;
+  return base;
+};
+
+identity = function(val) {
+  return val;
+};
+
+isArray = function(val) {
+  if (Array.isArray) {
+    return Array.isArray(val);
+  } else {
+    return val instanceof Array;
+  }
+};
+
+isObject = function(val) {
+  return Object.prototype.toString.call(val) === '[object Object]';
 };
 
 pluralize = function(count, word) {
@@ -417,6 +445,31 @@ pluralize = function(count, word) {
   } else {
     return word + 's';
   }
+};
+
+shallowCopy = function(val) {
+  var copy, key, prop;
+  switch (false) {
+    case !isObject(val):
+      copy = {};
+      for (key in val) {
+        if (!__hasProp.call(val, key)) continue;
+        prop = val[key];
+        copy[key] = prop;
+      }
+      return copy;
+    case !isArray(val):
+      return val.map(identity);
+    default:
+      return val;
+  }
+};
+
+set = function(key, prop, compositeValue) {
+  var copy;
+  copy = shallowCopy(compositeValue);
+  copy[key] = prop;
+  return copy;
 };
 
 store = function(namespace, data) {
@@ -465,6 +518,7 @@ module.exports = {
   compose: compose,
   extend: extend,
   pluralize: pluralize,
+  set: set,
   store: store,
   uuid: uuid
 };
