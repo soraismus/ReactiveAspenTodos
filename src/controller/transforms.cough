@@ -2,7 +2,7 @@
 { appStateProperty }                                           = require '../vendor/Aspen'
 { store, uuid }                                                = require '../utilities'
 { filtering }                                                  = require('../vendor/Pando').transforms
-{ NAMESPACE }                                                  = require '../namespace'
+NAMESPACE                                                      = require '../namespace'
 { reset, resetEditing, resetTodos }                            = require '../model/appState'
 
 cacheAppData = \appState ->
