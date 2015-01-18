@@ -1,18 +1,17 @@
-{ connect, getEventStream } = require '../vendor/Controller'
-{ mapping }                 = require('../vendor/Pando').transforms
-NAMESPACE                   = require '../namespace'
-{ resetMode }               = require '../model/appState'
+{ connect, getEventStream, push } = require '../vendor/Controller'
+{ mapping }                       = require('../vendor/Pando').transforms
+NAMESPACE                         = require '../namespace'
+{ resetMode }                     = require '../model/appState'
 
 setModeTo = (mode) -> () ->
-  $router-events.dispatch mode
+  push ($router-events, mode)
 
 updateMode = \newMode \appState ->
   resetMode (appState, newMode)
 
 $router-events = getEventStream '$router-events'
 
-connect $router-events 'cacher' ->
-  mapping updateMode
+connect ($router-events, 'cacher', -> mapping updateMode)
 
 # `Router` has been set on the global `window` object by another file.
 router = Router
