@@ -19888,7 +19888,7 @@ nodes = ['$clear-clicks', '$delete-clicks', '$new-todo-keydowns', '$toggle-all-c
 
 transforms = [mapping(removeCompletedTodos), mapping(removeTodo), compose([filteringEnter, mapping(extractNewTodo)]), mapping(toggleAllTodos), mapping(toggleTodo), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
 
-connect(nodes)('cacher')(function() {
+connect(nodes, 'cacher', function() {
   return transforms;
 });
 
@@ -19911,9 +19911,9 @@ onValue('todo-in-edit', function(capsule) {
 
 
 },{"../utilities":172,"../vendor/Controller":175,"../vendor/Pando":177,"./transforms":165}],164:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, connect, getEventStream, mapping, resetMode, router, setModeTo, store, updateMode, _ref;
+var $router_hyphen_events, NAMESPACE, connect, getEventStream, mapping, push, resetMode, router, setModeTo, updateMode, _ref;
 
-_ref = require('../vendor/Controller'), connect = _ref.connect, getEventStream = _ref.getEventStream;
+_ref = require('../vendor/Controller'), connect = _ref.connect, getEventStream = _ref.getEventStream, push = _ref.push;
 
 mapping = require('../vendor/Pando').transforms.mapping;
 
@@ -19921,26 +19921,11 @@ NAMESPACE = require('../namespace');
 
 resetMode = require('../model/appState').resetMode;
 
-store = require('../utilities').store;
-
 setModeTo = function(mode) {
   return function() {
-    return $router_hyphen_events.dispatch(mode);
+    return push($router_hyphen_events, mode);
   };
 };
-
-
-/*
-transformThenCache = \transform \appState ->
-  store (NAMESPACE, transform appState)
-
-updateMode = \newMode ->
-  transformThenCache \appState ->
-    resetMode (appState, newMode)
-
-updateMode = \newMode \appState ->
-  store (NAMESPACE, resetMode (appState, newMode))
- */
 
 updateMode = function(newMode) {
   return function(appState) {
@@ -19950,7 +19935,7 @@ updateMode = function(newMode) {
 
 $router_hyphen_events = getEventStream('$router-events');
 
-connect($router_hyphen_events)('cacher')(function() {
+connect($router_hyphen_events, 'cacher', function() {
   return mapping(updateMode);
 });
 
@@ -19964,7 +19949,7 @@ router.init('/');
 
 
 
-},{"../model/appState":168,"../namespace":171,"../utilities":172,"../vendor/Controller":175,"../vendor/Pando":177}],165:[function(require,module,exports){
+},{"../model/appState":168,"../namespace":171,"../vendor/Controller":175,"../vendor/Pando":177}],165:[function(require,module,exports){
 var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
@@ -22875,7 +22860,7 @@ module.exports = function(config) {
   };
   linkTogetherMVC = function(topViewFactory, appState) {
     var reactElement;
-    push(appStateProperty)(appState);
+    push(appStateProperty, appState);
     reactElement = topViewFactory(appState);
     connectViewToController();
     return reactElement;
@@ -22900,7 +22885,7 @@ var isArray, isString, _ref;
 _ref = _dereq_('./utilities'), isArray = _ref.isArray, isString = _ref.isString;
 
 module.exports = function(config) {
-  var connect, connectMultiple, connectSingle, getDispatcher, interpret, onEvent, onValue, pandoConnect, pandoOnValue, plug, plugIntoTerminus, push, setAlias, terminusEventStream, _connect;
+  var connect, connectMultiple, connectSingle, getDispatcher, interpret, onEvent, onValue, pandoConnect, pandoOnValue, plugIntoTerminus, push, setAlias, terminusEventStream, _connect;
   getDispatcher = config.getDispatcher;
   pandoConnect = config.connect;
   pandoOnValue = config.onValue;
@@ -22912,16 +22897,12 @@ module.exports = function(config) {
     setAlias(_tgt, tgt);
     return pandoConnect(_src, _tgt, transform);
   };
-  connect = function(sources) {
-    return function(targets) {
-      return function(thunk) {
-        if (isArray(sources)) {
-          return connectMultiple(sources, targets, thunk());
-        } else {
-          return connectSingle(sources, targets, thunk());
-        }
-      };
-    };
+  connect = function(sources, targets, thunk) {
+    if (isArray(sources)) {
+      return connectMultiple(sources, targets, thunk());
+    } else {
+      return connectSingle(sources, targets, thunk());
+    }
   };
   connectMultiple = function(sources, targets, transforms) {
     var i, j, src, tgt, _i, _j, _len, _len1, _results, _results1;
@@ -22975,22 +22956,13 @@ module.exports = function(config) {
   onValue = function(source, sink) {
     return pandoOnValue(interpret(source), sink);
   };
-  plug = function(targets) {
-    return function(thunk) {
-      return function(sources) {
-        return connect(sources)(targets)(thunk);
-      };
-    };
-  };
   plugIntoTerminus = function(source, transform) {
-    return connect(source)(terminusEventStream)(transform);
+    return connect(source, terminusEventStream, transform);
   };
-  push = function(label) {
-    return function(val) {
-      var bus;
-      bus = interpret(label);
-      return bus.dispatch(val, bus.id);
-    };
+  push = function(label, val) {
+    var bus;
+    bus = interpret(label);
+    return bus.dispatch(val, bus.id);
   };
   setAlias = function(bus, val) {
     if (isString(val)) {
@@ -23002,7 +22974,6 @@ module.exports = function(config) {
     interpret: interpret,
     onEvent: onEvent,
     onValue: onValue,
-    plug: plug,
     plugIntoTerminus: plugIntoTerminus,
     push: push
   };
