@@ -1,7 +1,3 @@
-onBlur    = { handler: 'onBlur' }
-onChange  = { handler: 'onChange' }
-onKeyDown = { handler: 'onKeyDown' }
-
 todoItemInput = 'TodoItemInput'
 
 module.exports = [
@@ -12,7 +8,7 @@ module.exports = [
   ['$toggle-all-clicks',       'ToggleAll'    ]
   ['$toggle-clicks',           'Toggle'       ]
 
-  ['$edit-blurs',    todoItemInput, onBlur   ]
-  ['$edit-keydowns', todoItemInput, onKeyDown]
-  ['todo-in-edit',   todoItemInput, onChange ]
+  ['$edit-blurs',    todoItemInput, { handler: 'onBlur'    }]
+  ['$edit-keydowns', todoItemInput, { handler: 'onKeyDown' }]
+  ['todo-in-edit',   todoItemInput, { handler: 'onChange'  }]
 ]
