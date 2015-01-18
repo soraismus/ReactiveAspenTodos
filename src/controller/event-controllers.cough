@@ -40,7 +40,7 @@ transforms = [
   compose [filteringEscape, mapping (endEditing restoreOrigTitle)]
 ]
 
-connect nodes 'cacher' -> transforms
+connect (nodes, 'cacher', -> transforms)
 
 plugIntoTerminus 'cacher', ->
   mapping \transform -> ; cacheAppData transform ;
