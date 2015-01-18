@@ -1,1 +1,6 @@
-module.exports = require '../../vendor/reactive-aspen'
+{ connectTo }    = require './Bridge'
+getReactiveAspen = require '../../vendor/reactive-aspen'
+Pando            = require './Pando'
+{ render }       = require './React'
+
+module.exports = getReactiveAspen (render, connectTo, Pando)

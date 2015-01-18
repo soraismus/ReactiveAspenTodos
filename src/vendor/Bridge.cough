@@ -1,1 +1,3 @@
-module.exports = require('./Aspen').Bridge
+DOM       = require './DOM'
+getBridge = require '../../vendor/bridge'
+module.exports = getBridge DOM
