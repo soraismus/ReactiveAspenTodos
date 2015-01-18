@@ -1,6 +1,6 @@
 { getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
 { mapping }                         = require('../vendor/Pando').transforms
-{ NAMESPACE }                       = require '../namespace'
+NAMESPACE                           = require '../namespace'
 { store }                           = require '../utilities'
 
 setModeTo = (mode) -> () ->
