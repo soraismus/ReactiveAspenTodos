@@ -1,23 +1,18 @@
-{ getDispatcher, plugIntoTerminus } = require '../vendor/Controller'
-{ mapping }                         = require('../vendor/Pando').transforms
-NAMESPACE                           = require '../namespace'
-{ store }                           = require '../utilities'
+{ connect, getEventStream } = require '../vendor/Controller'
+{ mapping }                 = require('../vendor/Pando').transforms
+NAMESPACE                   = require '../namespace'
+{ resetMode }               = require '../model/appState'
 
 setModeTo = (mode) -> () ->
   $router-events.dispatch mode
 
-transformThenCache = \transform \appState ->
-  transform appState
-  store (NAMESPACE, appState)
-  appState
+updateMode = \newMode \appState ->
+  resetMode (appState, newMode)
 
-updateMode = \newMode ->
-  transformThenCache \appState ->
-    appState.mode = newMode
+$router-events = getEventStream '$router-events'
 
-$router-events = getDispatcher ('$router-events', true)
-
-plugIntoTerminus $router-events, -> mapping updateMode
+connect $router-events 'cacher' ->
+  mapping updateMode
 
 # `Router` has been set on the global `window` object by another file.
 router = Router
