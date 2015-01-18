@@ -39,7 +39,10 @@ shallowCopy = \val ->
       val
 
 store = (namespace, data) ->
-  return localStorage.setItem (namespace, (JSON.stringify data)) if data
+  if data
+    localStorage.setItem (namespace, stringify data)
+    return data
+
   data = localStorage.getItem namespace
   if data then JSON.parse data else []
 
@@ -60,6 +63,7 @@ uuid = ->
 
   id
 
-signposts = [8, 12, 16, 20]
+signposts     = [8, 12, 16, 20]
+{ stringify } = JSON
 
 module.exports = { compose, extend, pluralize, set, store, uuid }
