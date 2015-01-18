@@ -3,13 +3,10 @@
 reset = (appState, newProps) ->
   extend ({}, appState, newProps)
 
-resetEditing = (appState, editableTodoID) ->
-  set ('editing', editableTodoID, appState)
+resetProp = (propName) -> (appState, newProp) ->
+  set (propName, newProp, appState)
 
-resetMode = (appState, newMode) ->
-  set ('mode', newMode, appState)
-
-resetTodos = (appState, newTodos) ->
-  set ('todos', newTodos, appState)
+[resetEditing, resetMode, resetTodos] =
+  ['editing', 'mode', 'todos'].map resetProp
 
 module.exports = { reset, resetEditing, resetMode, resetTodos }
