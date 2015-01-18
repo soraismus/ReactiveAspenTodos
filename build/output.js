@@ -19911,13 +19911,15 @@ onValue('todo-in-edit', function(capsule) {
 
 
 },{"../utilities":172,"../vendor/Controller":175,"../vendor/Pando":177,"./transforms":165}],164:[function(require,module,exports){
-var $router_hyphen_events, NAMESPACE, getDispatcher, mapping, plugIntoTerminus, router, setModeTo, store, transformThenCache, updateMode, _ref;
+var $router_hyphen_events, NAMESPACE, connect, getEventStream, mapping, resetMode, router, setModeTo, store, updateMode, _ref;
 
-_ref = require('../vendor/Controller'), getDispatcher = _ref.getDispatcher, plugIntoTerminus = _ref.plugIntoTerminus;
+_ref = require('../vendor/Controller'), connect = _ref.connect, getEventStream = _ref.getEventStream;
 
 mapping = require('../vendor/Pando').transforms.mapping;
 
 NAMESPACE = require('../namespace');
+
+resetMode = require('../model/appState').resetMode;
 
 store = require('../utilities').store;
 
@@ -19927,23 +19929,28 @@ setModeTo = function(mode) {
   };
 };
 
-transformThenCache = function(transform) {
+
+/*
+transformThenCache = \transform \appState ->
+  store (NAMESPACE, transform appState)
+
+updateMode = \newMode ->
+  transformThenCache \appState ->
+    resetMode (appState, newMode)
+
+updateMode = \newMode \appState ->
+  store (NAMESPACE, resetMode (appState, newMode))
+ */
+
+updateMode = function(newMode) {
   return function(appState) {
-    transform(appState);
-    store(NAMESPACE, appState);
-    return appState;
+    return resetMode(appState, newMode);
   };
 };
 
-updateMode = function(newMode) {
-  return transformThenCache(function(appState) {
-    return appState.mode = newMode;
-  });
-};
+$router_hyphen_events = getEventStream('$router-events');
 
-$router_hyphen_events = getDispatcher('$router-events', true);
-
-plugIntoTerminus($router_hyphen_events, function() {
+connect($router_hyphen_events)('cacher')(function() {
   return mapping(updateMode);
 });
 
@@ -19957,7 +19964,7 @@ router.init('/');
 
 
 
-},{"../namespace":171,"../utilities":172,"../vendor/Controller":175,"../vendor/Pando":177}],165:[function(require,module,exports){
+},{"../model/appState":168,"../namespace":171,"../utilities":172,"../vendor/Controller":175,"../vendor/Pando":177}],165:[function(require,module,exports){
 var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
@@ -19968,7 +19975,7 @@ _ref1 = require('../utilities'), store = _ref1.store, uuid = _ref1.uuid;
 
 filtering = require('../vendor/Pando').transforms.filtering;
 
-NAMESPACE = require('../namespace').NAMESPACE;
+NAMESPACE = require('../namespace');
 
 _ref2 = require('../model/appState'), reset = _ref2.reset, resetEditing = _ref2.resetEditing, resetTodos = _ref2.resetTodos;
 
@@ -20346,7 +20353,7 @@ module.exports = 'reactive-aspen-todos';
 
 
 },{}],172:[function(require,module,exports){
-var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, uuid, _uuid,
+var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, stringify, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
@@ -20427,7 +20434,8 @@ shallowCopy = function(val) {
 
 store = function(namespace, data) {
   if (data) {
-    return localStorage.setItem(namespace, JSON.stringify(data));
+    localStorage.setItem(namespace, stringify(data));
+    return data;
   }
   data = localStorage.getItem(namespace);
   if (data) {
@@ -20466,6 +20474,8 @@ uuid = function() {
 };
 
 signposts = [8, 12, 16, 20];
+
+stringify = JSON.stringify;
 
 module.exports = {
   compose: compose,
@@ -20535,23 +20545,25 @@ module.exports = require('./React').addons.classSet;
 
 
 },{"./React":178}],181:[function(require,module,exports){
-var onBlur, onChange, onKeyDown, todoItemInput;
-
-onBlur = {
-  handler: 'onBlur'
-};
-
-onChange = {
-  handler: 'onChange'
-};
-
-onKeyDown = {
-  handler: 'onKeyDown'
-};
+var todoItemInput;
 
 todoItemInput = 'TodoItemInput';
 
-module.exports = [['$clear-clicks', 'ClearButton'], ['$delete-clicks', 'DeleteButton'], ['$new-todo-keydowns', 'NewTodoInput'], ['$todo-label-doubleclicks', 'TodoItemLabel'], ['$toggle-all-clicks', 'ToggleAll'], ['$toggle-clicks', 'Toggle'], ['$edit-blurs', todoItemInput, onBlur], ['$edit-keydowns', todoItemInput, onKeyDown], ['todo-in-edit', todoItemInput, onChange]];
+module.exports = [
+  ['$clear-clicks', 'ClearButton'], ['$delete-clicks', 'DeleteButton'], ['$new-todo-keydowns', 'NewTodoInput'], ['$todo-label-doubleclicks', 'TodoItemLabel'], ['$toggle-all-clicks', 'ToggleAll'], ['$toggle-clicks', 'Toggle'], [
+    '$edit-blurs', todoItemInput, {
+      handler: 'onBlur'
+    }
+  ], [
+    '$edit-keydowns', todoItemInput, {
+      handler: 'onKeyDown'
+    }
+  ], [
+    'todo-in-edit', todoItemInput, {
+      handler: 'onChange'
+    }
+  ]
+];
 
 
 
@@ -20901,7 +20913,142 @@ module.exports = {
 
 
 
-},{"./factory-injector":4,"./utilities":6}],2:[function(_dereq_,module,exports){
+},{"./factory-injector":3,"./utilities":6}],2:[function(_dereq_,module,exports){
+var createSensitizingMixin, exportReactEvents, getCapsule, wrapSensitiveComponentWith, _ref;
+
+_ref = _dereq_('./factory-injector'), exportReactEvents = _ref.exportReactEvents, getCapsule = _ref.getCapsule;
+
+wrapSensitiveComponentWith = function(label_slash_capsule) {
+  return function(handler, component) {
+    var capsule;
+    capsule = getCapsule('sensitive', label_slash_capsule, handler);
+    capsule.component = component;
+    return capsule;
+  };
+};
+
+createSensitizingMixin = function(label_slash_capsule) {
+  var trigger, wrap;
+  wrap = wrapSensitiveComponentWith(label_slash_capsule);
+  trigger = function(component, lifeCycleEvent) {
+    return exportReactEvents(wrap(component, lifeCycleEvent));
+  };
+  return {
+    componentDidMount: function() {
+      return trigger(this, 'onDidMount');
+    },
+    componentWillUnmount: function() {
+      return trigger(this, 'onWillUnmount');
+    }
+  };
+};
+
+
+
+},{"./factory-injector":3}],3:[function(_dereq_,module,exports){
+var connectTo, createInjectable, embedEventInside, eventHandler, exportReactEvents, getCapsule, getHandlerForType, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref;
+
+_ref = _dereq_('./utilities'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
+
+eventHandler = null;
+
+connectTo = function(_eventHandler) {
+  return eventHandler = _eventHandler;
+};
+
+createInjectable = function(template) {
+  var getFactory, getHandlerForType, inject;
+  getHandlerForType = null;
+  inject = function(_getHandlerForType) {
+    return getHandlerForType = _getHandlerForType;
+  };
+  getFactory = function() {
+    if (isFunction(getHandlerForType)) {
+      return template(getHandlerForType);
+    }
+  };
+  return {
+    inject: inject,
+    getFactory: getFactory
+  };
+};
+
+embedEventInside = function(capsule) {
+  return function(event) {
+    capsule.event = event;
+    return capsule;
+  };
+};
+
+exportReactEvents = function(event) {
+  if (isFunction(eventHandler)) {
+    return eventHandler(event);
+  }
+};
+
+getCapsule = function(type, label_slash_capsule, handler) {
+  var capsule;
+  if (isString(label_slash_capsule)) {
+    return {
+      handler: handler,
+      label: label_slash_capsule,
+      type: type
+    };
+  } else {
+    capsule = shallowCopy(label_slash_capsule);
+    capsule.handler = handler;
+    capsule.type = type;
+    return capsule;
+  }
+};
+
+getHandlerForType = function(type, label_slash_capsule) {
+  return function(eventType) {
+    var wrap;
+    wrap = getWrapper(type, label_slash_capsule, eventType);
+    return function(event) {
+      return exportReactEvents(wrap(event));
+    };
+  };
+};
+
+_getInjectedFactory = function(template, type) {
+  return function(label_slash_capsule) {
+    var injectable;
+    injectable = createInjectable(template);
+    injectable.inject(getHandlerForType(type, label_slash_capsule));
+    return injectable.getFactory();
+  };
+};
+
+getInjectedFactory = function(template, type) {
+  return memoize(_getInjectedFactory(template, type), hasher);
+};
+
+getWrapper = function(type, label_slash_capsule, eventType) {
+  return embedEventInside(getCapsule(type, label_slash_capsule, eventType));
+};
+
+hasher = function(val) {
+  if (isString(val)) {
+    return val;
+  } else {
+    return stringify(val);
+  }
+};
+
+stringify = JSON.stringify;
+
+module.exports = {
+  connectTo: connectTo,
+  exportReactEvents: exportReactEvents,
+  getCapsule: getCapsule,
+  getInjectedFactory: getInjectedFactory
+};
+
+
+
+},{"./utilities":6}],4:[function(_dereq_,module,exports){
 var BUTTON, CHECKBOX, FORM, LABEL, LINK, PASSWORD, TEXT, collectAdapters, dollarize, ensureCheckboxProps, ensureLinkProps, ensurePasswordProps, ensureProps, ensureTextProps, getAdapter, getAdapters, isObject, isString, onChange, onClick, onSubmit, shallowCopy, _ref;
 
 getAdapter = _dereq_('./adapter-utilities').getAdapter;
@@ -21010,149 +21157,14 @@ module.exports = getAdapters;
 
 
 
-},{"./adapter-utilities":1,"./utilities":6}],3:[function(_dereq_,module,exports){
-var createSensitizingMixin, exportReactEvents, getCapsule, wrapSensitiveComponentWith, _ref;
-
-_ref = _dereq_('./factory-injector'), exportReactEvents = _ref.exportReactEvents, getCapsule = _ref.getCapsule;
-
-wrapSensitiveComponentWith = function(label_slash_capsule) {
-  return function(handler, component) {
-    var capsule;
-    capsule = getCapsule('sensitive', label_slash_capsule, handler);
-    capsule.component = component;
-    return capsule;
-  };
-};
-
-createSensitizingMixin = function(label_slash_capsule) {
-  var trigger, wrap;
-  wrap = wrapSensitiveComponentWith(label_slash_capsule);
-  trigger = function(component, lifeCycleEvent) {
-    return exportReactEvents(wrap(component, lifeCycleEvent));
-  };
-  return {
-    componentDidMount: function() {
-      return trigger(this, 'onDidMount');
-    },
-    componentWillUnmount: function() {
-      return trigger(this, 'onWillUnmount');
-    }
-  };
-};
-
-
-
-},{"./factory-injector":4}],4:[function(_dereq_,module,exports){
-var connectTo, createInjectable, embedEventInside, eventHandler, exportReactEvents, getCapsule, getHandlerForType, getInjectedFactory, getWrapper, hasher, isFunction, isString, memoize, shallowCopy, stringify, _getInjectedFactory, _ref;
-
-_ref = _dereq_('./utilities'), isFunction = _ref.isFunction, isString = _ref.isString, memoize = _ref.memoize, shallowCopy = _ref.shallowCopy;
-
-eventHandler = null;
-
-connectTo = function(_eventHandler) {
-  return eventHandler = _eventHandler;
-};
-
-createInjectable = function(template) {
-  var getFactory, getHandlerForType, inject;
-  getHandlerForType = null;
-  inject = function(_getHandlerForType) {
-    return getHandlerForType = _getHandlerForType;
-  };
-  getFactory = function() {
-    if (isFunction(getHandlerForType)) {
-      return template(getHandlerForType);
-    }
-  };
-  return {
-    inject: inject,
-    getFactory: getFactory
-  };
-};
-
-embedEventInside = function(capsule) {
-  return function(event) {
-    capsule.event = event;
-    return capsule;
-  };
-};
-
-exportReactEvents = function(event) {
-  if (isFunction(eventHandler)) {
-    return eventHandler(event);
-  }
-};
-
-getCapsule = function(type, label_slash_capsule, handler) {
-  var capsule;
-  if (isString(label_slash_capsule)) {
-    return {
-      handler: handler,
-      label: label_slash_capsule,
-      type: type
-    };
-  } else {
-    capsule = shallowCopy(label_slash_capsule);
-    capsule.handler = handler;
-    capsule.type = type;
-    return capsule;
-  }
-};
-
-getHandlerForType = function(type, label_slash_capsule) {
-  return function(eventType) {
-    var wrap;
-    wrap = getWrapper(type, label_slash_capsule, eventType);
-    return function(event) {
-      return exportReactEvents(wrap(event));
-    };
-  };
-};
-
-_getInjectedFactory = function(template, type) {
-  return function(label_slash_capsule) {
-    var injectable;
-    injectable = createInjectable(template);
-    injectable.inject(getHandlerForType(type, label_slash_capsule));
-    return injectable.getFactory();
-  };
-};
-
-getInjectedFactory = function(template, type) {
-  return memoize(_getInjectedFactory(template, type), hasher);
-};
-
-getWrapper = function(type, label_slash_capsule, eventType) {
-  return embedEventInside(getCapsule(type, label_slash_capsule, eventType));
-};
-
-hasher = function(val) {
-  if (isString(val)) {
-    return val;
-  } else {
-    return stringify(val);
-  }
-};
-
-stringify = JSON.stringify;
-
-module.exports = {
-  connectTo: connectTo,
-  exportReactEvents: exportReactEvents,
-  getCapsule: getCapsule,
-  getInjectedFactory: getInjectedFactory
-};
-
-
-
-},{"./utilities":6}],5:[function(_dereq_,module,exports){
+},{"./adapter-utilities":1,"./utilities":6}],5:[function(_dereq_,module,exports){
 var connectTo, createSensitizingMixin, getAdapters, getBridge;
-
-getAdapters = _dereq_('./adapters');
 
 connectTo = _dereq_('./factory-injector').connectTo;
 
 createSensitizingMixin = _dereq_('./createSensitizingMixin');
+
+getAdapters = _dereq_('./getAdapters');
 
 getBridge = function(DOMElements) {
   var adapters;
@@ -21168,7 +21180,7 @@ module.exports = getBridge;
 
 
 
-},{"./adapters":2,"./createSensitizingMixin":3,"./factory-injector":4}],6:[function(_dereq_,module,exports){
+},{"./createSensitizingMixin":2,"./factory-injector":3,"./getAdapters":4}],6:[function(_dereq_,module,exports){
 var ObjProto, hasType, identity, isArray, isFunction, isObject, isString, memoize, shallowCopy, toString, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -22998,26 +23010,15 @@ module.exports = function(config) {
 
 
 
-},{"./utilities":7}],3:[function(_dereq_,module,exports){
+},{"./utilities":6}],3:[function(_dereq_,module,exports){
 var isArray, isObject, _ref;
 
 _ref = _dereq_('./utilities'), isArray = _ref.isArray, isObject = _ref.isObject;
 
-module.exports = function(args) {
-  var actAsSwitchboard, connectBus, connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getEventStream, getFilter, getProperty, getTargetValue, interpretRecord, manageDispatcher, reactIntake, reactIntakeBus, switches, _blur, _preventDefault;
-  connectBus = args.connectBus, getEventStream = args.getEventStream, getProperty = args.getProperty, reactIntake = args.reactIntake;
+module.exports = function(getEventStream, getProperty) {
+  var connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getFilter, getTargetValue, interpretRecord, manageDispatcher, relayReactEvents, switches, _blur, _preventDefault;
   eventStreamRegex = /^\$/;
   switches = [];
-  actAsSwitchboard = function(event) {
-    var condition, dispatch, swich, _i, _len;
-    for (_i = 0, _len = switches.length; _i < _len; _i++) {
-      swich = switches[_i];
-      condition = swich.condition, dispatch = swich.dispatch;
-      if (condition(event)) {
-        return dispatch(event);
-      }
-    }
-  };
   _blur = function(capsule) {
     if (capsule.type === 'link') {
       return capsule.event.target.blur();
@@ -23097,57 +23098,25 @@ module.exports = function(args) {
       return capsule.event.preventDefault();
     }
   };
-  reactIntakeBus = connectBus(reactIntake);
-  reactIntakeBus.subscribe(actAsSwitchboard);
-  return connectPortsToBuses;
-};
-
-
-
-},{"./utilities":7}],4:[function(_dereq_,module,exports){
-var addComponent, getComponent, _ref;
-
-_ref = _dereq_('./utilities'), addComponent = _ref.addComponent, getComponent = _ref.getComponent;
-
-module.exports = function(createEventStreamBus) {
-  var busExt, connectPortComponent, getPortComponent, keypaths, portExt, ports, register;
-  keypaths = {};
-  ports = {};
-  busExt = '.bus';
-  portExt = '.port';
-  connectPortComponent = function(extension) {
-    return function(keypath) {
-      if (!keypaths[keypath]) {
-        register(keypath);
+  relayReactEvents = function(event) {
+    var condition, dispatch, swich, _i, _len;
+    for (_i = 0, _len = switches.length; _i < _len; _i++) {
+      swich = switches[_i];
+      condition = swich.condition, dispatch = swich.dispatch;
+      if (condition(event)) {
+        return dispatch(event);
       }
-      return getPortComponent(extension, keypath);
-    };
-  };
-  getPortComponent = function(extension, keypath) {
-    return getComponent(keypath + extension, ports);
-  };
-  register = function(keypath) {
-    var bus, port;
-    bus = createEventStreamBus();
-    bus.setAlias(keypath);
-    port = function(val) {
-      return bus.dispatch(val, bus.id);
-    };
-    addComponent(keypath, {
-      bus: bus,
-      port: port
-    }, ports);
-    return keypaths[keypath] = true;
+    }
   };
   return {
-    connectBus: connectPortComponent(busExt),
-    connectPort: connectPortComponent(portExt)
+    connectPortsToBuses: connectPortsToBuses,
+    relayReactEvents: relayReactEvents
   };
 };
 
 
 
-},{"./utilities":7}],5:[function(_dereq_,module,exports){
+},{"./utilities":6}],4:[function(_dereq_,module,exports){
 var isArray,
   __hasProp = {}.hasOwnProperty;
 
@@ -23230,8 +23199,8 @@ module.exports = function(config) {
 
 
 
-},{"./utilities":7}],6:[function(_dereq_,module,exports){
-var extend, getAspenInitializer, getChannelConnectors, getPortConnector, getPortRegistrar, getReactiveAspen, getRegistrationUtilities;
+},{"./utilities":6}],5:[function(_dereq_,module,exports){
+var extend, getAspenInitializer, getChannelConnectors, getPortConnector, getReactiveAspen, getRegistrationUtils;
 
 extend = _dereq_('./utilities').extend;
 
@@ -23241,12 +23210,10 @@ getChannelConnectors = _dereq_('./getChannelConnectors');
 
 getPortConnector = _dereq_('./getPortConnector');
 
-getPortRegistrar = _dereq_('./getPortRegistrar');
-
-getRegistrationUtilities = _dereq_('./getRegistrationUtilities');
+getRegistrationUtils = _dereq_('./getRegistrationUtils');
 
 getReactiveAspen = function(renderToDOM, connectTo, EventManager) {
-  var Controller, appStateProperty, blockTillReady, config1, config2, config3, connect, connectBus, connectPort, connectPortsToBuses, connectViewToController, connectors, createEventStreamBus, createNonInitPropertyBus, doAsync, getDispatcher, getEventStream, getProperty, initialize, onValue, portRegistrar, push, reactIntake, reactIntakePort, registrationUtilities, terminusEventStream, _ref, _ref1;
+  var Controller, appStateProperty, blockTillReady, config1, config2, connect, connectPortsToBuses, connectors, createEventStreamBus, createNonInitPropertyBus, doAsync, getDispatcher, getEventStream, getProperty, initialize, onValue, portConnector, push, registrationUtils, relayReactEvents, terminusEventStream, _ref, _ref1;
   _ref = EventManager.factories, createEventStreamBus = _ref.createEventStreamBus, createNonInitPropertyBus = _ref.createNonInitPropertyBus;
   _ref1 = EventManager.utilities, blockTillReady = _ref1.blockTillReady, connect = _ref1.connect, doAsync = _ref1.doAsync, onValue = _ref1.onValue;
   config1 = {
@@ -23254,12 +23221,11 @@ getReactiveAspen = function(renderToDOM, connectTo, EventManager) {
     createEventStreamBus: createEventStreamBus,
     createNonInitPropertyBus: createNonInitPropertyBus
   };
-  registrationUtilities = getRegistrationUtilities(config1);
-  getDispatcher = registrationUtilities.getDispatcher;
-  getEventStream = registrationUtilities.getEventStream;
-  getProperty = registrationUtilities.getProperty;
+  registrationUtils = getRegistrationUtils(config1);
+  getDispatcher = registrationUtils.getDispatcher;
+  getEventStream = registrationUtils.getEventStream;
+  getProperty = registrationUtils.getProperty;
   appStateProperty = getProperty('_appState_');
-  reactIntake = '.reactIntake';
   terminusEventStream = getEventStream('_terminus_');
   config2 = {
     connect: connect,
@@ -23269,32 +23235,23 @@ getReactiveAspen = function(renderToDOM, connectTo, EventManager) {
   };
   connectors = getChannelConnectors(config2);
   push = connectors.push;
-  portRegistrar = getPortRegistrar(createEventStreamBus);
-  connectBus = portRegistrar.connectBus;
-  connectPort = portRegistrar.connectPort;
-  config3 = {
-    connectBus: connectBus,
-    getEventStream: getEventStream,
-    getProperty: getProperty,
-    reactIntake: reactIntake
-  };
-  connectPortsToBuses = getPortConnector(config3);
-  reactIntakePort = connectPort(reactIntake);
-  connectViewToController = function() {
-    return connectTo(reactIntakePort);
-  };
+  portConnector = getPortConnector(getEventStream, getProperty);
+  connectPortsToBuses = portConnector.connectPortsToBuses;
+  relayReactEvents = portConnector.relayReactEvents;
   initialize = getAspenInitializer({
     appStateProperty: appStateProperty,
     blockTillReady: blockTillReady,
     connectPortsToBuses: connectPortsToBuses,
-    connectViewToController: connectViewToController,
+    connectViewToController: function() {
+      return connectTo(relayReactEvents);
+    },
     doAsync: doAsync,
     onValue: onValue,
     push: push,
     renderToDOM: renderToDOM,
     terminusEventStream: terminusEventStream
   });
-  Controller = extend({}, connectors, registrationUtilities);
+  Controller = extend({}, connectors, registrationUtils);
   return {
     appStateProperty: appStateProperty,
     Controller: Controller,
@@ -23306,7 +23263,7 @@ module.exports = getReactiveAspen;
 
 
 
-},{"./getAspenInitializer":1,"./getChannelConnectors":2,"./getPortConnector":3,"./getPortRegistrar":4,"./getRegistrationUtilities":5,"./utilities":7}],7:[function(_dereq_,module,exports){
+},{"./getAspenInitializer":1,"./getChannelConnectors":2,"./getPortConnector":3,"./getRegistrationUtils":4,"./utilities":6}],6:[function(_dereq_,module,exports){
 var ObjProto, addComponent, compositeRegex, dot, extend, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -23425,7 +23382,7 @@ module.exports = {
 
 
 
-},{}]},{},[6])
-(6)
+},{}]},{},[5])
+(5)
 });}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}]},{},[166])
