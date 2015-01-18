@@ -1,8 +1,8 @@
-{ initialize }  = require './vendor/Aspen'
-{ NAMESPACE }   = require './namespace'
-topViewFactory  = require './view/app'
-{ store }       = require './utilities'
-viewImports     = require './view-imports'
+{ initialize } = require './vendor/Aspen'
+NAMESPACE      = require './namespace'
+topViewFactory = require './view/app'
+{ store }      = require './utilities'
+viewImports    = require './view-imports'
 
 isEmpty = \array ->
   array.length == 0
