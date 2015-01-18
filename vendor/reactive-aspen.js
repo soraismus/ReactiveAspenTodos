@@ -1,1 +1,1 @@
-../../original.reactive-aspen/autobuild/output.js
+../../original.reactive-aspen/build/output.js
