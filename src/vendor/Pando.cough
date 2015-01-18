@@ -1,1 +1,1 @@
-module.exports = require('./Aspen').Pando
+module.exports = require '../../vendor/pando'
