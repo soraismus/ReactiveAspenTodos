@@ -1,5 +1,5 @@
 { connectTo }    = require './Bridge'
-getReactiveAspen = require '../../vendor/reactive-aspen'
+getReactiveAspen = require 'reactive-aspen'
 Pando            = require './Pando'
 { render }       = require './React'
 
