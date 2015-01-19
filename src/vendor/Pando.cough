@@ -1,1 +1,1 @@
-module.exports = require '../../vendor/pando'
+module.exports = require 'pando'
