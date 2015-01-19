@@ -21807,6 +21807,503 @@ if ("production" !== process.env.NODE_ENV) {
 module.exports = warning;
 }).call(this,require("/home/theo/.nvm/v0.10.24/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js"))
 },{"./emptyFunction":152,"/home/theo/.nvm/v0.10.24/lib/node_modules/browserify/node_modules/insert-module-globals/node_modules/process/browser.js":1}],192:[function(require,module,exports){
+module.exports = function(config) {
+  var appStateProperty, blockTillReady, connectPortsToBuses, connectViewToController, doAsync, initialize, linkTogetherMVC, node, onValue, push, renderToDOM, resetAppState, terminusEventStream, _linkTogetherMVC, _renderToDOM, _topViewFactory;
+  appStateProperty = config.appStateProperty, blockTillReady = config.blockTillReady, connectPortsToBuses = config.connectPortsToBuses, connectViewToController = config.connectViewToController, doAsync = config.doAsync, onValue = config.onValue, push = config.push, renderToDOM = config.renderToDOM, terminusEventStream = config.terminusEventStream;
+  node = null;
+  _topViewFactory = null;
+  initialize = function(appNodeID, topViewFactory, initialAppState, viewImports) {
+    var reactElement;
+    node = document.getElementById(appNodeID);
+    _topViewFactory = topViewFactory;
+    reactElement = linkTogetherMVC(topViewFactory, initialAppState);
+    renderToDOM(reactElement, node);
+    return connectPortsToBuses(viewImports);
+  };
+  linkTogetherMVC = function(topViewFactory, appState) {
+    var reactElement;
+    push(appStateProperty, appState);
+    reactElement = topViewFactory(appState);
+    connectViewToController();
+    return reactElement;
+  };
+  resetAppState = function(transform) {
+    var newAppState, reactElement;
+    newAppState = doAsync(transform)(appStateProperty);
+    reactElement = _linkTogetherMVC(_topViewFactory, newAppState);
+    return _renderToDOM(reactElement, node);
+  };
+  _linkTogetherMVC = doAsync(linkTogetherMVC);
+  _renderToDOM = blockTillReady(renderToDOM);
+  onValue(terminusEventStream, blockTillReady(resetAppState));
+  return initialize;
+};
+
+},{}],193:[function(require,module,exports){
+var isArray, isString, _ref;
+
+_ref = require('./utilities'), isArray = _ref.isArray, isString = _ref.isString;
+
+module.exports = function(config) {
+  var connect, connectMultiple, connectSingle, getDispatcher, interpret, onEvent, onValue, pandoConnect, pandoOnValue, plugIntoTerminus, push, setAlias, terminusEventStream, _connect;
+  getDispatcher = config.getDispatcher;
+  pandoConnect = config.connect;
+  pandoOnValue = config.onValue;
+  terminusEventStream = config.terminusEventStream;
+  _connect = function(src, tgt, transform) {
+    var _ref1, _src, _tgt;
+    _ref1 = [src, tgt].map(interpret), _src = _ref1[0], _tgt = _ref1[1];
+    setAlias(_src, src);
+    setAlias(_tgt, tgt);
+    return pandoConnect(_src, _tgt, transform);
+  };
+  connect = function(sources, targets, thunk) {
+    if (isArray(sources)) {
+      return connectMultiple(sources, targets, thunk());
+    } else {
+      return connectSingle(sources, targets, thunk());
+    }
+  };
+  connectMultiple = function(sources, targets, transforms) {
+    var i, j, src, tgt, _i, _j, _len, _len1, _results, _results1;
+    if (isArray(targets)) {
+      _results = [];
+      for (i = _i = 0, _len = targets.length; _i < _len; i = ++_i) {
+        tgt = targets[i];
+        _results.push((function() {
+          var _j, _len1, _results1;
+          _results1 = [];
+          for (j = _j = 0, _len1 = sources.length; _j < _len1; j = ++_j) {
+            src = sources[j];
+            _results1.push(_connect(src, tgt, transforms[i][j]));
+          }
+          return _results1;
+        })());
+      }
+      return _results;
+    } else {
+      _results1 = [];
+      for (i = _j = 0, _len1 = sources.length; _j < _len1; i = ++_j) {
+        src = sources[i];
+        _results1.push(_connect(src, targets, transforms[i]));
+      }
+      return _results1;
+    }
+  };
+  connectSingle = function(source, targets, transforms) {
+    var i, tgt, _i, _len, _results;
+    if (isArray(targets)) {
+      _results = [];
+      for (i = _i = 0, _len = targets.length; _i < _len; i = ++_i) {
+        tgt = targets[i];
+        _results.push(_connect(source, tgt, transforms[i]));
+      }
+      return _results;
+    } else {
+      return _connect(source, targets, transforms);
+    }
+  };
+  interpret = function(value) {
+    if (isString(value)) {
+      return getDispatcher(value, false);
+    } else {
+      return value;
+    }
+  };
+  onEvent = function(source, sink) {
+    return interpret(source).subscribe(sink);
+  };
+  onValue = function(source, sink) {
+    return pandoOnValue(interpret(source), sink);
+  };
+  plugIntoTerminus = function(source, transform) {
+    return connect(source, terminusEventStream, transform);
+  };
+  push = function(label, val) {
+    var bus;
+    bus = interpret(label);
+    return bus.dispatch(val, bus.id);
+  };
+  setAlias = function(bus, val) {
+    if (isString(val)) {
+      return bus.setAlias(val);
+    }
+  };
+  return {
+    connect: connect,
+    interpret: interpret,
+    onEvent: onEvent,
+    onValue: onValue,
+    plugIntoTerminus: plugIntoTerminus,
+    push: push
+  };
+};
+
+},{"./utilities":197}],194:[function(require,module,exports){
+var isArray, isObject, _ref;
+
+_ref = require('./utilities'), isArray = _ref.isArray, isObject = _ref.isObject;
+
+module.exports = function(getEventStream, getProperty) {
+  var connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getFilter, getTargetValue, interpretRecord, manageDispatcher, relayReactEvents, switches, _blur, _preventDefault;
+  eventStreamRegex = /^\$/;
+  switches = [];
+  _blur = function(capsule) {
+    if (capsule.type === 'link') {
+      return capsule.event.target.blur();
+    }
+  };
+  connectPortsToBuses = function(triplets) {
+    return triplets.forEach(connectIntakeToTarget);
+  };
+  connectIntakeToTarget = function(record) {
+    var config, dispatcher, handler, reactViewLabel, tgtBusLabel, type, _ref1;
+    _ref1 = interpretRecord(record), config = _ref1.config, handler = _ref1.handler, reactViewLabel = _ref1.reactViewLabel, tgtBusLabel = _ref1.tgtBusLabel, type = _ref1.type;
+    dispatcher = getDispatcher(tgtBusLabel);
+    manageDispatcher(dispatcher, config);
+    return switches.push({
+      condition: getFilter(reactViewLabel, type, handler),
+      dispatch: dispatchBy(dispatcher)
+    });
+  };
+  dispatchBy = function(bus) {
+    return function(capsule) {
+      return bus.dispatch(capsule, bus.id);
+    };
+  };
+  eventStreamName_question_ = function(val) {
+    return eventStreamRegex.test(val);
+  };
+  getDispatcher = function(label) {
+    var interpret;
+    interpret = eventStreamName_question_(label) ? getEventStream : getProperty;
+    return interpret(label);
+  };
+  getFilter = function(label, type, handler) {
+    return function(val) {
+      return val.label === label && (!type || val.type === type) && (!handler || val.handler === handler);
+    };
+  };
+  getTargetValue = function(capsule) {
+    var _ref1, _ref2;
+    return capsule != null ? (_ref1 = capsule['event']) != null ? (_ref2 = _ref1['target']) != null ? _ref2['value'] : void 0 : void 0 : void 0;
+  };
+  interpretRecord = function(record) {
+    var blur, config, handler, manage_question_, preventDefault, reactViewLabel, tgtBusLabel, type, _ref1;
+    if (isArray(record)) {
+      tgtBusLabel = record[0], reactViewLabel = record[1], type = record[2], handler = record[3], manage_question_ = record[4];
+      if (isObject(type)) {
+        _ref1 = type, blur = _ref1.blur, preventDefault = _ref1.preventDefault, handler = _ref1.handler, type = _ref1.type;
+      } else {
+        blur = preventDefault = manage_question_;
+      }
+    } else {
+      handler = record.handler, reactViewLabel = record.reactViewLabel, blur = record.blur, preventDefault = record.preventDefault, tgtBusLabel = record.tgtBusLabel, type = record.type;
+    }
+    config = {
+      doBlur: blur,
+      doPreventDefault: preventDefault
+    };
+    return {
+      config: config,
+      handler: handler,
+      reactViewLabel: reactViewLabel,
+      tgtBusLabel: tgtBusLabel,
+      type: type
+    };
+  };
+  manageDispatcher = function(dispatcher, config) {
+    var doBlur, doPreventDefault;
+    doBlur = config.doBlur, doPreventDefault = config.doPreventDefault;
+    if (doBlur) {
+      dispatcher.subscribe(_blur);
+    }
+    if (doPreventDefault) {
+      return dispatcher.subscribe(_preventDefault);
+    }
+  };
+  _preventDefault = function(capsule) {
+    if (capsule.event.preventDefault) {
+      return capsule.event.preventDefault();
+    }
+  };
+  relayReactEvents = function(event) {
+    var condition, dispatch, swich, _i, _len;
+    for (_i = 0, _len = switches.length; _i < _len; _i++) {
+      swich = switches[_i];
+      condition = swich.condition, dispatch = swich.dispatch;
+      if (condition(event)) {
+        return dispatch(event);
+      }
+    }
+  };
+  return {
+    connectPortsToBuses: connectPortsToBuses,
+    relayReactEvents: relayReactEvents
+  };
+};
+
+},{"./utilities":197}],195:[function(require,module,exports){
+var isArray,
+  __hasProp = {}.hasOwnProperty;
+
+isArray = require('./utilities').isArray;
+
+module.exports = function(config) {
+  var connect, createEventStreamBus, createNonInitPropertyBus, deleteDispatcher, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, matchesExistingDispatcher_question_, plugs, register, _register;
+  connect = config.connect, createEventStreamBus = config.createEventStreamBus, createNonInitPropertyBus = config.createNonInitPropertyBus;
+  disconnectors = {};
+  dispatchers = {};
+  plugs = {};
+  deleteDispatcher = function(label) {
+    free(label);
+    delete dispatchers[label];
+    return delete plugs[label];
+  };
+  free = function(label) {
+    var disconnect, key, _ref, _results;
+    _ref = disconnectors[label];
+    _results = [];
+    for (key in _ref) {
+      if (!__hasProp.call(_ref, key)) continue;
+      disconnect = _ref[key];
+      _results.push(disconnect());
+    }
+    return _results;
+  };
+  getDispatcher = function(label, eventstream_question_) {
+    var getBus;
+    getBus = eventstream_question_ ? getEventStream : getProperty;
+    return dispatchers[label] || getBus(label);
+  };
+  matchesExistingDispatcher_question_ = function(label) {
+    return !!dispatchers[label];
+  };
+  _register = function(busFactory, label) {
+    var bus, id, load;
+    id = 0;
+    bus = dispatchers[label] = busFactory();
+    bus.setAlias(label);
+    load = function(observable) {
+      var observable_hyphen_id, unplug, _unplug;
+      _unplug = connect(observable, bus);
+      observable_hyphen_id = id;
+      unplug = function() {
+        delete disconnectors[label][observable_hyphen_id];
+        return _unplug();
+      };
+      if (disconnectors[label] == null) {
+        disconnectors[label] = {};
+      }
+      disconnectors[label][observable_hyphen_id] = unplug;
+      id += 1;
+      return unplug;
+    };
+    plugs[label] = load;
+    return bus;
+  };
+  register = function(busFactory) {
+    return function(label_slash_s) {
+      switch (false) {
+        case !isArray(label_slash_s):
+          return label_slash_s.map(register(busFactory));
+        case !matchesExistingDispatcher_question_(label_slash_s):
+          return dispatchers[label_slash_s];
+        default:
+          return _register(busFactory, label_slash_s);
+      }
+    };
+  };
+  getEventStream = register(createEventStreamBus);
+  getProperty = register(createNonInitPropertyBus);
+  return {
+    deleteDispatcher: deleteDispatcher,
+    getDispatcher: getDispatcher,
+    getEventStream: getEventStream,
+    getProperty: getProperty
+  };
+};
+
+},{"./utilities":197}],196:[function(require,module,exports){
+var extend, getAspenInitializer, getChannelConnectors, getPortConnector, getReactiveAspen, getRegistrationUtils;
+
+extend = require('./utilities').extend;
+
+getAspenInitializer = require('./getAspenInitializer');
+
+getChannelConnectors = require('./getChannelConnectors');
+
+getPortConnector = require('./getPortConnector');
+
+getRegistrationUtils = require('./getRegistrationUtils');
+
+getReactiveAspen = function(renderToDOM, connectTo, EventManager) {
+  var Controller, appStateProperty, blockTillReady, config1, config2, connect, connectPortsToBuses, connectors, createEventStreamBus, createNonInitPropertyBus, doAsync, getDispatcher, getEventStream, getProperty, initialize, onValue, portConnector, push, registrationUtils, relayReactEvents, terminusEventStream, _ref, _ref1;
+  _ref = EventManager.factories, createEventStreamBus = _ref.createEventStreamBus, createNonInitPropertyBus = _ref.createNonInitPropertyBus;
+  _ref1 = EventManager.utilities, blockTillReady = _ref1.blockTillReady, connect = _ref1.connect, doAsync = _ref1.doAsync, onValue = _ref1.onValue;
+  config1 = {
+    connect: connect,
+    createEventStreamBus: createEventStreamBus,
+    createNonInitPropertyBus: createNonInitPropertyBus
+  };
+  registrationUtils = getRegistrationUtils(config1);
+  getDispatcher = registrationUtils.getDispatcher;
+  getEventStream = registrationUtils.getEventStream;
+  getProperty = registrationUtils.getProperty;
+  appStateProperty = getProperty('_appState_');
+  terminusEventStream = getEventStream('_terminus_');
+  config2 = {
+    connect: connect,
+    getDispatcher: getDispatcher,
+    onValue: onValue,
+    terminusEventStream: terminusEventStream
+  };
+  connectors = getChannelConnectors(config2);
+  push = connectors.push;
+  portConnector = getPortConnector(getEventStream, getProperty);
+  connectPortsToBuses = portConnector.connectPortsToBuses;
+  relayReactEvents = portConnector.relayReactEvents;
+  initialize = getAspenInitializer({
+    appStateProperty: appStateProperty,
+    blockTillReady: blockTillReady,
+    connectPortsToBuses: connectPortsToBuses,
+    connectViewToController: function() {
+      return connectTo(relayReactEvents);
+    },
+    doAsync: doAsync,
+    onValue: onValue,
+    push: push,
+    renderToDOM: renderToDOM,
+    terminusEventStream: terminusEventStream
+  });
+  Controller = extend({}, connectors, registrationUtils);
+  return {
+    appStateProperty: appStateProperty,
+    Controller: Controller,
+    initialize: initialize
+  };
+};
+
+module.exports = getReactiveAspen;
+
+},{"./getAspenInitializer":192,"./getChannelConnectors":193,"./getPortConnector":194,"./getRegistrationUtils":195,"./utilities":197}],197:[function(require,module,exports){
+var ObjProto, addComponent, compositeRegex, dot, extend, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
+  __slice = [].slice,
+  __hasProp = {}.hasOwnProperty;
+
+dot = '.';
+
+ObjProto = Object.prototype;
+
+compositeRegex = /\.[^\.]*\./;
+
+keypathRegex = /\.([^\.]*)(\.?.*)$/;
+
+addComponent = function(keypath, newComponent, recipient) {
+  var i, key, keys, last, proxy, _i;
+  keys = getKeys(keypath);
+  last = keys.length - 1;
+  proxy = recipient;
+  for (i = _i = 0; 0 <= last ? _i < last : _i > last; i = 0 <= last ? ++_i : --_i) {
+    key = keys[i];
+    if (proxy[key] == null) {
+      proxy[key] = {};
+    }
+    proxy = proxy[key];
+  }
+  return proxy[keys[last]] = newComponent;
+};
+
+extend = function() {
+  var key, mixin, mixins, obj, val, _i, _len;
+  obj = arguments[0], mixins = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+  for (_i = 0, _len = mixins.length; _i < _len; _i++) {
+    mixin = mixins[_i];
+    for (key in mixin) {
+      if (!__hasProp.call(mixin, key)) continue;
+      val = mixin[key];
+      obj[key] = val;
+    }
+  }
+  return obj;
+};
+
+getComponent = function(keypath, obj) {
+  var key, nextKey, nextKeypath, _ref;
+  if (isAtomicKeypath(keypath)) {
+    key = keypath.slice(1);
+    return shallowCopy(obj[key]);
+  } else {
+    _ref = processKeypath(keypath), nextKey = _ref[0], nextKeypath = _ref[1];
+    if (!isObject(obj[nextKey])) {
+      return null;
+    }
+    return getComponent(nextKeypath, obj[nextKey]);
+  }
+};
+
+getKeys = function(keypath) {
+  return keypath.split(dot).slice(1);
+};
+
+identity = function(val) {
+  return val;
+};
+
+isArray = Array.isArray;
+
+isAtomicKeypath = function(keypath) {
+  return !(compositeRegex.test(keypath));
+};
+
+hasType = function(type) {
+  return function(val) {
+    return ("[object " + type + "]") === toString(val);
+  };
+};
+
+_ref = ['Object', 'String'].map(hasType), isObject = _ref[0], isString = _ref[1];
+
+processKeypath = function(keypath) {
+  return keypathRegex.exec(keypath).slice(1, 3);
+};
+
+shallowCopy = function(val) {
+  var copy, key, prop;
+  switch (false) {
+    case !isObject(val):
+      copy = {};
+      for (key in val) {
+        if (!__hasProp.call(val, key)) continue;
+        prop = val[key];
+        copy[key] = prop;
+      }
+      return copy;
+    case !isArray(val):
+      return val.map(identity);
+    default:
+      return val;
+  }
+};
+
+toString = function(val) {
+  return ObjProto.toString.call(val);
+};
+
+transformResult = function(result, fn) {
+  return result = fn(result);
+};
+
+module.exports = {
+  addComponent: addComponent,
+  extend: extend,
+  getComponent: getComponent,
+  isArray: isArray,
+  isObject: isObject,
+  isString: isString
+};
+
+},{}],198:[function(require,module,exports){
 var cacheAppData, compose, connect, editAppState, endEditing, extractNewTodo, filteringEnter, filteringEscape, mapping, nodes, onValue, plugIntoTerminus, removeCompletedTodos, removeTodo, restoreOrigTitle, saveCurrentTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, _ref, _ref1;
 
 compose = require('../utilities').compose;
@@ -21843,7 +22340,7 @@ onValue('todo-in-edit', function(capsule) {
 
 
 
-},{"../utilities":201,"../vendor/Controller":204,"../vendor/Pando":206,"./transforms":194}],193:[function(require,module,exports){
+},{"../utilities":207,"../vendor/Controller":210,"../vendor/Pando":212,"./transforms":200}],199:[function(require,module,exports){
 var $router_hyphen_events, NAMESPACE, connect, getEventStream, mapping, push, resetMode, router, setModeTo, updateMode, _ref;
 
 _ref = require('../vendor/Controller'), connect = _ref.connect, getEventStream = _ref.getEventStream, push = _ref.push;
@@ -21882,7 +22379,7 @@ router.init('/');
 
 
 
-},{"../model/appState":197,"../namespace":200,"../vendor/Controller":204,"../vendor/Pando":206}],194:[function(require,module,exports){
+},{"../model/appState":203,"../namespace":206,"../vendor/Controller":210,"../vendor/Pando":212}],200:[function(require,module,exports){
 var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
@@ -22037,7 +22534,7 @@ module.exports = {
 
 
 
-},{"../model/appState":197,"../model/todoList":199,"../namespace":200,"../utilities":201,"../vendor/Aspen":202,"../vendor/Pando":206}],195:[function(require,module,exports){
+},{"../model/appState":203,"../model/todoList":205,"../namespace":206,"../utilities":207,"../vendor/Aspen":208,"../vendor/Pando":212}],201:[function(require,module,exports){
 var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
 
 initialize = require('./vendor/Aspen').initialize;
@@ -22074,7 +22571,7 @@ require('./controller/router');
 
 
 
-},{"./controller/event-controllers":192,"./controller/router":193,"./namespace":200,"./utilities":201,"./vendor/Aspen":202,"./view-imports":210,"./view/app":211}],196:[function(require,module,exports){
+},{"./controller/event-controllers":198,"./controller/router":199,"./namespace":206,"./utilities":207,"./vendor/Aspen":208,"./view-imports":216,"./view/app":217}],202:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -22108,7 +22605,7 @@ var UpdatePostFocusMixin = {
 
 module.exports = UpdatePostFocusMixin;
 
-},{}],197:[function(require,module,exports){
+},{}],203:[function(require,module,exports){
 var extend, reset, resetEditing, resetMode, resetProp, resetTodos, set, _ref, _ref1;
 
 _ref = require('../utilities'), extend = _ref.extend, set = _ref.set;
@@ -22134,7 +22631,7 @@ module.exports = {
 
 
 
-},{"../utilities":201}],198:[function(require,module,exports){
+},{"../utilities":207}],204:[function(require,module,exports){
 var activate, active, complete, completed, create, modifyCompletedStatus, recaption, set, toggle, uuid, _ref;
 
 _ref = require('../utilities'), set = _ref.set, uuid = _ref.uuid;
@@ -22189,7 +22686,7 @@ module.exports = {
 
 
 
-},{"../utilities":201}],199:[function(require,module,exports){
+},{"../utilities":207}],205:[function(require,module,exports){
 var activate, active, addTodo, complete, completed, create, getTodosByMode, recaption, recaptionTodo, removeActive, removeCompleted, removeTodo, set, toggle, toggleAll, toggleTodo, _ref;
 
 _ref = require('./todo'), active = _ref.active, activate = _ref.activate, complete = _ref.complete, completed = _ref.completed, create = _ref.create, recaption = _ref.recaption, toggle = _ref.toggle;
@@ -22265,12 +22762,12 @@ module.exports = {
 
 
 
-},{"../utilities":201,"./todo":198}],200:[function(require,module,exports){
+},{"../utilities":207,"./todo":204}],206:[function(require,module,exports){
 module.exports = 'reactive-aspen-todos';
 
 
 
-},{}],201:[function(require,module,exports){
+},{}],207:[function(require,module,exports){
 var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, stringify, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -22406,12 +22903,12 @@ module.exports = {
 
 
 
-},{}],202:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 var Pando, connectTo, getReactiveAspen, render;
 
 connectTo = require('./Bridge').connectTo;
 
-getReactiveAspen = require('../../vendor/reactive-aspen');
+getReactiveAspen = require('reactive-aspen');
 
 Pando = require('./Pando');
 
@@ -22421,7 +22918,7 @@ module.exports = getReactiveAspen(render, connectTo, Pando);
 
 
 
-},{"../../vendor/reactive-aspen":217,"./Bridge":203,"./Pando":206,"./React":207}],203:[function(require,module,exports){
+},{"./Bridge":209,"./Pando":212,"./React":213,"reactive-aspen":196}],209:[function(require,module,exports){
 var DOM, getBridge;
 
 DOM = require('./DOM');
@@ -22432,37 +22929,37 @@ module.exports = getBridge(DOM);
 
 
 
-},{"./DOM":205,"react-bridge":29}],204:[function(require,module,exports){
+},{"./DOM":211,"react-bridge":29}],210:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":202}],205:[function(require,module,exports){
+},{"./Aspen":208}],211:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":207}],206:[function(require,module,exports){
+},{"./React":213}],212:[function(require,module,exports){
 module.exports = require('pando');
 
 
 
-},{"pando":14}],207:[function(require,module,exports){
+},{"pando":14}],213:[function(require,module,exports){
 module.exports = require('react/addons');
 
 
 
-},{"react/addons":31}],208:[function(require,module,exports){
+},{"react/addons":31}],214:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":203}],209:[function(require,module,exports){
+},{"./Bridge":209}],215:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":207}],210:[function(require,module,exports){
+},{"./React":213}],216:[function(require,module,exports){
 var todoItemInput;
 
 todoItemInput = 'TodoItemInput';
@@ -22485,7 +22982,7 @@ module.exports = [
 
 
 
-},{}],211:[function(require,module,exports){
+},{}],217:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, countCompleted, countReducer, div, headerHasFocus;
 
 AppBody = require('./body');
@@ -22525,7 +23022,7 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":205,"./body":212,"./footer":213,"./header":214}],212:[function(require,module,exports){
+},{"../vendor/DOM":211,"./body":218,"./footer":219,"./header":220}],218:[function(require,module,exports){
 var $checkbox, $mainToggle, AppBody, TodoItem, getTodoView, getTodosByMode, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
@@ -22568,7 +23065,7 @@ module.exports = AppBody;
 
 
 
-},{"../model/todoList":199,"../vendor/DOM":205,"../vendor/adapters":208,"./todoItem":215}],213:[function(require,module,exports){
+},{"../model/todoList":205,"../vendor/DOM":211,"../vendor/adapters":214,"./todoItem":221}],219:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -22638,7 +23135,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":201,"../vendor/DOM":205,"../vendor/adapters":208,"../vendor/classSet":209}],214:[function(require,module,exports){
+},{"../utilities":207,"../vendor/DOM":211,"../vendor/adapters":214,"../vendor/classSet":215}],220:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -22666,7 +23163,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":205,"../vendor/adapters":208}],215:[function(require,module,exports){
+},{"../vendor/DOM":211,"../vendor/adapters":214}],221:[function(require,module,exports){
 var $button, $checkbox, $label, IDifyAdapter, TodoItem, applyId, classSet, createFactory, div, factories, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -22733,7 +23230,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":205,"../vendor/React":207,"../vendor/adapters":208,"../vendor/classSet":209,"./todoItemInputClass":216}],216:[function(require,module,exports){
+},{"../vendor/DOM":211,"../vendor/React":213,"../vendor/adapters":214,"../vendor/classSet":215,"./todoItemInputClass":222}],222:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -22768,517 +23265,4 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":196,"../vendor/React":207,"../vendor/adapters":208}],217:[function(require,module,exports){
-(function (global){!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactiveAspen=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-module.exports = function(config) {
-  var appStateProperty, blockTillReady, connectPortsToBuses, connectViewToController, doAsync, initialize, linkTogetherMVC, node, onValue, push, renderToDOM, resetAppState, terminusEventStream, _linkTogetherMVC, _renderToDOM, _topViewFactory;
-  appStateProperty = config.appStateProperty, blockTillReady = config.blockTillReady, connectPortsToBuses = config.connectPortsToBuses, connectViewToController = config.connectViewToController, doAsync = config.doAsync, onValue = config.onValue, push = config.push, renderToDOM = config.renderToDOM, terminusEventStream = config.terminusEventStream;
-  node = null;
-  _topViewFactory = null;
-  initialize = function(appNodeID, topViewFactory, initialAppState, viewImports) {
-    var reactElement;
-    node = document.getElementById(appNodeID);
-    _topViewFactory = topViewFactory;
-    reactElement = linkTogetherMVC(topViewFactory, initialAppState);
-    renderToDOM(reactElement, node);
-    return connectPortsToBuses(viewImports);
-  };
-  linkTogetherMVC = function(topViewFactory, appState) {
-    var reactElement;
-    push(appStateProperty, appState);
-    reactElement = topViewFactory(appState);
-    connectViewToController();
-    return reactElement;
-  };
-  resetAppState = function(transform) {
-    var newAppState, reactElement;
-    newAppState = doAsync(transform)(appStateProperty);
-    reactElement = _linkTogetherMVC(_topViewFactory, newAppState);
-    return _renderToDOM(reactElement, node);
-  };
-  _linkTogetherMVC = doAsync(linkTogetherMVC);
-  _renderToDOM = blockTillReady(renderToDOM);
-  onValue(terminusEventStream, blockTillReady(resetAppState));
-  return initialize;
-};
-
-
-
-},{}],2:[function(_dereq_,module,exports){
-var isArray, isString, _ref;
-
-_ref = _dereq_('./utilities'), isArray = _ref.isArray, isString = _ref.isString;
-
-module.exports = function(config) {
-  var connect, connectMultiple, connectSingle, getDispatcher, interpret, onEvent, onValue, pandoConnect, pandoOnValue, plugIntoTerminus, push, setAlias, terminusEventStream, _connect;
-  getDispatcher = config.getDispatcher;
-  pandoConnect = config.connect;
-  pandoOnValue = config.onValue;
-  terminusEventStream = config.terminusEventStream;
-  _connect = function(src, tgt, transform) {
-    var _ref1, _src, _tgt;
-    _ref1 = [src, tgt].map(interpret), _src = _ref1[0], _tgt = _ref1[1];
-    setAlias(_src, src);
-    setAlias(_tgt, tgt);
-    return pandoConnect(_src, _tgt, transform);
-  };
-  connect = function(sources, targets, thunk) {
-    if (isArray(sources)) {
-      return connectMultiple(sources, targets, thunk());
-    } else {
-      return connectSingle(sources, targets, thunk());
-    }
-  };
-  connectMultiple = function(sources, targets, transforms) {
-    var i, j, src, tgt, _i, _j, _len, _len1, _results, _results1;
-    if (isArray(targets)) {
-      _results = [];
-      for (i = _i = 0, _len = targets.length; _i < _len; i = ++_i) {
-        tgt = targets[i];
-        _results.push((function() {
-          var _j, _len1, _results1;
-          _results1 = [];
-          for (j = _j = 0, _len1 = sources.length; _j < _len1; j = ++_j) {
-            src = sources[j];
-            _results1.push(_connect(src, tgt, transforms[i][j]));
-          }
-          return _results1;
-        })());
-      }
-      return _results;
-    } else {
-      _results1 = [];
-      for (i = _j = 0, _len1 = sources.length; _j < _len1; i = ++_j) {
-        src = sources[i];
-        _results1.push(_connect(src, targets, transforms[i]));
-      }
-      return _results1;
-    }
-  };
-  connectSingle = function(source, targets, transforms) {
-    var i, tgt, _i, _len, _results;
-    if (isArray(targets)) {
-      _results = [];
-      for (i = _i = 0, _len = targets.length; _i < _len; i = ++_i) {
-        tgt = targets[i];
-        _results.push(_connect(source, tgt, transforms[i]));
-      }
-      return _results;
-    } else {
-      return _connect(source, targets, transforms);
-    }
-  };
-  interpret = function(value) {
-    if (isString(value)) {
-      return getDispatcher(value, false);
-    } else {
-      return value;
-    }
-  };
-  onEvent = function(source, sink) {
-    return interpret(source).subscribe(sink);
-  };
-  onValue = function(source, sink) {
-    return pandoOnValue(interpret(source), sink);
-  };
-  plugIntoTerminus = function(source, transform) {
-    return connect(source, terminusEventStream, transform);
-  };
-  push = function(label, val) {
-    var bus;
-    bus = interpret(label);
-    return bus.dispatch(val, bus.id);
-  };
-  setAlias = function(bus, val) {
-    if (isString(val)) {
-      return bus.setAlias(val);
-    }
-  };
-  return {
-    connect: connect,
-    interpret: interpret,
-    onEvent: onEvent,
-    onValue: onValue,
-    plugIntoTerminus: plugIntoTerminus,
-    push: push
-  };
-};
-
-
-
-},{"./utilities":6}],3:[function(_dereq_,module,exports){
-var isArray, isObject, _ref;
-
-_ref = _dereq_('./utilities'), isArray = _ref.isArray, isObject = _ref.isObject;
-
-module.exports = function(getEventStream, getProperty) {
-  var connectIntakeToTarget, connectPortsToBuses, dispatchBy, eventStreamName_question_, eventStreamRegex, getDispatcher, getFilter, getTargetValue, interpretRecord, manageDispatcher, relayReactEvents, switches, _blur, _preventDefault;
-  eventStreamRegex = /^\$/;
-  switches = [];
-  _blur = function(capsule) {
-    if (capsule.type === 'link') {
-      return capsule.event.target.blur();
-    }
-  };
-  connectPortsToBuses = function(triplets) {
-    return triplets.forEach(connectIntakeToTarget);
-  };
-  connectIntakeToTarget = function(record) {
-    var config, dispatcher, handler, reactViewLabel, tgtBusLabel, type, _ref1;
-    _ref1 = interpretRecord(record), config = _ref1.config, handler = _ref1.handler, reactViewLabel = _ref1.reactViewLabel, tgtBusLabel = _ref1.tgtBusLabel, type = _ref1.type;
-    dispatcher = getDispatcher(tgtBusLabel);
-    manageDispatcher(dispatcher, config);
-    return switches.push({
-      condition: getFilter(reactViewLabel, type, handler),
-      dispatch: dispatchBy(dispatcher)
-    });
-  };
-  dispatchBy = function(bus) {
-    return function(capsule) {
-      return bus.dispatch(capsule, bus.id);
-    };
-  };
-  eventStreamName_question_ = function(val) {
-    return eventStreamRegex.test(val);
-  };
-  getDispatcher = function(label) {
-    var interpret;
-    interpret = eventStreamName_question_(label) ? getEventStream : getProperty;
-    return interpret(label);
-  };
-  getFilter = function(label, type, handler) {
-    return function(val) {
-      return val.label === label && (!type || val.type === type) && (!handler || val.handler === handler);
-    };
-  };
-  getTargetValue = function(capsule) {
-    var _ref1, _ref2;
-    return capsule != null ? (_ref1 = capsule['event']) != null ? (_ref2 = _ref1['target']) != null ? _ref2['value'] : void 0 : void 0 : void 0;
-  };
-  interpretRecord = function(record) {
-    var blur, config, handler, manage_question_, preventDefault, reactViewLabel, tgtBusLabel, type, _ref1;
-    if (isArray(record)) {
-      tgtBusLabel = record[0], reactViewLabel = record[1], type = record[2], handler = record[3], manage_question_ = record[4];
-      if (isObject(type)) {
-        _ref1 = type, blur = _ref1.blur, preventDefault = _ref1.preventDefault, handler = _ref1.handler, type = _ref1.type;
-      } else {
-        blur = preventDefault = manage_question_;
-      }
-    } else {
-      handler = record.handler, reactViewLabel = record.reactViewLabel, blur = record.blur, preventDefault = record.preventDefault, tgtBusLabel = record.tgtBusLabel, type = record.type;
-    }
-    config = {
-      doBlur: blur,
-      doPreventDefault: preventDefault
-    };
-    return {
-      config: config,
-      handler: handler,
-      reactViewLabel: reactViewLabel,
-      tgtBusLabel: tgtBusLabel,
-      type: type
-    };
-  };
-  manageDispatcher = function(dispatcher, config) {
-    var doBlur, doPreventDefault;
-    doBlur = config.doBlur, doPreventDefault = config.doPreventDefault;
-    if (doBlur) {
-      dispatcher.subscribe(_blur);
-    }
-    if (doPreventDefault) {
-      return dispatcher.subscribe(_preventDefault);
-    }
-  };
-  _preventDefault = function(capsule) {
-    if (capsule.event.preventDefault) {
-      return capsule.event.preventDefault();
-    }
-  };
-  relayReactEvents = function(event) {
-    var condition, dispatch, swich, _i, _len;
-    for (_i = 0, _len = switches.length; _i < _len; _i++) {
-      swich = switches[_i];
-      condition = swich.condition, dispatch = swich.dispatch;
-      if (condition(event)) {
-        return dispatch(event);
-      }
-    }
-  };
-  return {
-    connectPortsToBuses: connectPortsToBuses,
-    relayReactEvents: relayReactEvents
-  };
-};
-
-
-
-},{"./utilities":6}],4:[function(_dereq_,module,exports){
-var isArray,
-  __hasProp = {}.hasOwnProperty;
-
-isArray = _dereq_('./utilities').isArray;
-
-module.exports = function(config) {
-  var connect, createEventStreamBus, createNonInitPropertyBus, deleteDispatcher, disconnectors, dispatchers, free, getDispatcher, getEventStream, getProperty, matchesExistingDispatcher_question_, plugs, register, _register;
-  connect = config.connect, createEventStreamBus = config.createEventStreamBus, createNonInitPropertyBus = config.createNonInitPropertyBus;
-  disconnectors = {};
-  dispatchers = {};
-  plugs = {};
-  deleteDispatcher = function(label) {
-    free(label);
-    delete dispatchers[label];
-    return delete plugs[label];
-  };
-  free = function(label) {
-    var disconnect, key, _ref, _results;
-    _ref = disconnectors[label];
-    _results = [];
-    for (key in _ref) {
-      if (!__hasProp.call(_ref, key)) continue;
-      disconnect = _ref[key];
-      _results.push(disconnect());
-    }
-    return _results;
-  };
-  getDispatcher = function(label, eventstream_question_) {
-    var getBus;
-    getBus = eventstream_question_ ? getEventStream : getProperty;
-    return dispatchers[label] || getBus(label);
-  };
-  matchesExistingDispatcher_question_ = function(label) {
-    return !!dispatchers[label];
-  };
-  _register = function(busFactory, label) {
-    var bus, id, load;
-    id = 0;
-    bus = dispatchers[label] = busFactory();
-    bus.setAlias(label);
-    load = function(observable) {
-      var observable_hyphen_id, unplug, _unplug;
-      _unplug = connect(observable, bus);
-      observable_hyphen_id = id;
-      unplug = function() {
-        delete disconnectors[label][observable_hyphen_id];
-        return _unplug();
-      };
-      if (disconnectors[label] == null) {
-        disconnectors[label] = {};
-      }
-      disconnectors[label][observable_hyphen_id] = unplug;
-      id += 1;
-      return unplug;
-    };
-    plugs[label] = load;
-    return bus;
-  };
-  register = function(busFactory) {
-    return function(label_slash_s) {
-      switch (false) {
-        case !isArray(label_slash_s):
-          return label_slash_s.map(register(busFactory));
-        case !matchesExistingDispatcher_question_(label_slash_s):
-          return dispatchers[label_slash_s];
-        default:
-          return _register(busFactory, label_slash_s);
-      }
-    };
-  };
-  getEventStream = register(createEventStreamBus);
-  getProperty = register(createNonInitPropertyBus);
-  return {
-    deleteDispatcher: deleteDispatcher,
-    getDispatcher: getDispatcher,
-    getEventStream: getEventStream,
-    getProperty: getProperty
-  };
-};
-
-
-
-},{"./utilities":6}],5:[function(_dereq_,module,exports){
-var extend, getAspenInitializer, getChannelConnectors, getPortConnector, getReactiveAspen, getRegistrationUtils;
-
-extend = _dereq_('./utilities').extend;
-
-getAspenInitializer = _dereq_('./getAspenInitializer');
-
-getChannelConnectors = _dereq_('./getChannelConnectors');
-
-getPortConnector = _dereq_('./getPortConnector');
-
-getRegistrationUtils = _dereq_('./getRegistrationUtils');
-
-getReactiveAspen = function(renderToDOM, connectTo, EventManager) {
-  var Controller, appStateProperty, blockTillReady, config1, config2, connect, connectPortsToBuses, connectors, createEventStreamBus, createNonInitPropertyBus, doAsync, getDispatcher, getEventStream, getProperty, initialize, onValue, portConnector, push, registrationUtils, relayReactEvents, terminusEventStream, _ref, _ref1;
-  _ref = EventManager.factories, createEventStreamBus = _ref.createEventStreamBus, createNonInitPropertyBus = _ref.createNonInitPropertyBus;
-  _ref1 = EventManager.utilities, blockTillReady = _ref1.blockTillReady, connect = _ref1.connect, doAsync = _ref1.doAsync, onValue = _ref1.onValue;
-  config1 = {
-    connect: connect,
-    createEventStreamBus: createEventStreamBus,
-    createNonInitPropertyBus: createNonInitPropertyBus
-  };
-  registrationUtils = getRegistrationUtils(config1);
-  getDispatcher = registrationUtils.getDispatcher;
-  getEventStream = registrationUtils.getEventStream;
-  getProperty = registrationUtils.getProperty;
-  appStateProperty = getProperty('_appState_');
-  terminusEventStream = getEventStream('_terminus_');
-  config2 = {
-    connect: connect,
-    getDispatcher: getDispatcher,
-    onValue: onValue,
-    terminusEventStream: terminusEventStream
-  };
-  connectors = getChannelConnectors(config2);
-  push = connectors.push;
-  portConnector = getPortConnector(getEventStream, getProperty);
-  connectPortsToBuses = portConnector.connectPortsToBuses;
-  relayReactEvents = portConnector.relayReactEvents;
-  initialize = getAspenInitializer({
-    appStateProperty: appStateProperty,
-    blockTillReady: blockTillReady,
-    connectPortsToBuses: connectPortsToBuses,
-    connectViewToController: function() {
-      return connectTo(relayReactEvents);
-    },
-    doAsync: doAsync,
-    onValue: onValue,
-    push: push,
-    renderToDOM: renderToDOM,
-    terminusEventStream: terminusEventStream
-  });
-  Controller = extend({}, connectors, registrationUtils);
-  return {
-    appStateProperty: appStateProperty,
-    Controller: Controller,
-    initialize: initialize
-  };
-};
-
-module.exports = getReactiveAspen;
-
-
-
-},{"./getAspenInitializer":1,"./getChannelConnectors":2,"./getPortConnector":3,"./getRegistrationUtils":4,"./utilities":6}],6:[function(_dereq_,module,exports){
-var ObjProto, addComponent, compositeRegex, dot, extend, getComponent, getKeys, hasType, identity, isArray, isAtomicKeypath, isObject, isString, keypathRegex, processKeypath, shallowCopy, toString, transformResult, _ref,
-  __slice = [].slice,
-  __hasProp = {}.hasOwnProperty;
-
-dot = '.';
-
-ObjProto = Object.prototype;
-
-compositeRegex = /\.[^\.]*\./;
-
-keypathRegex = /\.([^\.]*)(\.?.*)$/;
-
-addComponent = function(keypath, newComponent, recipient) {
-  var i, key, keys, last, proxy, _i;
-  keys = getKeys(keypath);
-  last = keys.length - 1;
-  proxy = recipient;
-  for (i = _i = 0; 0 <= last ? _i < last : _i > last; i = 0 <= last ? ++_i : --_i) {
-    key = keys[i];
-    if (proxy[key] == null) {
-      proxy[key] = {};
-    }
-    proxy = proxy[key];
-  }
-  return proxy[keys[last]] = newComponent;
-};
-
-extend = function() {
-  var key, mixin, mixins, obj, val, _i, _len;
-  obj = arguments[0], mixins = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-  for (_i = 0, _len = mixins.length; _i < _len; _i++) {
-    mixin = mixins[_i];
-    for (key in mixin) {
-      if (!__hasProp.call(mixin, key)) continue;
-      val = mixin[key];
-      obj[key] = val;
-    }
-  }
-  return obj;
-};
-
-getComponent = function(keypath, obj) {
-  var key, nextKey, nextKeypath, _ref;
-  if (isAtomicKeypath(keypath)) {
-    key = keypath.slice(1);
-    return shallowCopy(obj[key]);
-  } else {
-    _ref = processKeypath(keypath), nextKey = _ref[0], nextKeypath = _ref[1];
-    if (!isObject(obj[nextKey])) {
-      return null;
-    }
-    return getComponent(nextKeypath, obj[nextKey]);
-  }
-};
-
-getKeys = function(keypath) {
-  return keypath.split(dot).slice(1);
-};
-
-identity = function(val) {
-  return val;
-};
-
-isArray = Array.isArray;
-
-isAtomicKeypath = function(keypath) {
-  return !(compositeRegex.test(keypath));
-};
-
-hasType = function(type) {
-  return function(val) {
-    return ("[object " + type + "]") === toString(val);
-  };
-};
-
-_ref = ['Object', 'String'].map(hasType), isObject = _ref[0], isString = _ref[1];
-
-processKeypath = function(keypath) {
-  return keypathRegex.exec(keypath).slice(1, 3);
-};
-
-shallowCopy = function(val) {
-  var copy, key, prop;
-  switch (false) {
-    case !isObject(val):
-      copy = {};
-      for (key in val) {
-        if (!__hasProp.call(val, key)) continue;
-        prop = val[key];
-        copy[key] = prop;
-      }
-      return copy;
-    case !isArray(val):
-      return val.map(identity);
-    default:
-      return val;
-  }
-};
-
-toString = function(val) {
-  return ObjProto.toString.call(val);
-};
-
-transformResult = function(result, fn) {
-  return result = fn(result);
-};
-
-module.exports = {
-  addComponent: addComponent,
-  extend: extend,
-  getComponent: getComponent,
-  isArray: isArray,
-  isObject: isObject,
-  isString: isString
-};
-
-
-
-},{}]},{},[5])
-(5)
-});}).call(this,typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[195])
+},{"../mixins/UpdatePostFocusMixin":202,"../vendor/React":213,"../vendor/adapters":214}]},{},[201])
