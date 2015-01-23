@@ -3,15 +3,27 @@
 NAMESPACE                         = require '../namespace'
 { resetMode }                     = require '../model/appState'
 
-setModeTo = (mode) -> () ->
-  push ($router-events, mode)
+getLink = \href ->
+  document.querySelector("[href='" + href + "']")
 
-updateMode = \newMode \appState ->
-  resetMode (appState, newMode)
+setModeTo = (type) -> () ->
+  push ($router-events, modes[type])
+
+updateMode = \capsule \appState ->
+  resetMode (appState, capsule.mode)
 
 $router-events = getEventStream '$router-events'
 
+$router-events.subscribe \capsule ->
+  link = getLink(capsule.href)
+  link.blur () if link
+
 connect ($router-events, 'cacher', -> mapping updateMode)
+
+modes =
+  active    : { href: '#/active',    mode: 'active'    }
+  all       : { href: '#/',          mode: 'all'       }
+  completed : { href: '#/completed', mode: 'completed' }
 
 # `Router` has been set on the global `window` object by another file.
 router = Router
