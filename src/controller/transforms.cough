@@ -64,6 +64,11 @@ removeTodo = \capsule \appState ->
 setEventTgtValue = (capsule, text) ->
   capsule.event.target.value = text
 
+storeCookie = \appState ->
+  value = encodeURIComponent(JSON.stringify(appState))
+  document.cookie = "aspenTodoAppState=#{value}"
+  appState
+
 toggleAllTodos = \capsule \appState ->
   resetTodos (appState, (toggleAll appState.todos))
 
@@ -86,5 +91,6 @@ module.exports = {
   toggleTodo
   restoreOrigTitle
   saveCurrentTitle 
+  storeCookie
   storeTitle
 }
