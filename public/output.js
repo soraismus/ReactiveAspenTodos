@@ -22304,7 +22304,7 @@ module.exports = {
 };
 
 },{}],198:[function(require,module,exports){
-var cacheAppData, compose, connect, editAppState, endEditing, extractNewTodo, filteringEnter, filteringEscape, mapping, nodes, onValue, plugIntoTerminus, removeCompletedTodos, removeTodo, restoreOrigTitle, saveCurrentTitle, storeTitle, toggleAllTodos, toggleTodo, transforms, _ref, _ref1;
+var cacheAppData, compose, composing, connect, editAppState, endEditing, extractNewTodo, filteringEnter, filteringEscape, mapping, nodes, onValue, plugIntoTerminus, removeCompletedTodos, removeTodo, restoreOrigTitle, saveCurrentTitle, storeCookie, storeTitle, toggleAllTodos, toggleTodo, transforms, _ref, _ref1;
 
 compose = require('../utilities').compose;
 
@@ -22312,22 +22312,30 @@ _ref = require('../vendor/Controller'), connect = _ref.connect, onValue = _ref.o
 
 mapping = require('../vendor/Pando').transforms.mapping;
 
-_ref1 = require('./transforms'), cacheAppData = _ref1.cacheAppData, editAppState = _ref1.editAppState, endEditing = _ref1.endEditing, extractNewTodo = _ref1.extractNewTodo, filteringEnter = _ref1.filteringEnter, filteringEscape = _ref1.filteringEscape, removeCompletedTodos = _ref1.removeCompletedTodos, removeTodo = _ref1.removeTodo, toggleAllTodos = _ref1.toggleAllTodos, toggleTodo = _ref1.toggleTodo, restoreOrigTitle = _ref1.restoreOrigTitle, saveCurrentTitle = _ref1.saveCurrentTitle, storeTitle = _ref1.storeTitle;
+_ref1 = require('./transforms'), cacheAppData = _ref1.cacheAppData, editAppState = _ref1.editAppState, endEditing = _ref1.endEditing, extractNewTodo = _ref1.extractNewTodo, filteringEnter = _ref1.filteringEnter, filteringEscape = _ref1.filteringEscape, removeCompletedTodos = _ref1.removeCompletedTodos, removeTodo = _ref1.removeTodo, toggleAllTodos = _ref1.toggleAllTodos, toggleTodo = _ref1.toggleTodo, restoreOrigTitle = _ref1.restoreOrigTitle, saveCurrentTitle = _ref1.saveCurrentTitle, storeCookie = _ref1.storeCookie, storeTitle = _ref1.storeTitle;
 
 nodes = ['$clear-clicks', '$delete-clicks', '$new-todo-keydowns', '$toggle-all-clicks', '$toggle-clicks', '$edit-blurs', '$edit-keydowns', '$edit-keydowns'];
 
 transforms = [mapping(removeCompletedTodos), mapping(removeTodo), compose([filteringEnter, mapping(extractNewTodo)]), mapping(toggleAllTodos), mapping(toggleTodo), mapping(endEditing(saveCurrentTitle)), compose([filteringEnter, mapping(endEditing(saveCurrentTitle))]), compose([filteringEscape, mapping(endEditing(restoreOrigTitle))])];
 
+composing = function(leftComponent) {
+  return mapping(function(rightComponent) {
+    return function(__i) {
+      return leftComponent(rightComponent(__i));
+    };
+  });
+};
+
 connect(nodes, 'cacher', function() {
   return transforms;
 });
 
-plugIntoTerminus('cacher', function() {
-  return mapping(function(transform) {
-    return function(__i) {
-      return cacheAppData(transform(__i));
-    };
-  });
+connect('cacher', 'cookieManager', function() {
+  return composing(cacheAppData);
+});
+
+plugIntoTerminus('cookieManager', function() {
+  return composing(storeCookie);
 });
 
 plugIntoTerminus('$todo-label-doubleclicks', function() {
@@ -22407,7 +22415,7 @@ router.init('/');
 
 
 },{"../model/appState":203,"../namespace":206,"../vendor/Controller":210,"../vendor/Pando":212}],200:[function(require,module,exports){
-var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
+var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeCookie, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
 
@@ -22527,6 +22535,13 @@ setEventTgtValue = function(capsule, text) {
   return capsule.event.target.value = text;
 };
 
+storeCookie = function(appState) {
+  var value;
+  value = encodeURIComponent(JSON.stringify(appState));
+  document.cookie = "aspenTodoAppState=" + value;
+  return appState;
+};
+
 toggleAllTodos = function(capsule) {
   return function(appState) {
     return resetTodos(appState, toggleAll(appState.todos));
@@ -22556,6 +22571,7 @@ module.exports = {
   toggleTodo: toggleTodo,
   restoreOrigTitle: restoreOrigTitle,
   saveCurrentTitle: saveCurrentTitle,
+  storeCookie: storeCookie,
   storeTitle: storeTitle
 };
 
