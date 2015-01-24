@@ -22374,7 +22374,7 @@ onValue('todo-in-edit', function(capsule) {
 
 
 
-},{"../utilities":207,"../vendor/Controller":210,"../vendor/Pando":212,"./transforms":200}],199:[function(require,module,exports){
+},{"../utilities":208,"../vendor/Controller":211,"../vendor/Pando":213,"./transforms":200}],199:[function(require,module,exports){
 var $router_hyphen_events, NAMESPACE, connect, getEventStream, getLink, mapping, modes, push, resetMode, router, setModeTo, updateMode, _ref;
 
 _ref = require('../vendor/Controller'), connect = _ref.connect, getEventStream = _ref.getEventStream, push = _ref.push;
@@ -22440,7 +22440,7 @@ router.init('/');
 
 
 
-},{"../model/appState":203,"../namespace":206,"../vendor/Controller":210,"../vendor/Pando":212}],200:[function(require,module,exports){
+},{"../model/appState":204,"../namespace":207,"../vendor/Controller":211,"../vendor/Pando":213}],200:[function(require,module,exports){
 var NAMESPACE, add, appStateProperty, cacheAppData, editAppState, endEditing, extractNewTodo, filtering, filteringEnter, filteringEscape, filteringKey, findTodo, recaption, remove, removeCompleted, removeCompletedTodos, removeTodo, reset, resetEditing, resetTodos, restoreOrigTitle, saveCurrentTitle, setEventTgtValue, store, storeCookie, storeOrigTitle, storeTitle, toggle, toggleAll, toggleAllTodos, toggleTodo, uuid, _endEditing, _extractNewTodo, _ref, _ref1, _ref2, _ref3;
 
 _ref = require('../model/todoList'), add = _ref.add, recaption = _ref.recaption, remove = _ref.remove, removeCompleted = _ref.removeCompleted, toggle = _ref.toggle, toggleAll = _ref.toggleAll;
@@ -22603,8 +22603,19 @@ module.exports = {
 
 
 
-},{"../model/appState":203,"../model/todoList":205,"../namespace":206,"../utilities":207,"../vendor/Aspen":208,"../vendor/Pando":212}],201:[function(require,module,exports){
+},{"../model/appState":204,"../model/todoList":206,"../namespace":207,"../utilities":208,"../vendor/Aspen":209,"../vendor/Pando":213}],201:[function(require,module,exports){
+module.exports = {
+  editing: null,
+  mode: 'all',
+  todos: []
+};
+
+
+
+},{}],202:[function(require,module,exports){
 var NAMESPACE, appNodeId, cachedState, defaultState, initialState, initialize, isEmpty, store, topViewFactory, viewImports;
+
+defaultState = require('./default-state');
 
 initialize = require('./vendor/Aspen').initialize;
 
@@ -22624,12 +22635,6 @@ appNodeId = 'todoapp';
 
 cachedState = store(NAMESPACE);
 
-defaultState = {
-  editing: null,
-  mode: 'all',
-  todos: []
-};
-
 initialState = isEmpty(cachedState) ? defaultState : cachedState;
 
 initialize(appNodeId, topViewFactory, initialState, viewImports);
@@ -22640,7 +22645,7 @@ require('./controller/router');
 
 
 
-},{"./controller/event-controllers":198,"./controller/router":199,"./namespace":206,"./utilities":207,"./vendor/Aspen":208,"./view-imports":216,"./view/app":217}],202:[function(require,module,exports){
+},{"./controller/event-controllers":198,"./controller/router":199,"./default-state":201,"./namespace":207,"./utilities":208,"./vendor/Aspen":209,"./view-imports":217,"./view/app":218}],203:[function(require,module,exports){
 /**
  * Derivative of source code copyrighted by Facebook.
  * This source code is licensed under Facebook's  BSD-style license.
@@ -22674,7 +22679,7 @@ var UpdatePostFocusMixin = {
 
 module.exports = UpdatePostFocusMixin;
 
-},{}],203:[function(require,module,exports){
+},{}],204:[function(require,module,exports){
 var extend, reset, resetEditing, resetMode, resetProp, resetTodos, set, _ref, _ref1;
 
 _ref = require('../utilities'), extend = _ref.extend, set = _ref.set;
@@ -22700,7 +22705,7 @@ module.exports = {
 
 
 
-},{"../utilities":207}],204:[function(require,module,exports){
+},{"../utilities":208}],205:[function(require,module,exports){
 var activate, active, complete, completed, create, modifyCompletedStatus, recaption, set, toggle, uuid, _ref;
 
 _ref = require('../utilities'), set = _ref.set, uuid = _ref.uuid;
@@ -22755,7 +22760,7 @@ module.exports = {
 
 
 
-},{"../utilities":207}],205:[function(require,module,exports){
+},{"../utilities":208}],206:[function(require,module,exports){
 var activate, active, addTodo, complete, completed, create, getTodosByMode, recaption, recaptionTodo, removeActive, removeCompleted, removeTodo, set, toggle, toggleAll, toggleTodo, _ref;
 
 _ref = require('./todo'), active = _ref.active, activate = _ref.activate, complete = _ref.complete, completed = _ref.completed, create = _ref.create, recaption = _ref.recaption, toggle = _ref.toggle;
@@ -22831,12 +22836,12 @@ module.exports = {
 
 
 
-},{"../utilities":207,"./todo":204}],206:[function(require,module,exports){
+},{"../utilities":208,"./todo":205}],207:[function(require,module,exports){
 module.exports = 'reactive-aspen-todos';
 
 
 
-},{}],207:[function(require,module,exports){
+},{}],208:[function(require,module,exports){
 var compose, composeReducer, extend, identity, isArray, isObject, pluralize, set, shallowCopy, signposts, store, stringify, uuid, _uuid,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty,
@@ -22972,7 +22977,7 @@ module.exports = {
 
 
 
-},{}],208:[function(require,module,exports){
+},{}],209:[function(require,module,exports){
 var Pando, connectTo, getReactiveAspen, render;
 
 connectTo = require('./Bridge').connectTo;
@@ -22987,7 +22992,7 @@ module.exports = getReactiveAspen(render, connectTo, Pando);
 
 
 
-},{"./Bridge":209,"./Pando":212,"./React":213,"reactive-aspen":196}],209:[function(require,module,exports){
+},{"./Bridge":210,"./Pando":213,"./React":214,"reactive-aspen":196}],210:[function(require,module,exports){
 var DOM, getBridge;
 
 DOM = require('./DOM');
@@ -22998,37 +23003,37 @@ module.exports = getBridge(DOM);
 
 
 
-},{"./DOM":211,"react-bridge":6}],210:[function(require,module,exports){
+},{"./DOM":212,"react-bridge":6}],211:[function(require,module,exports){
 module.exports = require('./Aspen').Controller;
 
 
 
-},{"./Aspen":208}],211:[function(require,module,exports){
+},{"./Aspen":209}],212:[function(require,module,exports){
 module.exports = require('./React').DOM;
 
 
 
-},{"./React":213}],212:[function(require,module,exports){
+},{"./React":214}],213:[function(require,module,exports){
 module.exports = require('pando');
 
 
 
-},{"pando":181}],213:[function(require,module,exports){
+},{"pando":181}],214:[function(require,module,exports){
 module.exports = require('react/addons');
 
 
 
-},{"react/addons":8}],214:[function(require,module,exports){
+},{"react/addons":8}],215:[function(require,module,exports){
 module.exports = require('./Bridge').adapters;
 
 
 
-},{"./Bridge":209}],215:[function(require,module,exports){
+},{"./Bridge":210}],216:[function(require,module,exports){
 module.exports = require('./React').addons.classSet;
 
 
 
-},{"./React":213}],216:[function(require,module,exports){
+},{"./React":214}],217:[function(require,module,exports){
 var blur, todoItemInput;
 
 blur = {
@@ -23055,7 +23060,7 @@ module.exports = [
 
 
 
-},{}],217:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 var AppBody, AppFooter, AppHeader, TodoApp, countCompleted, countReducer, div, headerHasFocus;
 
 AppBody = require('./body');
@@ -23095,7 +23100,7 @@ module.exports = TodoApp;
 
 
 
-},{"../vendor/DOM":211,"./body":218,"./footer":219,"./header":220}],218:[function(require,module,exports){
+},{"../vendor/DOM":212,"./body":219,"./footer":220,"./header":221}],219:[function(require,module,exports){
 var $checkbox, $mainToggle, AppBody, TodoItem, getTodoView, getTodosByMode, section, ul, _ref;
 
 $checkbox = require('../vendor/adapters').$checkbox;
@@ -23138,7 +23143,7 @@ module.exports = AppBody;
 
 
 
-},{"../model/todoList":205,"../vendor/DOM":211,"../vendor/adapters":214,"./todoItem":221}],219:[function(require,module,exports){
+},{"../model/todoList":206,"../vendor/DOM":212,"../vendor/adapters":215,"./todoItem":222}],220:[function(require,module,exports){
 var $button, $link, AppFooter, activeFilter, allFilter, classSet, clearButton, completedFilter, countSpan, fields, footer, getFilterClassName, getFilterOption, li, noProps, pluralize, span, strong, ul, _ref, _ref1, _ref2;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $link = _ref.$link;
@@ -23208,7 +23213,7 @@ module.exports = AppFooter;
 
 
 
-},{"../utilities":207,"../vendor/DOM":211,"../vendor/adapters":214,"../vendor/classSet":215}],220:[function(require,module,exports){
+},{"../utilities":208,"../vendor/DOM":212,"../vendor/adapters":215,"../vendor/classSet":216}],221:[function(require,module,exports){
 var $text, AppHeader, h1, header, todoInput, todosCaption, _ref;
 
 _ref = require('../vendor/DOM'), h1 = _ref.h1, header = _ref.header;
@@ -23236,7 +23241,7 @@ module.exports = AppHeader;
 
 
 
-},{"../vendor/DOM":211,"../vendor/adapters":214}],221:[function(require,module,exports){
+},{"../vendor/DOM":212,"../vendor/adapters":215}],222:[function(require,module,exports){
 var $button, $checkbox, $label, IDifyAdapter, TodoItem, applyId, classSet, createFactory, div, factories, li, todoItemInputClass, todoItemInputFactory, _ref, _ref1;
 
 _ref = require('../vendor/adapters'), $button = _ref.$button, $checkbox = _ref.$checkbox, $label = _ref.$label;
@@ -23303,7 +23308,7 @@ module.exports = TodoItem;
 
 
 
-},{"../vendor/DOM":211,"../vendor/React":213,"../vendor/adapters":214,"../vendor/classSet":215,"./todoItemInputClass":222}],222:[function(require,module,exports){
+},{"../vendor/DOM":212,"../vendor/React":214,"../vendor/adapters":215,"../vendor/classSet":216,"./todoItemInputClass":223}],223:[function(require,module,exports){
 var $text, UpdatePostFocusMixin, createClass, todoItemInputClass, _todoItemInput;
 
 createClass = require('../vendor/React').createClass;
@@ -23338,4 +23343,4 @@ module.exports = todoItemInputClass;
 
 
 
-},{"../mixins/UpdatePostFocusMixin":202,"../vendor/React":213,"../vendor/adapters":214}]},{},[201])
+},{"../mixins/UpdatePostFocusMixin":203,"../vendor/React":214,"../vendor/adapters":215}]},{},[202])
