@@ -1,8 +1,9 @@
-var express = require('express');
-var fs      = require('fs');
-var path    = require('path');
-var React   = require('react/addons');
-var TodoApp = require('./lib/view/app');
+var cookieParser = require('cookie-parser');
+var express      = require('express');
+var fs           = require('fs');
+var path         = require('path');
+var React        = require('react/addons');
+var TodoApp      = require('./lib/view/app');
 
 var app      = express();
 var anchor   = '$TODOAPP$';
@@ -12,14 +13,19 @@ var template = fs.readFileSync('./index.html', utf8);
 // WET.
 var defaultState = { editing: null, mode: 'all', todos: [] };
 
+function getAppState(req) {
+  return JSON.parse(req.cookies.aspenTodoAppState) || defaultState;
+}
+
 function renderReactToHtml(req, res) {
-  console.log('renderReactToHtml');
-  markup = React.renderToString(TodoApp(defaultState));
-  console.log('Reach has been rendered.');
+  appState = getAppState(req);
+  markup = React.renderToString(TodoApp(appState));
   res.send(template.replace(anchor, markup));
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(cookieParser());
 
 app.get('/', renderReactToHtml);
 app.get('/index.html', renderReactToHtml);
