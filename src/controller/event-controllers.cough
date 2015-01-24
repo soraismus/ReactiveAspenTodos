@@ -1,6 +1,6 @@
 { compose }                            = require '../utilities'
 { connect, onValue, plugIntoTerminus } = require '../vendor/Controller'
-{ mapping }                            = require('../vendor/Pando').transforms
+{ composing, mapping }                 = require('../vendor/Pando').transforms
 
 {
   cacheAppData
@@ -40,9 +40,6 @@ transforms = [
   compose [filteringEnter,  mapping (endEditing saveCurrentTitle)]
   compose [filteringEscape, mapping (endEditing restoreOrigTitle)]
 ]
-
-composing = \leftComponent ->
-  mapping \rightComponent -> ; leftComponent rightComponent ;
 
 connect (nodes, 'cacher', -> transforms)
 
