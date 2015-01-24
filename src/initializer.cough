@@ -1,3 +1,4 @@
+defaultState   = require './default-state'
 { initialize } = require './vendor/Aspen'
 NAMESPACE      = require './namespace'
 topViewFactory = require './view/app'
@@ -9,7 +10,6 @@ isEmpty = \array ->
 
 appNodeId    = 'todoapp'
 cachedState  = store NAMESPACE
-defaultState = { editing: null, mode: 'all', todos: [] }
 initialState = if isEmpty cachedState then defaultState else cachedState
 
 initialize (appNodeId, topViewFactory, initialState, viewImports)
